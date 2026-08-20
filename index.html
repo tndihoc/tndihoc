@@ -101,13 +101,21 @@
   .fc-card.is-flipped { transform: rotateY(180deg); }
   .fc-face {
     position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
-    border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border-radius: 22px; display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding: 1.5rem; text-align: center;
+    box-shadow: 0 18px 34px -12px rgba(46,52,64,.28), 0 2px 6px rgba(46,52,64,.08);
+  }
+  .fc-face--front { background: #6C5CE7; color: #FFFFFF; transition: background-color .25s ease, color .25s ease; }
+  .fc-front-badge {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
+    background: rgba(255,255,255,.28); border-radius: 9999px; padding: 4px 12px; margin-bottom: 16px;
   }
   .fc-face--back { transform: rotateY(180deg); }
   @media (prefers-reduced-motion: reduce) {
     .fc-card { transition: none; }
   }
+  .fc-progress-track { height: 8px; border-radius: 9999px; background: #F0F2F5; overflow: hidden; }
+  .fc-progress-fill { height: 100%; background: #0052D9; border-radius: 9999px; transition: width .25s ease; }
 
   .fc-speak-btn {
     display: inline-flex; align-items: center; justify-content: center;
@@ -145,17 +153,69 @@
   .btvn-order-sentence .btvn-chip { background:#E6EEFC; border-color:#B9CDF5; }
   .btvn-subq { border-top:1px dashed rgba(46,52,64,0.15); padding-top:12px; margin-top:12px; }
 
-  /* ===== Bảng xếp hạng & Vinh danh streak ===== */
-  .lb-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
-  .lb-rank { width: 26px; text-align: center; font-weight: 700; color: #6B7280; font-size: 13px; flex-shrink: 0; }
-  .lb-rank.is-top1 { color: #B8860B; }
-  .lb-rank.is-top2 { color: #71797E; }
-  .lb-rank.is-top3 { color: #A0522D; }
-  .lb-avatar { width: 32px; height: 32px; border-radius: 9999px; flex-shrink: 0; background: #E6EEFC; object-fit: cover; }
-  .lb-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: #2E3440; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .lb-score { font-weight: 700; color: #0052D9; font-size: 14px; flex-shrink: 0; }
-  .lb-streak { font-weight: 700; color: #FF7D00; font-size: 14px; flex-shrink: 0; }
-  .lb-row.is-me { background: #F0F5FF; }
+  /* =====================================================================
+     Trang trí phong cách PPT board-game 奔跑吧同学 áp dụng cho phần "trắc
+     nghiệm" (jn-): nền trời xanh + mây, thẻ câu hỏi vàng cam bo tròn lớn,
+     linh vật mặt trời.
+     ===================================================================== */
+  .jn-sky {
+    position: relative; overflow: hidden; border-radius: 22px;
+    background: linear-gradient(180deg, #8FD3F4 0%, #B9E6FB 55%, #D7F0FC 100%);
+    padding: 20px; min-height: 320px;
+  }
+  .jn-sky > *:not(.jn-cloud) { position: relative; z-index: 2; }
+  .jn-cloud {
+    position: absolute; opacity: .9; filter: drop-shadow(0 2px 0 rgba(255,255,255,.6));
+  }
+  .jn-setup-card { background: rgba(255,255,255,.72); border-radius: 18px; padding: 16px 18px; }
+  @media (min-width: 640px) { .jn-setup-card { padding: 20px; } }
+  .jn-sky .rx-board { background: rgba(255,255,255,.55); }
+  .jn-sun {
+    width: 42px; height: 42px; border-radius: 9999px;
+    background: radial-gradient(circle at 35% 30%, #FFE58A, #FFC72C 70%);
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+    box-shadow: 0 4px 10px rgba(255,167,38,.4);
+    flex-shrink: 0;
+  }
+  .jn-topbar { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .jn-progress-pill { background: rgba(255,255,255,.85); border-radius: 9999px; padding: 6px 14px; font-weight: 700; font-size: 13px; color: #2E3440; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+  .jn-timebar-track { position: relative; z-index: 2; height: 10px; border-radius: 9999px; background: rgba(255,255,255,.55); overflow: hidden; margin-bottom: 16px; }
+  .jn-timebar-fill { height: 100%; background: #0052D9; border-radius: 9999px; transition: width .12s linear, background-color .2s ease; }
+  .jn-timebar-fill.is-low { background: #D6524F; }
+
+  .jn-card {
+    position: relative; z-index: 2; background: linear-gradient(180deg, #FFD35C, #FFC72C);
+    border-radius: 22px; padding: 22px 20px; box-shadow: 0 10px 24px rgba(180,120,0,.25);
+  }
+  .jn-question { text-align: center; color: #5C3D00; font-weight: 800; font-size: 15px; margin-bottom: 4px; }
+  .jn-hanzi { text-align: center; font-family: '"Kaiti SC"', '"STKaiti"', '"KaiTi"', '"Noto Serif SC"', serif; font-size: 44px; color: #FFFFFF; text-shadow: 0 2px 0 rgba(140,90,0,.35); margin-bottom: 4px; }
+  .jn-pinyin { text-align: center; color: rgba(255,255,255,.9); font-size: 13px; font-weight: 600; margin-bottom: 16px; }
+  .jn-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 420px) { .jn-options { grid-template-columns: 1fr; } }
+  .jn-option {
+    display: flex; align-items: center; gap: 8px; background: #FFFFFF; border-radius: 14px;
+    padding: 11px 14px; font-size: 13.5px; font-weight: 600; color: #2E3440;
+    text-align: left; transition: transform .1s ease, background-color .15s ease; width: 100%;
+  }
+  .jn-option:hover:not(:disabled) { transform: translateY(-2px); }
+  .jn-option-badge {
+    width: 22px; height: 22px; border-radius: 9999px; background: #F0F2F5; color: #6B7280;
+    font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .jn-option.is-correct { background: #DCFCE7; }
+  .jn-option.is-correct .jn-option-badge { background: #16A34A; color: #fff; }
+  .jn-option.is-wrong { background: #FBE3E2; animation: shakeTile .35s ease; }
+  .jn-option.is-wrong .jn-option-badge { background: #D6524F; color: #fff; }
+  .jn-option:disabled { cursor: default; }
+
+  .jn-celebrate { position: relative; z-index: 2; text-align: center; padding: 26px 10px; }
+  .jn-stat-card { background: rgba(255,255,255,.85); border-radius: 16px; padding: 12px 16px; min-width: 92px; }
+  @media (prefers-reduced-motion: reduce) {
+    .jn-option.is-wrong { animation: none; }
+  }
+
+  /* ===== Sổ tay từ vựng ===== */
+  .nb-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; }
 
   /* ===== Ghép cặp phản xạ nhanh (rx) ===== */
   .rx-pill {
@@ -260,8 +320,9 @@
   }
 
   /* ===== Trợ lý AI ===== */
+  /* Vị trí: sát mép trái (chiều ngang), canh giữa màn hình (chiều dọc) */
   .ai-bubble-btn {
-    position: fixed; left: 20px; bottom: 20px; z-index: 999;
+    position: fixed; left: 20px; top: 50%; transform: translateY(-50%); z-index: 999;
     width: 56px; height: 56px; border-radius: 9999px;
     background: #FF7D00; color: #fff;
     display: flex; align-items: center; justify-content: center;
@@ -269,19 +330,22 @@
     border: 2px solid rgba(255,255,255,0.6);
     transition: transform .15s ease, box-shadow .15s ease;
   }
-  .ai-bubble-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(255,125,0,0.4); }
+  .ai-bubble-btn:hover { transform: translateY(-50%) translateY(-2px); box-shadow: 0 12px 24px rgba(255,125,0,0.4); }
   .ai-bubble-btn.is-open { background: #2E3440; }
 
   .ai-panel {
-    position: fixed; left: 20px; bottom: 88px; z-index: 999;
+    position: fixed; left: 88px; top: 50%; transform: translateY(-50%); z-index: 999;
     width: min(360px, calc(100vw - 32px)); height: min(520px, calc(100vh - 140px));
     background: #FFFFFF; border: 1px solid rgba(46,52,64,0.12); border-radius: 18px;
     box-shadow: 0 20px 45px rgba(46,52,64,0.18);
     display: flex; flex-direction: column; overflow: hidden;
     animation: aiPanelIn .18s ease both;
   }
-  @keyframes aiPanelIn { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes aiPanelIn { from { opacity: 0; transform: translateY(-50%) translateY(10px) scale(.98); } to { opacity: 1; transform: translateY(-50%) translateY(0) scale(1); } }
   @media (prefers-reduced-motion: reduce) { .ai-panel { animation: none; } }
+  @media (max-width: 480px) {
+    .ai-panel { left: 12px; width: calc(100vw - 24px); }
+  }
 
   .ai-panel-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -386,25 +450,6 @@
       <button class="nav-link" data-target="chinese" data-nav-btn><span class="nav-dot"></span> học tiếng trung</button>
       <button class="nav-link" data-target="abroad" data-nav-btn><span class="nav-dot"></span> du học trung quốc</button>
     </nav>
-
-    <!-- ===== Khu vực tài khoản (Firebase Auth) ===== -->
-    <div id="auth-area" class="flex items-center gap-2 shrink-0">
-      <button id="auth-signin-btn" type="button" class="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-ink/15 text-sm font-semibold text-ink hover:bg-ink/5 focus-ring">
-        <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.67-2.26 1.06-3.71 1.06-2.86 0-5.28-1.93-6.15-4.53H2.18v2.85A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.85 14.1a6.6 6.6 0 0 1 0-4.2V7.05H2.18a11 11 0 0 0 0 9.9l3.67-2.85z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1a11 11 0 0 0-9.82 6.05l3.67 2.85C6.72 7.3 9.14 5.38 12 5.38z"/></svg>
-        đăng nhập
-      </button>
-      <button id="auth-signin-btn-mobile" type="button" aria-label="Đăng nhập" class="sm:hidden p-2 rounded-lg hover:bg-ink/5 focus-ring">
-        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.67-2.26 1.06-3.71 1.06-2.86 0-5.28-1.93-6.15-4.53H2.18v2.85A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.85 14.1a6.6 6.6 0 0 1 0-4.2V7.05H2.18a11 11 0 0 0 0 9.9l3.67-2.85z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1a11 11 0 0 0-9.82 6.05l3.67 2.85C6.72 7.3 9.14 5.38 12 5.38z"/></svg>
-      </button>
-
-      <div id="auth-user-chip" class="hidden items-center gap-2">
-        <img id="auth-user-avatar" src="" alt="" class="w-8 h-8 rounded-full border border-ink/10" referrerpolicy="no-referrer">
-        <span id="auth-user-name" class="hidden md:inline text-sm font-semibold text-ink max-w-[120px] truncate"></span>
-        <button id="auth-signout-btn" type="button" aria-label="Đăng xuất" class="p-1.5 rounded-lg hover:bg-ink/5 focus-ring text-slate" title="Đăng xuất">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        </button>
-      </div>
-    </div>
 
     <button id="drawer-open" aria-label="Mở menu điều hướng" class="lg:hidden p-2 rounded-lg hover:bg-ink/5 focus-ring shrink-0">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -520,30 +565,13 @@
         <p class="text-mint font-semibold text-sm tracking-wide mb-2">mục 2 · trọng tâm</p>
         <h2 class="font-sans font-semibold text-2xl sm:text-3xl text-ink mb-5">học tiếng trung</h2>
 
-        <!-- ===== Màn chặn đăng nhập — chỉ hiện khi CHƯA đăng nhập Google ===== -->
-        <div id="chinese-auth-gate" class="bg-white border border-ink/10 rounded-2xl px-6 sm:px-10 py-14 text-center">
-          <div class="w-14 h-14 mx-auto rounded-full bg-mint-light flex items-center justify-center mb-4">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0052D9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          </div>
-          <h3 class="font-sans font-semibold text-xl text-ink mb-2">cần đăng nhập để học</h3>
-          <p class="text-sm text-slate max-w-md mx-auto mb-6">flashcard, trò chơi ôn từ vựng, bài đọc, bài tập về nhà, streak và bảng xếp hạng chỉ mở khoá sau khi bạn đăng nhập bằng tài khoản gmail — điểm số và chuỗi học của bạn sẽ được lưu lại để lên bảng xếp hạng.</p>
-          <button id="auth-gate-signin-btn" type="button" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-ink/15 text-sm font-semibold text-ink hover:bg-ink/5 focus-ring">
-            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.99.67-2.26 1.06-3.71 1.06-2.86 0-5.28-1.93-6.15-4.53H2.18v2.85A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.85 14.1a6.6 6.6 0 0 1 0-4.2V7.05H2.18a11 11 0 0 0 0 9.9l3.67-2.85z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1a11 11 0 0 0-9.82 6.05l3.67 2.85C6.72 7.3 9.14 5.38 12 5.38z"/></svg>
-            đăng nhập bằng gmail
-          </button>
-        </div>
-
-        <!-- ===== Toàn bộ nội dung học tập — chỉ hiện khi ĐÃ đăng nhập ===== -->
-        <div id="chinese-content" class="hidden">
-
         <!-- ===== Chuyển nhanh trong mục "học tiếng trung" ===== -->
         <div class="flex flex-wrap gap-2 mb-8" id="chinese-quicknav">
           <a href="#streak-widget" class="baidoc-pill">tổng quan</a>
           <a href="#btvn-section" class="baidoc-pill">bài tập về nhà</a>
           <a href="#vocab-games" class="baidoc-pill">trò chơi</a>
           <a href="#baidoc-section" class="baidoc-pill" style="background:#FFE8D1;color:#FF7D00;border-color:#FFC98A;">📖 bài đọc</a>
-          <a href="#leaderboard-section" class="baidoc-pill">🏆 bảng xếp hạng</a>
-          <a href="#streak-hof-section" class="baidoc-pill">🔥 vinh danh streak</a>
+          <a href="#notebook-section" class="baidoc-pill">📓 sổ tay từ vựng</a>
         </div>
 
         <!-- ===== Streak & Heatmap widget ===== -->
@@ -691,6 +719,7 @@
             <button data-game-hsk="5" class="game-hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring">hsk 5</button>
             <button data-game-hsk="6" class="game-hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring">hsk 6</button>
             <button data-game-hsk="79" class="game-hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring">hsk 7-9</button>
+            <button data-game-hsk="notebook" class="game-hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring">📓 sổ tay (<span id="game-hsk-nb-count">0</span>)</button>
             <span class="text-xs text-slate ml-1">đang chơi: <span id="game-hsk-label" class="font-semibold text-mint">hsk 1 · 149 từ</span></span>
           </div>
 
@@ -704,80 +733,110 @@
 
           <!-- ---------- GAME 1: MATCH UP (NỐI CẶP) ---------- -->
           <div id="game-matchup" class="game-panel active">
-            <div class="bg-white border border-ink/10 rounded-2xl p-5 sm:p-7">
+            <div class="jn-sky">
+              <!-- Mây trang trí -->
+              <svg class="jn-cloud" style="top:10px; left:6%; width:64px;" viewBox="0 0 100 60" fill="#fff"><ellipse cx="30" cy="35" rx="28" ry="20"/><ellipse cx="55" cy="25" rx="22" ry="18"/><ellipse cx="72" cy="38" rx="20" ry="15"/></svg>
+              <svg class="jn-cloud" style="top:4px; right:8%; width:50px;" viewBox="0 0 100 60" fill="#fff"><ellipse cx="30" cy="35" rx="28" ry="20"/><ellipse cx="55" cy="25" rx="22" ry="18"/><ellipse cx="72" cy="38" rx="20" ry="15"/></svg>
 
               <div id="mu-setup">
-                <h3 class="font-sans font-semibold text-lg text-ink mb-2">nối cặp từ</h3>
-                <p class="text-sm text-slate mb-5">chọn 1 ô từ vựng và 1 ô nghĩa tương ứng. đúng thì 2 ô biến mất và đổi màu xanh; sai thì rung nhẹ rồi tự bỏ chọn. càng nhanh càng tốt!</p>
-              <div class="flex items-center gap-3 mb-5">
-                <label class="text-sm font-semibold text-ink">số cặp từ:</label>
-                <select id="mu-count" class="text-sm rounded-lg border border-ink/15 px-2.5 py-1.5 focus-ring">
-                  <option value="6">6 cặp</option>
-                  <option value="8" selected>8 cặp</option>
-                  <option value="10">10 cặp</option>
-                  <option value="12">12 cặp</option>
-                </select>
-              </div>
-              <button id="mu-start" class="px-5 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring">bắt đầu chơi</button>
-              <p id="mu-setup-warning" class="text-xs text-seal mt-3 hidden">bộ từ hiện tại chưa đủ dữ liệu (cần tối thiểu 6 từ có nghĩa). hãy nạp thêm từ ở mục "học tiếng trung" trước nhé.</p>
-            </div>
-
-            <div id="mu-play" class="hidden">
-              <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
-                <div class="flex items-center gap-2 text-sm">
-                  <span class="font-semibold text-ink" id="mu-timer">00:00</span>
-                  <span class="text-slate">· còn <span id="mu-remaining" class="font-semibold text-mint">8</span> cặp</span>
+                <div class="flex items-center gap-3 mb-4">
+                  <span class="jn-sun">☀️</span>
+                  <div>
+                    <h3 class="font-sans font-semibold text-lg text-ink">nối cặp từ</h3>
+                    <p class="text-xs text-ink/70">các ô chữ Hán và ô nghĩa được trộn lẫn ngẫu nhiên trong 1 lưới. đúng thì 2 ô đổi màu xanh rồi biến mất; sai thì rung nhẹ rồi tự bỏ chọn để chọn lại.</p>
+                  </div>
                 </div>
-                <button id="mu-restart-mid" class="text-xs font-semibold text-slate hover:text-ink underline">chơi lại</button>
+                <div class="jn-setup-card">
+                  <div class="flex items-center gap-3 mb-5">
+                    <label class="text-sm font-semibold text-ink">số cặp từ:</label>
+                    <select id="mu-count" class="text-sm rounded-lg border border-ink/15 px-2.5 py-1.5 focus-ring bg-white">
+                      <option value="6">6 cặp</option>
+                      <option value="8" selected>8 cặp</option>
+                      <option value="10">10 cặp</option>
+                      <option value="12">12 cặp</option>
+                    </select>
+                  </div>
+                  <button id="mu-start" class="px-5 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring">bắt đầu chơi</button>
+                  <p id="mu-setup-warning" class="text-xs text-seal mt-3 hidden">bộ từ hiện tại chưa đủ dữ liệu (cần tối thiểu 6 từ có nghĩa). hãy nạp thêm từ ở mục "học tiếng trung" trước nhé.</p>
+                </div>
               </div>
-              <div class="grid grid-cols-2 gap-3 sm:gap-6">
-                <div id="mu-col-word" class="flex flex-col gap-2.5"></div>
-                <div id="mu-col-mean" class="flex flex-col gap-2.5"></div>
+
+              <div id="mu-play" class="hidden">
+                <div class="jn-topbar">
+                  <span class="jn-sun">☀️</span>
+                  <span class="jn-progress-pill"><span id="mu-timer">00:00</span> · còn <span id="mu-remaining" class="text-mint">8</span> cặp</span>
+                  <button id="mu-restart-mid" class="text-xs font-semibold text-ink/70 hover:text-ink underline bg-white/70 rounded-full px-3 py-1.5">chơi lại</button>
+                </div>
+                <div id="mu-board" class="rx-board"></div>
               </div>
-            </div>
 
-            <div id="mu-result" class="hidden text-center py-6">
-              <p class="text-5xl mb-3">🎉</p>
-              <h3 class="font-sans font-semibold text-xl text-ink mb-1">hoàn thành!</h3>
-              <p class="text-sm text-slate mb-1">thời gian hoàn thành: <span id="mu-final-time" class="font-semibold text-ink">00:00</span></p>
-              <p class="text-xs text-slate mb-5">kỷ lục nhanh nhất: <span id="mu-best-time" class="font-semibold text-mint">—</span></p>
-              <button id="mu-play-again" class="px-5 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring">chơi lại</button>
-            </div>
+              <div id="mu-result" class="hidden jn-celebrate">
+                <p class="text-5xl mb-3">🎉</p>
+                <h3 class="font-sans font-semibold text-xl text-ink mb-1">hoàn thành!</h3>
+                <p class="text-sm text-ink/80 mb-1">thời gian hoàn thành: <span id="mu-final-time" class="font-semibold text-ink">00:00</span></p>
+                <p class="text-xs text-ink/70 mb-5">kỷ lục nhanh nhất: <span id="mu-best-time" class="font-semibold text-mint">—</span></p>
+                <button id="mu-play-again" class="px-5 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring">chơi lại</button>
+              </div>
 
+            </div>
           </div>
-        </div>
 
         <!-- ---------- GAME 2: QUIZ (TRẮC NGHIỆM) ---------- -->
         <div id="game-quiz" class="game-panel">
-          <div class="bg-white border border-ink/10 rounded-2xl p-5 sm:p-7">
+          <div class="jn-sky">
+            <!-- Mây trang trí -->
+            <svg class="jn-cloud" style="top:10px; left:6%; width:64px;" viewBox="0 0 100 60" fill="#fff"><ellipse cx="30" cy="35" rx="28" ry="20"/><ellipse cx="55" cy="25" rx="22" ry="18"/><ellipse cx="72" cy="38" rx="20" ry="15"/></svg>
+            <svg class="jn-cloud" style="top:4px; right:8%; width:50px;" viewBox="0 0 100 60" fill="#fff"><ellipse cx="30" cy="35" rx="28" ry="20"/><ellipse cx="55" cy="25" rx="22" ry="18"/><ellipse cx="72" cy="38" rx="20" ry="15"/></svg>
 
-            <div id="qz-setup">
-              <h3 class="font-sans font-semibold text-lg text-ink mb-2">trắc nghiệm kiến thức</h3>
-              <p class="text-sm text-slate mb-5">10 câu hỏi chọn 1 trong 4 đáp án. trả lời càng nhanh, điểm thưởng càng cao!</p>
-              <button id="qz-start" class="px-5 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring">bắt đầu chơi</button>
-              <p id="qz-setup-warning" class="text-xs text-seal mt-3 hidden">bộ từ hiện tại chưa đủ dữ liệu (cần tối thiểu 4 từ có nghĩa). hãy nạp thêm từ ở mục "học tiếng trung" trước nhé.</p>
+            <div id="qz-setup" class="relative" style="z-index:2;">
+              <div class="flex items-center gap-3 mb-4">
+                <span class="jn-sun">☀️</span>
+                <div>
+                  <h3 class="font-sans font-semibold text-lg text-ink">trắc nghiệm kiến thức</h3>
+                  <p class="text-xs text-ink/70">mỗi lượt chơi kéo dài 5 phút, từ vựng random xuyên suốt toàn bộ cấp độ hsk đang chọn. mỗi câu có 10 giây — hết giờ hoặc trả lời sai đều tự động chuyển sang từ tiếp theo, không bị dừng game.</p>
+                </div>
+              </div>
+              <div class="bg-white/70 rounded-2xl p-4 sm:p-5">
+                <button id="qz-start" class="px-5 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring">bắt đầu chơi</button>
+                <p id="qz-setup-warning" class="text-xs text-seal mt-3 hidden">bộ từ hiện tại chưa đủ dữ liệu (cần tối thiểu 4 từ có nghĩa). hãy nạp thêm từ ở mục "học tiếng trung" trước nhé.</p>
+              </div>
             </div>
 
-            <div id="qz-play" class="hidden">
-              <div class="flex items-center justify-between text-sm mb-2">
-                <span class="font-semibold text-ink">câu <span id="qz-qnum">1</span>/10</span>
-                <span class="font-semibold text-mint">điểm: <span id="qz-score">0</span></span>
+            <div id="qz-play" class="hidden relative" style="z-index:2;">
+              <div class="jn-topbar">
+                <span class="jn-sun">☀️</span>
+                <span class="jn-progress-pill">⏱ còn lại <span id="qz-session-time">5:00</span></span>
+                <span class="jn-progress-pill">điểm: <span id="qz-score" class="text-mint">0</span></span>
+                <button id="qz-quit" type="button" class="text-xs font-semibold text-ink/70 hover:text-ink underline bg-white/70 rounded-full px-3 py-1.5">dừng lại</button>
               </div>
-              <div class="game-timebar-track mb-5"><div id="qz-progressbar" class="game-timebar-fill" style="width:100%"></div></div>
+              <div class="jn-timebar-track"><div id="qz-progressbar" class="jn-timebar-fill" style="width:100%"></div></div>
 
-              <div class="text-center mb-6">
-                <p class="font-hanzi font-black text-5xl text-ink mb-2" id="qz-hanzi">爱</p>
-                <p class="text-slate text-sm" id="qz-pinyin">ài</p>
+              <div class="jn-card">
+                <p class="jn-question">chọn nghĩa đúng của từ sau:</p>
+                <p class="jn-hanzi" id="qz-hanzi">爱</p>
+                <p class="jn-pinyin" id="qz-pinyin">ài</p>
+                <div class="jn-options" id="qz-options"></div>
               </div>
-
-              <div class="grid sm:grid-cols-2 gap-3" id="qz-options"></div>
             </div>
 
-            <div id="qz-result" class="hidden text-center py-6">
-              <p class="text-5xl mb-3" id="qz-result-emoji">🏆</p>
-              <h3 class="font-sans font-semibold text-xl text-ink mb-1">hoàn thành bài trắc nghiệm!</h3>
-              <p class="text-sm text-slate mb-1">đúng <span id="qz-final-correct" class="font-semibold text-ink">0</span>/10 câu — tổng điểm <span id="qz-final-score" class="font-semibold text-mint">0</span></p>
-              <p class="text-xs text-slate mb-5">điểm cao nhất: <span id="qz-best-score" class="font-semibold text-mint">—</span></p>
+            <div id="qz-result" class="hidden jn-celebrate">
+              <p class="text-5xl mb-2" id="qz-result-emoji">🏆</p>
+              <h3 class="font-sans font-semibold text-xl text-ink mb-1">hết giờ! đây là kết quả của bạn</h3>
+              <p class="text-sm text-ink/70 mb-5">5 phút trôi qua thật nhanh — cùng xem thành tích lần này nhé.</p>
+              <div class="flex flex-wrap items-center justify-center gap-3 mb-5">
+                <div class="jn-stat-card">
+                  <p class="text-xs text-slate mb-0.5">tổng điểm</p>
+                  <p class="font-hanzi font-black text-2xl text-ink" id="qz-final-score">0</p>
+                </div>
+                <div class="jn-stat-card">
+                  <p class="text-xs text-slate mb-0.5">trả lời đúng</p>
+                  <p class="font-hanzi font-black text-2xl text-ink"><span id="qz-final-correct">0</span>/<span id="qz-final-total">0</span></p>
+                </div>
+                <div class="jn-stat-card">
+                  <p class="text-xs text-slate mb-0.5">kỷ lục điểm</p>
+                  <p class="font-hanzi font-black text-2xl text-ink" id="qz-best-score">—</p>
+                </div>
+              </div>
               <button id="qz-play-again" class="px-5 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring">chơi lại</button>
             </div>
 
@@ -786,40 +845,51 @@
 
         <!-- ---------- GAME 3: ĐẤU TRƯỜNG SINH TỒN ---------- -->
         <div id="game-arena" class="game-panel">
-          <div class="bg-white border border-ink/10 rounded-2xl p-5 sm:p-7">
+          <div class="jn-sky">
+            <!-- Mây trang trí -->
+            <svg class="jn-cloud" style="top:10px; left:6%; width:64px;" viewBox="0 0 100 60" fill="#fff"><ellipse cx="30" cy="35" rx="28" ry="20"/><ellipse cx="55" cy="25" rx="22" ry="18"/><ellipse cx="72" cy="38" rx="20" ry="15"/></svg>
+            <svg class="jn-cloud" style="top:4px; right:8%; width:50px;" viewBox="0 0 100 60" fill="#fff"><ellipse cx="30" cy="35" rx="28" ry="20"/><ellipse cx="55" cy="25" rx="22" ry="18"/><ellipse cx="72" cy="38" rx="20" ry="15"/></svg>
 
             <div id="ar-setup">
-              <h3 class="font-sans font-semibold text-lg text-ink mb-2">đấu trường sinh tồn</h3>
-              <p class="text-sm text-slate mb-5">mỗi lượt có <strong>5 giây</strong> để xác nhận nghĩa hiển thị đúng hay sai. trả lời sai hoặc hết giờ là thua trận. trụ được càng lâu, điểm càng cao!</p>
-              <button id="ar-start" class="px-5 py-2.5 rounded-xl bg-peach text-white text-sm font-semibold hover:opacity-90 focus-ring">vào trận</button>
-              <p id="ar-setup-warning" class="text-xs text-seal mt-3 hidden">bộ từ hiện tại chưa đủ dữ liệu (cần tối thiểu 4 từ có nghĩa). hãy nạp thêm từ ở mục "học tiếng trung" trước nhé.</p>
+              <div class="flex items-center gap-3 mb-4">
+                <span class="jn-sun">☀️</span>
+                <div>
+                  <h3 class="font-sans font-semibold text-lg text-ink">đấu trường sinh tồn</h3>
+                  <p class="text-xs text-ink/70">mỗi lượt có <strong>5 giây</strong> để xác nhận nghĩa hiển thị đúng hay sai. trả lời sai hoặc hết giờ là thua trận. trụ được càng lâu, điểm càng cao!</p>
+                </div>
+              </div>
+              <div class="jn-setup-card">
+                <button id="ar-start" class="px-5 py-2.5 rounded-xl bg-peach text-white text-sm font-semibold hover:opacity-90 focus-ring">vào trận</button>
+                <p id="ar-setup-warning" class="text-xs text-seal mt-3 hidden">bộ từ hiện tại chưa đủ dữ liệu (cần tối thiểu 4 từ có nghĩa). hãy nạp thêm từ ở mục "học tiếng trung" trước nhé.</p>
+              </div>
             </div>
 
             <div id="ar-play" class="hidden">
-              <div class="flex items-center justify-between text-sm mb-3">
-                <span class="font-semibold text-ink">streak: <span id="ar-streak" class="text-peach">0</span></span>
-                <span class="font-semibold text-ink">điểm: <span id="ar-score">0</span></span>
+              <div class="jn-topbar">
+                <span class="jn-sun">☀️</span>
+                <span class="jn-progress-pill">streak: <span id="ar-streak" class="text-peach">0</span></span>
+                <span class="jn-progress-pill">điểm: <span id="ar-score" class="text-mint">0</span></span>
               </div>
-              <div class="game-timebar-track mb-6"><div id="ar-timebar" class="game-timebar-fill" style="width:100%"></div></div>
+              <div class="jn-timebar-track"><div id="ar-timebar" class="jn-timebar-fill" style="width:100%"></div></div>
 
-              <div class="text-center mb-6">
-                <p class="font-hanzi font-black text-5xl text-ink mb-2" id="ar-hanzi">爱</p>
-                <p class="text-slate text-sm mb-4" id="ar-pinyin">ài</p>
-                <p class="text-lg font-semibold text-ink" id="ar-proposed-mean">yêu</p>
-                <p class="text-xs text-slate mt-1">nghĩa trên có đúng với từ này không?</p>
+              <div class="jn-card mb-5">
+                <p class="jn-hanzi" id="ar-hanzi">爱</p>
+                <p class="jn-pinyin" id="ar-pinyin">ài</p>
+                <p class="text-center text-lg font-semibold text-white mt-2" id="ar-proposed-mean">yêu</p>
+                <p class="text-center text-xs text-white/85 mt-1">nghĩa trên có đúng với từ này không?</p>
               </div>
 
               <div class="grid grid-cols-2 gap-4">
-                <button id="ar-btn-true" class="py-4 rounded-xl bg-mint-light text-mint font-semibold text-lg hover:opacity-90 focus-ring">✅ đúng</button>
-                <button id="ar-btn-false" class="py-4 rounded-xl bg-seal-light text-seal font-semibold text-lg hover:opacity-90 focus-ring">❌ sai</button>
+                <button id="ar-btn-true" class="py-4 rounded-xl bg-white text-mint font-semibold text-lg hover:opacity-90 focus-ring shadow">✅ đúng</button>
+                <button id="ar-btn-false" class="py-4 rounded-xl bg-white text-seal font-semibold text-lg hover:opacity-90 focus-ring shadow">❌ sai</button>
               </div>
             </div>
 
-            <div id="ar-result" class="hidden text-center py-6">
+            <div id="ar-result" class="hidden jn-celebrate">
               <p class="text-5xl mb-3" id="ar-result-emoji">💀</p>
               <h3 class="font-sans font-semibold text-xl text-ink mb-1">thua trận!</h3>
-              <p class="text-sm text-slate mb-1">trụ được <span id="ar-final-streak" class="font-semibold text-ink">0</span> câu liên tiếp — tổng điểm <span id="ar-final-score" class="font-semibold text-peach">0</span></p>
-              <p class="text-xs text-slate mb-5">kỷ lục streak: <span id="ar-best-streak" class="font-semibold text-peach">—</span></p>
+              <p class="text-sm text-ink/80 mb-1">trụ được <span id="ar-final-streak" class="font-semibold text-ink">0</span> câu liên tiếp — tổng điểm <span id="ar-final-score" class="font-semibold text-peach">0</span></p>
+              <p class="text-xs text-ink/70 mb-5">kỷ lục streak: <span id="ar-best-streak" class="font-semibold text-peach">—</span></p>
               <button id="ar-play-again" class="px-5 py-2.5 rounded-xl bg-peach text-white text-sm font-semibold hover:opacity-90 focus-ring">chơi lại</button>
             </div>
 
@@ -828,69 +898,80 @@
 
         <!-- ---------- GAME 4: GHÉP CẶP PHẢN XẠ NHANH ---------- -->
         <div id="game-reflex" class="game-panel">
-          <div class="bg-white border border-ink/10 rounded-2xl p-5 sm:p-7">
+          <div class="jn-sky">
+            <!-- Mây trang trí -->
+            <svg class="jn-cloud" style="top:10px; left:6%; width:64px;" viewBox="0 0 100 60" fill="#fff"><ellipse cx="30" cy="35" rx="28" ry="20"/><ellipse cx="55" cy="25" rx="22" ry="18"/><ellipse cx="72" cy="38" rx="20" ry="15"/></svg>
+            <svg class="jn-cloud" style="top:4px; right:8%; width:50px;" viewBox="0 0 100 60" fill="#fff"><ellipse cx="30" cy="35" rx="28" ry="20"/><ellipse cx="55" cy="25" rx="22" ry="18"/><ellipse cx="72" cy="38" rx="20" ry="15"/></svg>
 
             <div id="rx-setup">
-              <h3 class="font-sans font-semibold text-lg text-ink mb-2">ghép cặp phản xạ nhanh</h3>
-              <p class="text-sm text-slate mb-5">chọn 1 ô chữ Hán và 1 ô nghĩa khớp nhau thật nhanh. đúng thì ô nháy xanh rồi biến mất, ô mới tự hiện lên ngay lấp chỗ trống; sai thì ô nháy đỏ và giữ nguyên để chọn lại. từ hsk 3 trở lên được tự động chia thành từng đơn nguyên tối đa 150 từ, mỗi từ xuất hiện ít nhất 2 lần trước khi đơn nguyên được tính là hoàn thành. (game này dùng bộ chọn cấp độ + đơn nguyên riêng bên dưới, độc lập với "cấp độ chơi" chung ở trên vì cần theo dõi tiến độ theo từng đơn nguyên.)</p>
-
-              <div class="mb-5">
-                <label class="text-sm font-semibold text-ink mb-2 block">cấp độ</label>
-                <div class="flex flex-wrap gap-2" id="rx-level-pills">
-                  <button data-rx-level="1" class="rx-pill active focus-ring">hsk 1</button>
-                  <button data-rx-level="2" class="rx-pill focus-ring">hsk 2</button>
-                  <button data-rx-level="3" class="rx-pill focus-ring">hsk 3</button>
-                  <button data-rx-level="4" class="rx-pill focus-ring">hsk 4</button>
-                  <button data-rx-level="5" class="rx-pill focus-ring">hsk 5</button>
-                  <button data-rx-level="6" class="rx-pill focus-ring">hsk 6</button>
-                  <button data-rx-level="79" class="rx-pill focus-ring">hsk 7-9</button>
+              <div class="flex items-center gap-3 mb-4">
+                <span class="jn-sun">☀️</span>
+                <div>
+                  <h3 class="font-sans font-semibold text-lg text-ink">ghép cặp phản xạ nhanh</h3>
+                  <p class="text-xs text-ink/70">chọn 1 ô chữ Hán và 1 ô nghĩa khớp nhau thật nhanh. đúng thì ô nháy xanh rồi biến mất, ô mới tự hiện lên ngay lấp chỗ trống; sai thì ô nháy đỏ và giữ nguyên để chọn lại. từ hsk 3 trở lên được tự động chia thành từng đơn nguyên tối đa 50 từ, mỗi từ xuất hiện ít nhất 2 lần trước khi đơn nguyên được tính là hoàn thành. (game này dùng bộ chọn cấp độ + đơn nguyên riêng bên dưới, độc lập với "cấp độ chơi" chung ở trên vì cần theo dõi tiến độ theo từng đơn nguyên.)</p>
                 </div>
               </div>
 
-              <div class="mb-5" id="rx-unit-wrap">
-                <label class="text-sm font-semibold text-ink mb-2 block">đơn nguyên <span class="text-slate font-normal" id="rx-unit-hint"></span></label>
-                <div class="flex flex-wrap gap-2" id="rx-unit-pills"></div>
-              </div>
+              <div class="jn-setup-card">
+                <div class="mb-5">
+                  <label class="text-sm font-semibold text-ink mb-2 block">cấp độ</label>
+                  <div class="flex flex-wrap gap-2" id="rx-level-pills">
+                    <button data-rx-level="1" class="rx-pill active focus-ring">hsk 1</button>
+                    <button data-rx-level="2" class="rx-pill focus-ring">hsk 2</button>
+                    <button data-rx-level="3" class="rx-pill focus-ring">hsk 3</button>
+                    <button data-rx-level="4" class="rx-pill focus-ring">hsk 4</button>
+                    <button data-rx-level="5" class="rx-pill focus-ring">hsk 5</button>
+                    <button data-rx-level="6" class="rx-pill focus-ring">hsk 6</button>
+                    <button data-rx-level="79" class="rx-pill focus-ring">hsk 7-9</button>
+                  </div>
+                </div>
 
-              <div class="mb-6 flex items-center gap-3 flex-wrap">
-                <label class="text-sm font-semibold text-ink" for="rx-board-size">số cặp hiện cùng lúc:</label>
-                <select id="rx-board-size" class="text-sm rounded-lg border border-ink/15 px-2.5 py-1.5 focus-ring bg-white">
-                  <option value="6" selected>6 cặp</option>
-                  <option value="8">8 cặp</option>
-                  <option value="10">10 cặp</option>
-                </select>
-              </div>
+                <div class="mb-5" id="rx-unit-wrap">
+                  <label class="text-sm font-semibold text-ink mb-2 block">đơn nguyên <span class="text-slate font-normal" id="rx-unit-hint"></span></label>
+                  <div class="flex flex-wrap gap-2" id="rx-unit-pills"></div>
+                </div>
 
-              <button id="rx-start" class="px-5 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring">bắt đầu</button>
-              <p id="rx-empty-warning" class="text-xs text-seal mt-3 hidden">đơn nguyên này chưa đủ dữ liệu (cần tối thiểu 4 từ có nghĩa).</p>
+                <div class="mb-6 flex items-center gap-3 flex-wrap">
+                  <label class="text-sm font-semibold text-ink" for="rx-board-size">số cặp hiện cùng lúc:</label>
+                  <select id="rx-board-size" class="text-sm rounded-lg border border-ink/15 px-2.5 py-1.5 focus-ring bg-white">
+                    <option value="6" selected>6 cặp</option>
+                    <option value="8">8 cặp</option>
+                    <option value="10">10 cặp</option>
+                  </select>
+                </div>
+
+                <button id="rx-start" class="px-5 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring">bắt đầu</button>
+                <p id="rx-empty-warning" class="text-xs text-seal mt-3 hidden">đơn nguyên này chưa đủ dữ liệu (cần tối thiểu 4 từ có nghĩa).</p>
+              </div>
             </div>
 
-            <div id="rx-random-banner" class="hidden mb-4 rounded-xl px-4 py-3 bg-peach-light border border-peach-border text-sm text-ink">
+            <div id="rx-random-banner" class="hidden mb-4 rounded-xl px-4 py-3 bg-white/70 border border-white text-sm text-ink">
               chế độ ôn tập tự do — từ được lấy ngẫu nhiên từ toàn bộ cấp độ, không giới hạn số lượt.
-              <button id="rx-random-exit" class="ml-2 font-semibold text-peach hover:opacity-80 underline">thoát ôn tập</button>
+              <button id="rx-random-exit" class="ml-2 font-semibold text-mint hover:opacity-80 underline">thoát ôn tập</button>
             </div>
 
             <div id="rx-play" class="hidden">
-              <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
-                <p class="text-sm font-semibold text-ink" id="rx-play-label">hsk 1 · đơn nguyên 1</p>
-                <button id="rx-quit" type="button" class="text-xs font-semibold text-slate hover:text-ink underline">dừng, quay lại thiết lập</button>
+              <div class="jn-topbar">
+                <span class="jn-sun">☀️</span>
+                <span class="jn-progress-pill" id="rx-play-label">hsk 1 · đơn nguyên 1</span>
+                <button id="rx-quit" type="button" class="text-xs font-semibold text-ink/70 hover:text-ink underline bg-white/70 rounded-full px-3 py-1.5">dừng, quay lại thiết lập</button>
               </div>
 
-              <div class="mb-6" id="rx-progress-wrap">
-                <div class="flex items-center justify-between text-xs font-semibold text-slate mb-1.5">
+              <div class="mb-5" id="rx-progress-wrap">
+                <div class="flex items-center justify-between text-xs font-semibold text-ink/70 mb-1.5">
                   <span>tiến độ đơn nguyên</span>
                   <span id="rx-progress-label">0%</span>
                 </div>
-                <div class="rx-progress-track"><div id="rx-progress-fill" class="rx-progress-fill" style="width:0%"></div></div>
+                <div class="jn-timebar-track"><div id="rx-progress-fill" class="jn-timebar-fill" style="background:#16A34A; width:0%"></div></div>
               </div>
 
               <div id="game-board" class="rx-board"></div>
             </div>
 
-            <div id="rx-complete" class="hidden text-center py-8">
+            <div id="rx-complete" class="hidden jn-celebrate">
               <p class="text-5xl mb-3">🎉</p>
               <h4 class="font-sans font-semibold text-xl text-ink mb-1">hoàn thành đơn nguyên!</h4>
-              <p class="text-sm text-slate mb-6" id="rx-complete-sub">bạn đã ghép đúng đủ số lượt cho toàn bộ từ trong đơn nguyên này.</p>
+              <p class="text-sm text-ink/80 mb-6" id="rx-complete-sub">bạn đã ghép đúng đủ số lượt cho toàn bộ từ trong đơn nguyên này.</p>
               <div class="flex flex-wrap items-center justify-center gap-3">
                 <button id="rx-replay-unit" type="button" class="px-4 py-2.5 rounded-xl bg-white border border-ink/15 text-sm font-semibold text-ink hover:bg-ink/5 focus-ring">chơi lại đơn nguyên</button>
                 <button id="rx-next-unit" type="button" class="px-4 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring">đơn nguyên tiếp theo</button>
@@ -906,7 +987,7 @@
           <div class="bg-white border border-ink/10 rounded-2xl p-5 sm:p-7">
 
             <h3 class="font-sans font-semibold text-lg text-ink mb-2">flashcard ôn tập từ vựng</h3>
-            <p class="text-sm text-slate mb-5">bấm vào thẻ để lật, dùng nút bên dưới để chuyển từ. bộ đang học: <span id="fc-deck-name" class="font-semibold text-mint">hsk 1 · 149 từ</span>.</p>
+            <p class="text-sm text-slate mb-5">bấm vào thẻ để lật, dùng nút bên dưới để đánh giá và chuyển từ. bộ đang học: <span id="fc-deck-name" class="font-semibold text-mint">hsk 1 · 149 từ</span>.</p>
 
             <div class="mb-6">
               <label class="text-sm font-semibold text-ink mb-2 block">lộ trình hsk</label>
@@ -918,24 +999,31 @@
                 <button data-hsk="5" class="hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring">hsk 5</button>
                 <button data-hsk="6" class="hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring">hsk 6</button>
                 <button data-hsk="79" class="hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring">hsk 7-9</button>
+                <button data-hsk="notebook" class="hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring">📓 sổ tay (<span id="fc-hsk-nb-count">0</span>)</button>
               </div>
-              <p class="text-xs text-slate mt-3">bấm vào một cấp để nạp bộ từ tương ứng vào flashcard bên dưới. hsk 1-6: đầy đủ từ vựng theo giáo trình (có nghĩa). hsk 7-9: đầy đủ ~5.600 từ nâng cao (có nghĩa tiếng việt), đã loại bỏ trùng lặp.</p>
+              <p class="text-xs text-slate mt-3">bấm vào một cấp để nạp bộ từ tương ứng vào flashcard bên dưới. hsk 1-6: đầy đủ từ vựng theo giáo trình (có nghĩa). hsk 7-9: đầy đủ ~5.600 từ nâng cao (có nghĩa tiếng việt), đã loại bỏ trùng lặp. mục "sổ tay" chứa các từ bạn từng chọn/trả lời sai ở flashcard hoặc bất kỳ trò chơi nào.</p>
             </div>
 
             <div class="flex flex-col items-center">
-              <p class="text-xs font-semibold text-mint tracking-wide mb-3" id="fc-progress">1 / 149</p>
+              <div class="w-full max-w-md mb-2">
+                <div class="flex items-center justify-between text-xs font-semibold text-slate mb-1.5">
+                  <span id="fc-progress">1 / 149</span>
+                  <span id="fc-review-count" class="text-seal hidden">📓 <span id="fc-review-count-num">0</span> từ cần ôn lại</span>
+                </div>
+                <div class="fc-progress-track"><div id="fc-progress-fill" class="fc-progress-fill" style="width:0%"></div></div>
+              </div>
 
-              <div class="fc-scene w-full max-w-md h-64 sm:h-72 mb-5">
+              <div class="fc-scene w-full max-w-md h-64 sm:h-72 mb-5 mt-3">
                 <div class="fc-card" id="fc-card" role="button" tabindex="0" aria-label="Bấm để lật thẻ">
-                  <div class="fc-face fc-face--front bg-white border-2 border-mint-border shadow-sm">
-                    <span class="text-[11px] font-semibold uppercase tracking-wide text-mint bg-mint-light rounded-full px-2.5 py-1 mb-4">chữ hán</span>
+                  <div class="fc-face fc-face--front" id="fc-face-front">
+                    <span class="fc-front-badge">chữ hán</span>
                     <div class="flex items-center gap-2.5">
-                      <p class="font-hanzi font-black text-6xl sm:text-7xl text-ink" id="fc-hanzi">爱</p>
+                      <p class="font-hanzi font-black text-6xl sm:text-7xl" id="fc-hanzi">爱</p>
                       <button type="button" id="fc-speak-front" class="fc-speak-btn focus-ring" aria-label="Phát âm chữ Hán">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
                       </button>
                     </div>
-                    <p class="text-xs text-slate mt-5">bấm vào thẻ để xem nghĩa</p>
+                    <p class="text-xs mt-5" id="fc-front-hint" style="opacity:.85;">bấm vào thẻ để xem nghĩa</p>
                   </div>
                   <div class="fc-face fc-face--back bg-mint-light border-2 border-mint">
                     <span class="text-[11px] font-semibold uppercase tracking-wide text-white bg-mint rounded-full px-2.5 py-1 mb-4">phiên âm &amp; nghĩa</span>
@@ -945,23 +1033,30 @@
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
                       </button>
                     </div>
-                    <p class="text-base text-ink/80" id="fc-mean">yêu</p>
+                    <p class="text-base text-ink/80 mb-2" id="fc-mean">yêu</p>
+                    <p class="text-xs text-ink/60 italic hidden" id="fc-example"></p>
                   </div>
                 </div>
               </div>
 
-              <div class="flex items-center gap-3">
-                <button id="fc-prev" class="px-4 py-2.5 rounded-xl bg-white border border-ink/15 text-sm font-semibold text-ink hover:bg-ink/5 focus-ring flex items-center gap-1.5">
+              <div class="flex items-center gap-2 mb-3">
+                <button id="fc-prev" class="px-3.5 py-2.5 rounded-xl bg-white border border-ink/15 text-sm font-semibold text-ink hover:bg-ink/5 focus-ring flex items-center gap-1.5">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
                   quay lại
                 </button>
-                <button id="fc-flip" class="px-4 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring flex items-center gap-1.5">
+                <button id="fc-flip" class="px-3.5 py-2.5 rounded-xl bg-white border border-ink/15 text-sm font-semibold text-ink hover:bg-ink/5 focus-ring flex items-center gap-1.5">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4M7 22l-4-4 4-4M3 6h13a4 4 0 0 1 4 4v1M21 18H8a4 4 0 0 1-4-4v-1"/></svg>
                   lật thẻ
                 </button>
-                <button id="fc-next" class="px-4 py-2.5 rounded-xl bg-white border border-ink/15 text-sm font-semibold text-ink hover:bg-ink/5 focus-ring flex items-center gap-1.5">
-                  tiếp theo
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+              <div class="flex items-center gap-3">
+                <button id="fc-review" class="px-4 py-2.5 rounded-xl bg-white border-2 border-seal text-seal text-sm font-semibold hover:bg-seal/5 focus-ring flex items-center gap-1.5">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  cần ôn lại
+                </button>
+                <button id="fc-known" class="px-4 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring flex items-center gap-1.5">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  đã nhớ
                 </button>
               </div>
               <button id="fc-shuffle" class="mt-3 text-xs font-semibold text-slate hover:text-mint focus-ring rounded">
@@ -1026,43 +1121,20 @@
           </div>
         </div>
 
-        <!-- ===== BẢNG XẾP HẠNG ===== -->
-        <div class="mt-10 pt-8 border-t border-ink/10" id="leaderboard-section">
+        <!-- ===== SỔ TAY TỪ VỰNG ===== -->
+        <div class="mt-10 pt-8 border-t border-ink/10" id="notebook-section">
           <div class="flex items-center gap-2 mb-1">
-            <span class="seal-stamp" style="width:30px;height:30px;font-size:12px;background:#0052D9;color:#E6EEFC;">榜</span>
-            <h3 class="font-sans font-semibold text-xl text-ink">bảng xếp hạng</h3>
+            <span class="seal-stamp" style="width:30px;height:30px;font-size:12px;background:#0052D9;color:#E6EEFC;">记</span>
+            <h3 class="font-sans font-semibold text-xl text-ink">sổ tay từ vựng <span class="text-sm font-normal text-slate">(<span id="notebook-count">0</span> từ)</span></h3>
           </div>
-          <p class="text-sm text-slate mb-5 max-w-2xl">tổng điểm cộng dồn từ flashcard và mọi trò chơi ôn từ vựng. bảng cập nhật theo thời gian thực.</p>
-
-          <div class="flex flex-wrap gap-2 mb-5" id="lb-range-pills">
-            <button data-lb-range="daily" class="rx-pill active focus-ring">bảng ngày</button>
-            <button data-lb-range="weekly" class="rx-pill focus-ring">bảng tuần</button>
-            <button data-lb-range="monthly" class="rx-pill focus-ring">bảng tháng</button>
-          </div>
+          <p class="text-sm text-slate mb-5 max-w-2xl">mỗi khi bạn chọn/trả lời sai 1 từ ở flashcard hoặc bất kỳ trò chơi nào, từ đó sẽ tự động được ghi vào đây. mở tab "trò chơi" bên trên, chọn mục <strong>"sổ tay"</strong> ở bộ chọn cấp độ để ôn lại đúng các từ này.</p>
 
           <div class="bg-white border border-ink/10 rounded-2xl overflow-hidden">
-            <div id="lb-list" class="divide-y divide-ink/10"></div>
-            <p id="lb-empty" class="hidden text-center text-sm text-slate py-8">chưa có dữ liệu — hãy là người đầu tiên ghi điểm!</p>
-            <p id="lb-loading" class="text-center text-sm text-slate py-8">đang tải bảng xếp hạng…</p>
+            <div id="notebook-list" class="divide-y divide-ink/10"></div>
+            <p id="notebook-empty" class="text-center text-sm text-slate py-8">sổ tay đang trống — chơi vài ván game ôn từ vựng, từ nào chọn sai sẽ tự động xuất hiện ở đây.</p>
           </div>
+          <button id="notebook-clear" type="button" class="mt-3 text-xs font-semibold text-slate hover:text-seal underline">xoá toàn bộ sổ tay</button>
         </div>
-
-        <!-- ===== VINH DANH TOP STREAK THÁNG NÀY ===== -->
-        <div class="mt-10 pt-8 border-t border-ink/10" id="streak-hof-section">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="seal-stamp" style="width:30px;height:30px;font-size:12px;background:#FF7D00;color:#FFE8D1;">🔥</span>
-            <h3 class="font-sans font-semibold text-xl text-ink">vinh danh top streak tháng <span id="streak-hof-month-label"></span></h3>
-          </div>
-          <p class="text-sm text-slate mb-5 max-w-2xl">top 10 học viên có chuỗi ngày học liên tiếp cao nhất trong tháng — giữ streak mỗi ngày để lọt bảng!</p>
-
-          <div class="bg-white border border-ink/10 rounded-2xl overflow-hidden">
-            <div id="streak-hof-list" class="divide-y divide-ink/10"></div>
-            <p id="streak-hof-empty" class="hidden text-center text-sm text-slate py-8">chưa có ai lập streak tháng này.</p>
-            <p id="streak-hof-loading" class="text-center text-sm text-slate py-8">đang tải…</p>
-          </div>
-        </div>
-
-        </div><!-- /#chinese-content -->
 
         <!-- ===== Trợ lý AI (chỉ hiện trong mục "học tiếng trung") ===== -->
       </section>
@@ -1190,320 +1262,6 @@
   overlay.addEventListener('click', closeDrawer);
 </script>
 
-<!-- =====================================================================
-     FIREBASE: TÀI KHOẢN (Google Sign-In) + FIRESTORE (điểm số & streak)
-     =====================================================================
-     Việc cần làm để tính năng này hoạt động:
-     1. Tạo project tại https://console.firebase.google.com
-     2. Authentication -> Sign-in method -> bật "Google"
-     3. Firestore Database -> Create database (chế độ production)
-     4. Firestore -> tab Rules -> dán rule bên dưới rồi Publish:
-
-        rules_version = '2';
-        service cloud.firestore {
-          match /databases/{database}/documents {
-            match /users/{uid} {
-              allow read: if request.auth != null;
-              allow write: if request.auth != null && request.auth.uid == uid;
-            }
-            match /scoreEvents/{eventId} {
-              allow read: if request.auth != null;
-              allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
-            }
-            match /dailyTotals/{docId} {
-              allow read: if request.auth != null;
-              allow write: if request.auth != null && request.resource.data.uid == request.auth.uid;
-            }
-            match /weeklyTotals/{docId} {
-              allow read: if request.auth != null;
-              allow write: if request.auth != null && request.resource.data.uid == request.auth.uid;
-            }
-            match /monthlyTotals/{docId} {
-              allow read: if request.auth != null;
-              allow write: if request.auth != null && request.resource.data.uid == request.auth.uid;
-            }
-            match /monthlyStreaks/{docId} {
-              allow read: if request.auth != null;
-              allow write: if request.auth != null && request.resource.data.uid == request.auth.uid;
-            }
-          }
-        }
-
-     5. Project settings -> "Your apps" -> Add app -> Web -> copy đoạn config,
-        dán đè vào firebaseConfig bên dưới (thay toàn bộ giá trị "TODO...").
-     ===================================================================== -->
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js';
-  import {
-    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
-  } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js';
-  import {
-    getFirestore, doc, setDoc, getDoc, addDoc, collection, serverTimestamp,
-    increment, query, where, orderBy, limit, getDocs
-  } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
-
-  // TODO: thay bằng config thật lấy từ Firebase Console (Project settings -> Your apps)
-  const firebaseConfig = {
-    apiKey: "TODO_API_KEY",
-    authDomain: "TODO_PROJECT.firebaseapp.com",
-    projectId: "TODO_PROJECT",
-    storageBucket: "TODO_PROJECT.appspot.com",
-    messagingSenderId: "TODO_SENDER_ID",
-    appId: "TODO_APP_ID",
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  const provider = new GoogleAuthProvider();
-
-  let currentUser = null;
-
-  // ---- Helpers thời gian: khoá ngày/tuần/tháng dùng làm document id ----
-  function pad2(n) { return String(n).padStart(2, '0'); }
-  function dayKey(d = new Date()) { return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; }
-  function monthKey(d = new Date()) { return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`; }
-  function weekKey(d = new Date()) {
-    // Số tuần ISO-8601 (tuần bắt đầu thứ 2)
-    const dt = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    const dayNum = (dt.getUTCDay() + 6) % 7;
-    dt.setUTCDate(dt.getUTCDate() - dayNum + 3);
-    const firstThursday = new Date(Date.UTC(dt.getUTCFullYear(), 0, 4));
-    const week = 1 + Math.round(((dt - firstThursday) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7);
-    return `${dt.getUTCFullYear()}-W${pad2(week)}`;
-  }
-
-  // ---- UI: bật/tắt trạng thái đăng nhập trên navbar + auth-gate của mục "học tiếng trung" ----
-  function renderAuthUI(user) {
-    const signinBtn = document.getElementById('auth-signin-btn');
-    const signinBtnMobile = document.getElementById('auth-signin-btn-mobile');
-    const userChip = document.getElementById('auth-user-chip');
-    const gate = document.getElementById('chinese-auth-gate');
-    const content = document.getElementById('chinese-content');
-
-    if (user) {
-      signinBtn?.classList.add('hidden');
-      signinBtnMobile?.classList.add('hidden');
-      userChip?.classList.remove('hidden');
-      userChip?.classList.add('flex');
-      document.getElementById('auth-user-avatar').src = user.photoURL || '';
-      document.getElementById('auth-user-name').textContent = user.displayName || user.email || 'học viên';
-      gate?.classList.add('hidden');
-      content?.classList.remove('hidden');
-    } else {
-      signinBtn?.classList.remove('hidden');
-      signinBtnMobile?.classList.remove('hidden');
-      userChip?.classList.add('hidden');
-      userChip?.classList.remove('flex');
-      gate?.classList.remove('hidden');
-      content?.classList.add('hidden');
-    }
-  }
-
-  async function doSignIn() {
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (e) {
-      console.error('Đăng nhập thất bại:', e);
-      alert('Đăng nhập bằng Gmail thất bại. Vui lòng thử lại.\n(' + (e.code || e.message) + ')');
-    }
-  }
-  async function doSignOut() { await signOut(auth); }
-
-  document.getElementById('auth-signin-btn')?.addEventListener('click', doSignIn);
-  document.getElementById('auth-signin-btn-mobile')?.addEventListener('click', doSignIn);
-  document.getElementById('auth-gate-signin-btn')?.addEventListener('click', doSignIn);
-  document.getElementById('auth-signout-btn')?.addEventListener('click', doSignOut);
-
-  onAuthStateChanged(auth, async (user) => {
-    currentUser = user;
-    renderAuthUI(user);
-    if (user) {
-      try {
-        await setDoc(doc(db, 'users', user.uid), {
-          displayName: user.displayName || '',
-          email: user.email || '',
-          photoURL: user.photoURL || '',
-          lastSeenAt: serverTimestamp(),
-        }, { merge: true });
-      } catch (e) { console.error('Không lưu được hồ sơ người dùng:', e); }
-      if (window.refreshLeaderboard) window.refreshLeaderboard();
-      if (window.refreshStreakHallOfFame) window.refreshStreakHallOfFame();
-    }
-  });
-
-  // =====================================================================
-  // GHI ĐIỂM: gọi window.recordScore('tên_game', số_điểm) sau mỗi lượt chơi.
-  // Cộng dồn atomically vào dailyTotals / weeklyTotals / monthlyTotals bằng
-  // increment(), đồng thời ghi 1 dòng log vào scoreEvents để tra cứu sau này.
-  // =====================================================================
-  window.recordScore = async function (game, points) {
-    if (!currentUser || !points) return;
-    const uid = currentUser.uid;
-    const name = currentUser.displayName || currentUser.email || 'học viên';
-    const photo = currentUser.photoURL || '';
-    const now = new Date();
-
-    try {
-      await addDoc(collection(db, 'scoreEvents'), {
-        uid, displayName: name, points, game, createdAt: serverTimestamp(),
-      });
-
-      const dKey = dayKey(now), wKey = weekKey(now), mKey = monthKey(now);
-      await Promise.all([
-        setDoc(doc(db, 'dailyTotals', `${uid}_${dKey}`),
-          { uid, displayName: name, photoURL: photo, date: dKey, total: increment(points) }, { merge: true }),
-        setDoc(doc(db, 'weeklyTotals', `${uid}_${wKey}`),
-          { uid, displayName: name, photoURL: photo, week: wKey, total: increment(points) }, { merge: true }),
-        setDoc(doc(db, 'monthlyTotals', `${uid}_${mKey}`),
-          { uid, displayName: name, photoURL: photo, month: mKey, total: increment(points) }, { merge: true }),
-      ]);
-
-      if (window.refreshLeaderboard) window.refreshLeaderboard();
-    } catch (e) { console.error('Không ghi được điểm:', e); }
-  };
-
-  // =====================================================================
-  // VINH DANH STREAK: gọi window.recordMonthlyStreak(streakHienTai) mỗi khi
-  // streak người dùng tăng lên (hook trong hệ thống streak/heatmap có sẵn).
-  // Chỉ ghi lại nếu streak mới CAO HƠN giá trị đã lưu trong tháng, để bảng
-  // vinh danh phản ánh đúng "streak cao nhất đạt được trong tháng".
-  // =====================================================================
-  window.recordMonthlyStreak = async function (currentStreak) {
-    if (!currentUser || !currentStreak) return;
-    const uid = currentUser.uid;
-    const mKey = monthKey();
-    const ref = doc(db, 'monthlyStreaks', `${uid}_${mKey}`);
-    try {
-      const snap = await getDoc(ref);
-      const prevBest = snap.exists() ? (snap.data().bestStreak || 0) : 0;
-      if (currentStreak > prevBest) {
-        await setDoc(ref, {
-          uid,
-          displayName: currentUser.displayName || currentUser.email || 'học viên',
-          photoURL: currentUser.photoURL || '',
-          month: mKey,
-          bestStreak: currentStreak,
-          updatedAt: serverTimestamp(),
-        }, { merge: true });
-        if (window.refreshStreakHallOfFame) window.refreshStreakHallOfFame();
-      }
-    } catch (e) { console.error('Không ghi được streak tháng:', e); }
-  };
-
-  // =====================================================================
-  // BẢNG XẾP HẠNG: đọc top 20 từ dailyTotals/weeklyTotals/monthlyTotals.
-  // =====================================================================
-  const LB_COLLECTION = { daily: 'dailyTotals', weekly: 'weeklyTotals', monthly: 'monthlyTotals' };
-  const LB_FIELD = { daily: 'date', weekly: 'week', monthly: 'month' };
-  const LB_KEYFN = { daily: dayKey, weekly: weekKey, monthly: monthKey };
-  let lbCurrentRange = 'daily';
-
-  function renderRankBadge(i) {
-    const cls = i === 0 ? 'is-top1' : i === 1 ? 'is-top2' : i === 2 ? 'is-top3' : '';
-    const label = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : String(i + 1);
-    return `<span class="lb-rank ${cls}">${label}</span>`;
-  }
-
-  window.refreshLeaderboard = async function () {
-    const listEl = document.getElementById('lb-list');
-    const emptyEl = document.getElementById('lb-empty');
-    const loadingEl = document.getElementById('lb-loading');
-    if (!listEl) return;
-    loadingEl.classList.remove('hidden');
-    emptyEl.classList.add('hidden');
-    listEl.innerHTML = '';
-
-    try {
-      const key = LB_KEYFN[lbCurrentRange]();
-      const q = query(
-        collection(db, LB_COLLECTION[lbCurrentRange]),
-        where(LB_FIELD[lbCurrentRange], '==', key),
-        orderBy('total', 'desc'),
-        limit(20)
-      );
-      const snap = await getDocs(q);
-      loadingEl.classList.add('hidden');
-      if (snap.empty) { emptyEl.classList.remove('hidden'); return; }
-
-      let i = 0;
-      snap.forEach(docSnap => {
-        const d = docSnap.data();
-        const isMe = currentUser && d.uid === currentUser.uid;
-        listEl.insertAdjacentHTML('beforeend', `
-          <div class="lb-row ${isMe ? 'is-me' : ''}">
-            ${renderRankBadge(i)}
-            <img class="lb-avatar" src="${d.photoURL || ''}" alt="" referrerpolicy="no-referrer">
-            <span class="lb-name">${(d.displayName || 'học viên').replace(/</g, '&lt;')}</span>
-            <span class="lb-score">${d.total} điểm</span>
-          </div>`);
-        i++;
-      });
-    } catch (e) {
-      loadingEl.classList.add('hidden');
-      console.error('Không tải được bảng xếp hạng (có thể cần tạo composite index — xem link trong lỗi console):', e);
-      emptyEl.classList.remove('hidden');
-      emptyEl.textContent = 'không tải được bảng xếp hạng — mở console (F12) để xem chi tiết lỗi.';
-    }
-  };
-
-  document.querySelectorAll('#lb-range-pills .rx-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      document.querySelectorAll('#lb-range-pills .rx-pill').forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      lbCurrentRange = pill.dataset.lbRange;
-      window.refreshLeaderboard();
-    });
-  });
-
-  // =====================================================================
-  // VINH DANH TOP 10 STREAK THÁNG NÀY: đọc từ monthlyStreaks.
-  // =====================================================================
-  const MONTH_NAMES_VI = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
-  window.refreshStreakHallOfFame = async function () {
-    const listEl = document.getElementById('streak-hof-list');
-    const emptyEl = document.getElementById('streak-hof-empty');
-    const loadingEl = document.getElementById('streak-hof-loading');
-    const labelEl = document.getElementById('streak-hof-month-label');
-    if (!listEl) return;
-    const now = new Date();
-    if (labelEl) labelEl.textContent = MONTH_NAMES_VI[now.getMonth()] + '/' + now.getFullYear();
-    loadingEl.classList.remove('hidden');
-    emptyEl.classList.add('hidden');
-    listEl.innerHTML = '';
-
-    try {
-      const q = query(
-        collection(db, 'monthlyStreaks'),
-        where('month', '==', monthKey(now)),
-        orderBy('bestStreak', 'desc'),
-        limit(10)
-      );
-      const snap = await getDocs(q);
-      loadingEl.classList.add('hidden');
-      if (snap.empty) { emptyEl.classList.remove('hidden'); return; }
-
-      let i = 0;
-      snap.forEach(docSnap => {
-        const d = docSnap.data();
-        const isMe = currentUser && d.uid === currentUser.uid;
-        listEl.insertAdjacentHTML('beforeend', `
-          <div class="lb-row ${isMe ? 'is-me' : ''}">
-            ${renderRankBadge(i)}
-            <img class="lb-avatar" src="${d.photoURL || ''}" alt="" referrerpolicy="no-referrer">
-            <span class="lb-name">${(d.displayName || 'học viên').replace(/</g, '&lt;')}</span>
-            <span class="lb-streak">🔥 ${d.bestStreak} ngày</span>
-          </div>`);
-        i++;
-      });
-    } catch (e) {
-      loadingEl.classList.add('hidden');
-      console.error('Không tải được vinh danh streak (có thể cần tạo composite index):', e);
-      emptyEl.classList.remove('hidden');
-      emptyEl.textContent = 'không tải được — mở console (F12) để xem chi tiết lỗi.';
-    }
-  };
-</script>
 
 <script>
   /*
@@ -12148,14 +11906,47 @@
   let fcFlipped = false;
 
   const fcCard = document.getElementById('fc-card');
+  const fcFaceFront = document.getElementById('fc-face-front');
+  const fcFrontHint = document.getElementById('fc-front-hint');
   const fcHanzi = document.getElementById('fc-hanzi');
   const fcPinyin = document.getElementById('fc-pinyin');
   const fcMean = document.getElementById('fc-mean');
+  const fcExample = document.getElementById('fc-example');
   const fcProgress = document.getElementById('fc-progress');
+  const fcProgressFill = document.getElementById('fc-progress-fill');
+  const fcReviewCountWrap = document.getElementById('fc-review-count');
+  const fcReviewCountNum = document.getElementById('fc-review-count-num');
   const fcDeckName = document.getElementById('fc-deck-name');
   const fcImportMsg = document.getElementById('fc-import-msg');
   const fcSpeakFront = document.getElementById('fc-speak-front');
   const fcSpeakBack = document.getElementById('fc-speak-back');
+  const fcHskNbCount = document.getElementById('fc-hsk-nb-count');
+
+  // ===== Bảng màu thẻ: 8 màu tươi sáng, mỗi màu có sẵn màu chữ tương phản riêng.
+  // Gán màu theo fcIndex % 8 trên 1 thứ tự đã xáo trộn cố định cho mỗi lần nạp bộ từ
+  // -> vì chu kỳ dài 8 > 5, bất kỳ 5 thẻ liên tiếp nào cũng chắc chắn không trùng màu. =====
+  const FC_PALETTE = [
+    { bg: '#6C5CE7', text: '#FFFFFF' }, // tím
+    { bg: '#00B894', text: '#FFFFFF' }, // xanh lá đậm
+    { bg: '#FDCB3A', text: '#5C3D00' }, // vàng
+    { bg: '#FF6B6B', text: '#FFFFFF' }, // đỏ san hô
+    { bg: '#0EA5B7', text: '#FFFFFF' }, // xanh ngọc
+    { bg: '#FF9F43', text: '#4A2600' }, // cam
+    { bg: '#4A90E2', text: '#FFFFFF' }, // xanh dương
+    { bg: '#F368A0', text: '#FFFFFF' }, // hồng
+  ];
+  let fcPaletteOrder = shufflePalette();
+  function shufflePalette() {
+    const a = FC_PALETTE.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function fcColorFor(index) {
+    return fcPaletteOrder[index % fcPaletteOrder.length];
+  }
 
   // ===== Phát âm chữ Hán bằng Web Speech API (speechSynthesis) =====
   // Không cần tải/chuẩn bị file âm thanh nào — trình duyệt tự tổng hợp giọng đọc.
@@ -12199,6 +11990,13 @@
     window.speechSynthesis.speak(utter);
   }
 
+  function fcUpdateReviewCount() {
+    if (!fcReviewCountWrap) return;
+    const n = window.getNotebookCount ? window.getNotebookCount() : 0;
+    fcReviewCountNum.textContent = String(n);
+    fcReviewCountWrap.classList.toggle('hidden', n === 0);
+  }
+
   function fcRender() {
     const word = fcDeck[fcIndex];
     fcCard.classList.remove('is-flipped');
@@ -12209,7 +12007,23 @@
     fcMean.classList.toggle('italic', !word.mean || !word.mean.trim());
     fcMean.classList.toggle('text-ink/40', !word.mean || !word.mean.trim());
     fcMean.classList.toggle('text-ink/80', !!(word.mean && word.mean.trim()));
+    if (word.example) {
+      fcExample.textContent = word.example;
+      fcExample.classList.remove('hidden');
+    } else {
+      fcExample.textContent = '';
+      fcExample.classList.add('hidden');
+    }
+
+    // Đổ màu mặt trước theo bảng màu, đảm bảo 5 thẻ liên tiếp không trùng màu.
+    const color = fcColorFor(fcIndex);
+    fcFaceFront.style.background = color.bg;
+    fcFaceFront.style.color = color.text;
+    fcFrontHint.style.color = color.text;
+
     fcProgress.textContent = (fcIndex + 1) + ' / ' + fcDeck.length;
+    fcProgressFill.style.width = Math.round(((fcIndex + 1) / fcDeck.length) * 100) + '%';
+    fcUpdateReviewCount();
   }
 
   function fcFlip() {
@@ -12233,12 +12047,27 @@
     if (window.trackStudyActivity) window.trackStudyActivity();
   }
 
+  // "Cần ôn lại": ghi từ hiện tại vào sổ tay rồi chuyển sang thẻ tiếp theo.
+  function fcMarkReview() {
+    const word = fcDeck[fcIndex];
+    if (window.addToNotebook) window.addToNotebook(word);
+    fcNext();
+  }
+
+  // "Đã nhớ": nếu từ này từng nằm trong sổ tay thì gỡ ra (đã thuộc rồi), rồi chuyển tiếp.
+  function fcMarkKnown() {
+    const word = fcDeck[fcIndex];
+    if (window.removeFromNotebook) window.removeFromNotebook(word.hanzi, word.pinyin);
+    fcNext();
+  }
+
   function fcShuffle() {
     for (let i = fcDeck.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [fcDeck[i], fcDeck[j]] = [fcDeck[j], fcDeck[i]];
     }
     fcIndex = 0;
+    fcPaletteOrder = shufflePalette();
     fcRender();
   }
 
@@ -12263,8 +12092,9 @@
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fcFlip(); }
   });
   document.getElementById('fc-flip').addEventListener('click', fcFlip);
-  document.getElementById('fc-next').addEventListener('click', fcNext);
   document.getElementById('fc-prev').addEventListener('click', fcPrev);
+  document.getElementById('fc-review').addEventListener('click', fcMarkReview);
+  document.getElementById('fc-known').addEventListener('click', fcMarkKnown);
   document.getElementById('fc-shuffle').addEventListener('click', fcShuffle);
 
   [fcSpeakFront, fcSpeakBack].forEach(btn => {
@@ -12274,6 +12104,14 @@
       fcSpeak(fcDeck[fcIndex].hanzi);
     });
   });
+
+  function fcDeckForLevel(level) {
+    if (level === 'notebook') return (window.getNotebookWords ? window.getNotebookWords() : []).slice();
+    return decks[level].slice();
+  }
+  function fcLabelForLevel(level) {
+    return level === 'notebook' ? 'sổ tay từ vựng' : levelLabels[level];
+  }
 
   document.getElementById('fc-load').addEventListener('click', () => {
     const raw = document.getElementById('fc-import').value;
@@ -12286,6 +12124,7 @@
     }
     fcDeck = newDeck;
     fcIndex = 0;
+    fcPaletteOrder = shufflePalette();
     fcDeckName.textContent = fcDeck.length + ' từ (tuỳ chỉnh)';
     fcImportMsg.classList.remove('text-seal');
     fcImportMsg.classList.add('text-mint');
@@ -12294,9 +12133,17 @@
   });
 
   document.getElementById('fc-reset').addEventListener('click', () => {
-    fcDeck = decks[currentLevel].slice();
+    const newDeck = fcDeckForLevel(currentLevel);
+    if (newDeck.length === 0) {
+      fcImportMsg.classList.remove('text-mint');
+      fcImportMsg.classList.add('text-seal');
+      fcImportMsg.textContent = 'sổ tay đang trống, chưa có từ nào để ôn.';
+      return;
+    }
+    fcDeck = newDeck;
     fcIndex = 0;
-    fcDeckName.textContent = levelLabels[currentLevel] + ' · ' + fcDeck.length + ' từ';
+    fcPaletteOrder = shufflePalette();
+    fcDeckName.textContent = fcLabelForLevel(currentLevel) + ' · ' + fcDeck.length + ' từ';
     fcImportMsg.textContent = '';
     document.getElementById('fc-import').value = '';
     fcRender();
@@ -12305,11 +12152,20 @@
   const hskPills = document.querySelectorAll('.hsk-pill');
   hskPills.forEach(pill => {
     pill.addEventListener('click', () => {
-      const level = Number(pill.dataset.hsk);
+      const raw = pill.dataset.hsk;
+      const level = raw === 'notebook' ? 'notebook' : Number(raw);
+      const newDeck = fcDeckForLevel(level);
+      if (newDeck.length === 0) {
+        fcImportMsg.classList.remove('text-mint');
+        fcImportMsg.classList.add('text-seal');
+        fcImportMsg.textContent = 'sổ tay đang trống — chơi vài ván game, từ chọn sai sẽ tự xuất hiện ở đây để ôn.';
+        return;
+      }
       currentLevel = level;
-      fcDeck = decks[level].slice();
+      fcDeck = newDeck;
       fcIndex = 0;
-      fcDeckName.textContent = levelLabels[level] + ' · ' + fcDeck.length + ' từ';
+      fcPaletteOrder = shufflePalette();
+      fcDeckName.textContent = fcLabelForLevel(level) + ' · ' + fcDeck.length + ' từ';
       fcImportMsg.textContent = '';
       document.getElementById('fc-import').value = '';
       hskPills.forEach(p => {
@@ -12326,7 +12182,105 @@
     });
   });
 
+  if (fcHskNbCount) fcHskNbCount.textContent = String(window.getNotebookCount ? window.getNotebookCount() : 0);
+  window.updateFcNotebookBadge = function () {
+    if (fcHskNbCount) fcHskNbCount.textContent = String(window.getNotebookCount ? window.getNotebookCount() : 0);
+    fcUpdateReviewCount();
+  };
+
   fcRender();
+</script>
+
+<script>
+  /* =====================================================================
+     SỔ TAY TỪ VỰNG — tự động ghi lại từ mà người chơi trả lời/chọn SAI
+     trong bất kỳ trò chơi ôn từ vựng nào. Lưu ở localStorage, dùng chung
+     cho toàn bộ trang qua các hàm window.* bên dưới.
+     ===================================================================== */
+  const NOTEBOOK_KEY = 'tndihoc_notebook_v1';
+
+  function nbLoad() {
+    try { return JSON.parse(localStorage.getItem(NOTEBOOK_KEY) || '[]'); }
+    catch (e) { return []; }
+  }
+  function nbSave(list) {
+    try { localStorage.setItem(NOTEBOOK_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
+  // Gọi hàm này ngay khi người chơi chọn/trả lời SAI 1 từ, ở bất kỳ game nào.
+  window.addToNotebook = function (word) {
+    if (!word || !word.hanzi) return;
+    const list = nbLoad();
+    const existing = list.find(w => w.hanzi === word.hanzi && w.pinyin === word.pinyin);
+    if (existing) {
+      existing.wrongCount = (existing.wrongCount || 1) + 1;
+      existing.updatedAt = Date.now();
+    } else {
+      list.push({ hanzi: word.hanzi, pinyin: word.pinyin || '', mean: word.mean || '', wrongCount: 1, updatedAt: Date.now() });
+    }
+    nbSave(list);
+    if (window.renderNotebookUI) window.renderNotebookUI();
+    if (window.updateNotebookPillLabels) window.updateNotebookPillLabels();
+    if (window.updateFcNotebookBadge) window.updateFcNotebookBadge();
+  };
+
+  // Gọi khi người học đã thuộc từ đó (ví dụ bấm "đã nhớ" ở flashcard) -> gỡ khỏi sổ tay.
+  window.removeFromNotebook = function (hanzi, pinyin) {
+    const list = nbLoad().filter(w => !(w.hanzi === hanzi && w.pinyin === pinyin));
+    nbSave(list);
+    if (window.renderNotebookUI) window.renderNotebookUI();
+    if (window.updateNotebookPillLabels) window.updateNotebookPillLabels();
+    if (window.updateFcNotebookBadge) window.updateFcNotebookBadge();
+  };
+
+  window.clearNotebook = function () {
+    nbSave([]);
+    if (window.renderNotebookUI) window.renderNotebookUI();
+    if (window.updateNotebookPillLabels) window.updateNotebookPillLabels();
+    if (window.updateFcNotebookBadge) window.updateFcNotebookBadge();
+  };
+
+  // Trả về danh sách từ trong sổ tay, đúng định dạng {hanzi, pinyin, mean} như các bộ deck khác,
+  // để có thể nạp thẳng vào flashcard/game như 1 "cấp độ" bình thường.
+  window.getNotebookWords = function () {
+    return nbLoad().map(w => ({ hanzi: w.hanzi, pinyin: w.pinyin, mean: w.mean }));
+  };
+  window.getNotebookCount = function () { return nbLoad().length; };
+
+  // ---- Giao diện xem/quản lý sổ tay (mục riêng trong "học tiếng trung") ----
+  function nbEscape(str) { return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+  window.renderNotebookUI = function () {
+    const listEl = document.getElementById('notebook-list');
+    const emptyEl = document.getElementById('notebook-empty');
+    const countEl = document.getElementById('notebook-count');
+    if (!listEl) return;
+    const list = nbLoad().sort((a, b) => (b.wrongCount || 0) - (a.wrongCount || 0));
+    countEl.textContent = String(list.length);
+    emptyEl.classList.toggle('hidden', list.length > 0);
+    listEl.innerHTML = list.map(w => `
+      <div class="nb-row">
+        <div class="min-w-0">
+          <span class="font-hanzi font-semibold text-lg text-ink">${nbEscape(w.hanzi)}</span>
+          <span class="text-xs text-slate ml-2">${nbEscape(w.pinyin || '')}</span>
+          <span class="text-sm text-ink/80 ml-2">${nbEscape(w.mean || '')}</span>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="text-[11px] text-seal font-semibold">sai ${w.wrongCount || 1} lần</span>
+          <button type="button" class="text-xs text-slate hover:text-seal focus-ring rounded px-1" data-nb-remove="${nbEscape(w.hanzi)}|${nbEscape(w.pinyin || '')}">xoá</button>
+        </div>
+      </div>`).join('');
+    listEl.querySelectorAll('[data-nb-remove]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const [hanzi, pinyin] = btn.dataset.nbRemove.split('|');
+        window.removeFromNotebook(hanzi, pinyin);
+      });
+    });
+  };
+  document.getElementById('notebook-clear')?.addEventListener('click', () => {
+    if (confirm('Xoá toàn bộ sổ tay từ vựng?')) window.clearNotebook();
+  });
+  window.renderNotebookUI();
 </script>
 
 <script>
@@ -12363,6 +12317,9 @@
   // ---- Dữ liệu dùng chung: lấy theo cấp độ HSK học sinh chọn RIÊNG cho phần game ----
   let gameLevel = (typeof currentLevel !== 'undefined') ? currentLevel : 1;
   function gameWords() {
+    if (gameLevel === 'notebook') {
+      return (window.getNotebookWords ? window.getNotebookWords() : []).filter(w => w.mean && w.mean.trim());
+    }
     const source = (typeof decks !== 'undefined' && decks[gameLevel])
       ? decks[gameLevel]
       : (typeof hsk1Deck !== 'undefined' ? hsk1Deck : []);
@@ -12404,9 +12361,10 @@
   // ---- Bộ chọn cấp độ HSK riêng cho phần trò chơi ----
   const gameHskPills = document.querySelectorAll('.game-hsk-pill');
   const gameHskLabel = document.getElementById('game-hsk-label');
+  const gameHskNbCount = document.getElementById('game-hsk-nb-count');
   function updateGameHskUI() {
     gameHskPills.forEach(p => {
-      const active = Number(p.dataset.gameHsk) === gameLevel;
+      const active = p.dataset.gameHsk === String(gameLevel);
       p.classList.toggle('bg-mint', active);
       p.classList.toggle('text-white', active);
       p.classList.toggle('bg-white', !active);
@@ -12414,19 +12372,24 @@
       p.classList.toggle('border-ink/15', !active);
       p.classList.toggle('text-slate', !active);
     });
-    const label = (typeof levelLabels !== 'undefined' && levelLabels[gameLevel]) ? levelLabels[gameLevel] : ('hsk ' + gameLevel);
+    if (gameHskNbCount) gameHskNbCount.textContent = String(window.getNotebookCount ? window.getNotebookCount() : 0);
+    const label = gameLevel === 'notebook'
+      ? 'sổ tay từ vựng'
+      : ((typeof levelLabels !== 'undefined' && levelLabels[gameLevel]) ? levelLabels[gameLevel] : ('hsk ' + gameLevel));
     gameHskLabel.textContent = label + ' · ' + gameWords().length + ' từ';
   }
+  window.updateNotebookPillLabels = updateGameHskUI;
   gameHskPills.forEach(pill => {
     pill.addEventListener('click', () => {
-      gameLevel = Number(pill.dataset.gameHsk);
+      const raw = pill.dataset.gameHsk;
+      gameLevel = raw === 'notebook' ? 'notebook' : Number(raw);
       updateGameHskUI();
       gameAvailabilityChecks.forEach(fn => fn());
     });
   });
   updateGameHskUI();
 
-  /* ============ GAME 1: NỐI CẶP TỪ (MATCH UP) ============ */
+  /* ============ GAME 1: NỐI CẶP TỪ (MATCH UP) — lưới ô trộn lẫn, bấm chọn cặp đôi ============ */
   (function () {
     const setupEl = document.getElementById('mu-setup');
     const playEl = document.getElementById('mu-play');
@@ -12436,8 +12399,7 @@
     const restartMidBtn = document.getElementById('mu-restart-mid');
     const playAgainBtn = document.getElementById('mu-play-again');
     const warningEl = document.getElementById('mu-setup-warning');
-    const colWord = document.getElementById('mu-col-word');
-    const colMean = document.getElementById('mu-col-mean');
+    const boardEl = document.getElementById('mu-board');
     const timerEl = document.getElementById('mu-timer');
     const remainingEl = document.getElementById('mu-remaining');
     const finalTimeEl = document.getElementById('mu-final-time');
@@ -12463,6 +12425,30 @@
 
     function bestTimeKey(n) { return 'tndihoc_mu_best_' + n; }
 
+    // Chèn 1 thẻ vào vị trí ngẫu nhiên trong lưới (không chỉ nối cuối), để ô từ và ô nghĩa
+    // luôn xen kẽ ngẫu nhiên, đúng tinh thần "trộn lẫn" thay vì tách 2 cột như trước.
+    function insertRandom(el) {
+      const children = Array.from(boardEl.children);
+      if (children.length === 0) { boardEl.appendChild(el); return; }
+      const idx = Math.floor(Math.random() * (children.length + 1));
+      if (idx >= children.length) boardEl.appendChild(el);
+      else boardEl.insertBefore(el, children[idx]);
+    }
+
+    function makeTile(kind, word) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'mu-tile rx-tile rx-tile-enter ' + (kind === 'word' ? 'rx-tile--word' : 'rx-tile--mean');
+      if (kind === 'word') {
+        btn.innerHTML = `<span class="rx-tile-hanzi font-semibold text-ink">${word.hanzi}</span><span class="rx-tile-pinyin">${word.pinyin || ''}</span>`;
+      } else {
+        btn.innerHTML = `<span class="rx-tile-mean-text text-ink">${word.mean}</span>`;
+      }
+      btn.addEventListener('animationend', () => btn.classList.remove('rx-tile-enter'), { once: true });
+      btn.addEventListener('click', () => onPick(kind, btn, word));
+      return btn;
+    }
+
     function start() {
       if (!checkAvailability()) return;
       clearInterval(timerInterval);
@@ -12474,24 +12460,11 @@
       selectedMean = null;
       locked = false;
 
-      colWord.innerHTML = '';
-      colMean.innerHTML = '';
-      shuffleArr(words).forEach(w => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'mu-tile';
-        btn.innerHTML = '<span class="font-hanzi font-semibold">' + w.hanzi + '</span><span class="block text-xs text-slate mt-0.5">' + w.pinyin + '</span>';
-        btn.addEventListener('click', () => onPick('word', btn, w));
-        colWord.appendChild(btn);
-      });
-      shuffleArr(words).forEach(w => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'mu-tile';
-        btn.textContent = w.mean;
-        btn.addEventListener('click', () => onPick('mean', btn, w));
-        colMean.appendChild(btn);
-      });
+      boardEl.innerHTML = '';
+      shuffleArr([
+        ...words.map(w => ({ kind: 'word', word: w })),
+        ...words.map(w => ({ kind: 'mean', word: w })),
+      ]).forEach(item => insertRandom(makeTile(item.kind, item.word)));
 
       remainingEl.textContent = String(remaining);
       timerEl.textContent = '00:00';
@@ -12503,6 +12476,27 @@
       setupEl.classList.add('hidden');
       resultEl.classList.add('hidden');
       playEl.classList.remove('hidden');
+    }
+
+    // Hiệu ứng FLIP: các ô còn lại tự trượt mượt lấp chỗ trống khi 2 ô đúng biến mất.
+    function reflow(mutateFn) {
+      const before = new Map();
+      Array.from(boardEl.children).forEach(el => before.set(el, el.getBoundingClientRect()));
+      mutateFn();
+      Array.from(boardEl.children).forEach(el => {
+        const first = before.get(el);
+        if (!first) return;
+        const last = el.getBoundingClientRect();
+        const dx = first.left - last.left, dy = first.top - last.top;
+        if (dx || dy) {
+          el.style.transition = 'none';
+          el.style.transform = `translate(${dx}px, ${dy}px)`;
+          requestAnimationFrame(() => {
+            el.style.transition = 'transform .28s ease';
+            el.style.transform = '';
+          });
+        }
+      });
     }
 
     function onPick(kind, btn, word) {
@@ -12522,7 +12516,8 @@
         const isMatch = selectedWord.word.__muId === selectedMean.word.__muId;
         if (isMatch) {
           sndCorrect();
-          [selectedWord.el, selectedMean.el].forEach(el => {
+          const wEl = selectedWord.el, mEl = selectedMean.el;
+          [wEl, mEl].forEach(el => {
             el.classList.remove('is-selected');
             el.classList.add('is-correct');
             el.disabled = true;
@@ -12530,9 +12525,16 @@
           remaining -= 1;
           remainingEl.textContent = String(remaining);
           selectedWord = null; selectedMean = null; locked = false;
-          if (remaining <= 0) finish();
+          setTimeout(() => {
+            reflow(() => { wEl.remove(); mEl.remove(); });
+            if (remaining <= 0) finish();
+          }, 320);
         } else {
           sndWrong();
+          if (window.addToNotebook) {
+            window.addToNotebook(selectedWord.word);
+            window.addToNotebook(selectedMean.word);
+          }
           [selectedWord.el, selectedMean.el].forEach(el => el.classList.add('is-wrong'));
           setTimeout(() => {
             [selectedWord.el, selectedMean.el].forEach(el => el.classList.remove('is-wrong', 'is-selected'));
@@ -12555,10 +12557,6 @@
       } else {
         bestTimeEl.textContent = fmtTime(best);
       }
-      // Điểm: 10 điểm/cặp, cộng thưởng cho tốc độ (tối đa +50), tối thiểu 1 điểm/cặp.
-      const nPairs = Number(countSelect.value);
-      const speedBonus = Math.max(0, Math.round(50 - elapsed));
-      if (window.recordScore) window.recordScore('nối cặp từ', nPairs * 10 + speedBonus);
       playEl.classList.add('hidden');
       resultEl.classList.remove('hidden');
     }
@@ -12583,28 +12581,35 @@
     const playEl = document.getElementById('qz-play');
     const resultEl = document.getElementById('qz-result');
     const startBtn = document.getElementById('qz-start');
+    const quitBtn = document.getElementById('qz-quit');
     const playAgainBtn = document.getElementById('qz-play-again');
     const warningEl = document.getElementById('qz-setup-warning');
-    const qnumEl = document.getElementById('qz-qnum');
     const scoreEl = document.getElementById('qz-score');
+    const sessionTimeEl = document.getElementById('qz-session-time');
     const progressbar = document.getElementById('qz-progressbar');
     const hanziEl = document.getElementById('qz-hanzi');
     const pinyinEl = document.getElementById('qz-pinyin');
     const optionsEl = document.getElementById('qz-options');
     const finalCorrectEl = document.getElementById('qz-final-correct');
+    const finalTotalEl = document.getElementById('qz-final-total');
     const finalScoreEl = document.getElementById('qz-final-score');
     const bestScoreEl = document.getElementById('qz-best-score');
     const resultEmojiEl = document.getElementById('qz-result-emoji');
 
-    const TOTAL_Q = 10;
-    const TIME_PER_Q = 8; // giây mỗi câu
-    let questions = [];
-    let qIndex = 0;
+    const SESSION_MS = 5 * 60 * 1000; // mỗi lượt chơi kéo dài 5 phút
+    const TIME_PER_Q = 10;            // 10 giây mỗi câu
+    let queue = [];        // hàng đợi từ đã xáo trộn, đi hết thì xáo lại và đi tiếp cho tới khi hết giờ
+    let currentWord = null;
+    let currentCorrectMean = '';
     let score = 0;
     let correctCount = 0;
+    let totalAnswered = 0;
     let timeLeft = TIME_PER_Q;
-    let tickInterval = null;
+    let sessionMsLeft = SESSION_MS;
+    let questionTick = null;   // đếm ngược 10s/câu
+    let sessionTick = null;    // đếm ngược tổng 5 phút
     let answered = false;
+    let sessionActive = false;
 
     function checkAvailability() {
       const ok = gameWords().length >= 4;
@@ -12616,64 +12621,92 @@
     gameAvailabilityChecks.push(checkAvailability);
     checkAvailability();
 
-    function buildQuestions() {
-      const words = gameWords();
-      const n = Math.min(TOTAL_Q, words.length);
-      const chosen = shuffleArr(words).slice(0, n);
-      return chosen.map(w => {
-        const wrongPool = shuffleArr(words.filter(x => x !== w)).slice(0, 3).map(x => x.mean);
-        const opts = shuffleArr([w.mean, ...wrongPool]);
-        return { word: w, options: opts };
-      });
+    function fmtMmSs(ms) {
+      const totalSec = Math.max(0, Math.ceil(ms / 1000));
+      const m = Math.floor(totalSec / 60);
+      const s = totalSec % 60;
+      return m + ':' + String(s).padStart(2, '0');
+    }
+
+    // Nạp lại hàng đợi bằng TOÀN BỘ từ vựng của cấp độ đang chọn, xáo trộn ngẫu nhiên.
+    // Gọi lại mỗi khi hàng đợi cạn, để trong 5 phút người chơi có thể lặp qua hết bộ từ nhiều lần.
+    function refillQueue() {
+      queue = shuffleArr(gameWords());
+    }
+
+    function nextWord() {
+      if (queue.length === 0) refillQueue();
+      return queue.pop();
     }
 
     function start() {
       if (!checkAvailability()) return;
-      questions = buildQuestions();
-      qIndex = 0; score = 0; correctCount = 0;
+      refillQueue();
+      score = 0; correctCount = 0; totalAnswered = 0;
+      sessionMsLeft = SESSION_MS;
+      sessionActive = true;
       setupEl.classList.add('hidden');
       resultEl.classList.add('hidden');
       playEl.classList.remove('hidden');
+      sessionTimeEl.textContent = fmtMmSs(sessionMsLeft);
+
+      clearInterval(sessionTick);
+      sessionTick = setInterval(() => {
+        sessionMsLeft -= 1000;
+        sessionTimeEl.textContent = fmtMmSs(sessionMsLeft);
+        if (sessionMsLeft <= 0) finish();
+      }, 1000);
+
       renderQuestion();
     }
 
+    function buildOptionsFor(word) {
+      const words = gameWords();
+      const wrongPool = shuffleArr(words.filter(x => x.mean !== word.mean)).slice(0, 3).map(x => x.mean);
+      return shuffleArr([word.mean, ...wrongPool]);
+    }
+
     function renderQuestion() {
+      if (!sessionActive) return;
       answered = false;
-      const q = questions[qIndex];
-      qnumEl.textContent = String(qIndex + 1);
+      currentWord = nextWord();
+      currentCorrectMean = currentWord.mean;
       scoreEl.textContent = String(score);
-      hanziEl.textContent = q.word.hanzi;
-      pinyinEl.textContent = q.word.pinyin;
+      hanziEl.textContent = currentWord.hanzi;
+      pinyinEl.textContent = currentWord.pinyin;
       optionsEl.innerHTML = '';
-      q.options.forEach(opt => {
+      const badges = ['A', 'B', 'C', 'D'];
+      buildOptionsFor(currentWord).forEach((opt, i) => {
         const btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'qz-option';
-        btn.textContent = opt;
-        btn.addEventListener('click', () => onAnswer(btn, opt === q.word.mean));
+        btn.className = 'jn-option focus-ring';
+        btn.innerHTML = `<span class="jn-option-badge">${badges[i]}</span><span>${opt}</span>`;
+        btn.dataset.qzMean = opt;
+        btn.addEventListener('click', () => onAnswer(btn, opt === currentCorrectMean));
         optionsEl.appendChild(btn);
       });
       timeLeft = TIME_PER_Q;
       progressbar.style.width = '100%';
       progressbar.classList.remove('is-low');
-      clearInterval(tickInterval);
-      tickInterval = setInterval(() => {
+      clearInterval(questionTick);
+      questionTick = setInterval(() => {
         timeLeft -= 0.1;
         progressbar.style.width = Math.max(0, (timeLeft / TIME_PER_Q) * 100) + '%';
         progressbar.classList.toggle('is-low', timeLeft <= 2.5);
-        if (timeLeft <= 0) { clearInterval(tickInterval); onAnswer(null, false); }
+        if (timeLeft <= 0) { clearInterval(questionTick); onAnswer(null, false); }
       }, 100);
     }
 
+    // Hết giờ (btn=null) hoặc chọn sai đều KHÔNG dừng game — luôn tự động chuyển sang từ tiếp theo.
     function onAnswer(btn, isCorrect) {
-      if (answered) return;
+      if (answered || !sessionActive) return;
       answered = true;
+      totalAnswered += 1;
       if (window.trackStudyActivity) window.trackStudyActivity();
-      clearInterval(tickInterval);
-      const q = questions[qIndex];
+      clearInterval(questionTick);
       Array.from(optionsEl.children).forEach(b => {
         b.disabled = true;
-        if (b.textContent === q.word.mean) b.classList.add('is-correct');
+        if (b.dataset.qzMean === currentCorrectMean) b.classList.add('is-correct');
       });
       if (isCorrect) {
         sndCorrect();
@@ -12683,35 +12716,46 @@
       } else {
         sndWrong();
         if (btn) btn.classList.add('is-wrong');
+        if (window.addToNotebook) window.addToNotebook(currentWord);
       }
       scoreEl.textContent = String(score);
       setTimeout(() => {
-        qIndex += 1;
-        if (qIndex >= questions.length) finish();
-        else renderQuestion();
-      }, 850);
+        if (sessionActive) renderQuestion();
+      }, 700);
     }
 
     function finish() {
-      const ratio = correctCount / questions.length;
-      resultEmojiEl.textContent = ratio === 1 ? '🏆' : ratio >= 0.7 ? '🎉' : ratio >= 0.4 ? '👍' : '📚';
-      if (ratio >= 0.7) sndWin(); else sndWrong();
+      sessionActive = false;
+      clearInterval(questionTick);
+      clearInterval(sessionTick);
+      const ratio = totalAnswered > 0 ? correctCount / totalAnswered : 0;
+      resultEmojiEl.textContent = ratio >= 0.85 ? '🏆' : ratio >= 0.6 ? '🎉' : ratio >= 0.35 ? '👍' : '📚';
+      if (ratio >= 0.6) sndWin(); else sndWrong();
       finalCorrectEl.textContent = String(correctCount);
+      finalTotalEl.textContent = String(totalAnswered);
       finalScoreEl.textContent = String(score);
       const key = 'tndihoc_qz_best';
       const best = Number(localStorage.getItem(key) || '0');
       if (score > best) {
         localStorage.setItem(key, String(score));
-        bestScoreEl.textContent = String(score) + ' 🏅 kỷ lục mới!';
+        bestScoreEl.textContent = String(score) + ' 🏅 mới!';
       } else {
         bestScoreEl.textContent = String(best);
       }
-      if (window.recordScore) window.recordScore('trắc nghiệm', score);
       playEl.classList.add('hidden');
       resultEl.classList.remove('hidden');
     }
 
+    function stopToSetup() {
+      sessionActive = false;
+      clearInterval(questionTick);
+      clearInterval(sessionTick);
+      playEl.classList.add('hidden');
+      setupEl.classList.remove('hidden');
+    }
+
     startBtn.addEventListener('click', start);
+    quitBtn.addEventListener('click', stopToSetup);
     playAgainBtn.addEventListener('click', () => {
       resultEl.classList.add('hidden');
       setupEl.classList.remove('hidden');
@@ -12800,6 +12844,7 @@
         setTimeout(nextRound, 350);
       } else {
         sndLose();
+        if (window.addToNotebook) window.addToNotebook(current.word);
         lose();
       }
     }
@@ -12816,7 +12861,6 @@
       } else {
         bestStreakEl.textContent = String(best);
       }
-      if (window.recordScore) window.recordScore('đấu trường sinh tồn', score);
       playEl.classList.add('hidden');
       resultEl.classList.remove('hidden');
     }
@@ -12851,7 +12895,7 @@
      script phía trên — không cần khai báo dữ liệu riêng.
      ========================================================================= */
 
-  const RX_CHUNK_SIZE = 150;   // mỗi đơn nguyên tối đa 150 từ
+  const RX_CHUNK_SIZE = 50;   // mỗi đơn nguyên tối đa 50 từ
   const RX_REQUIRED_REPEATS = 2; // mỗi từ phải xuất hiện (được đưa ra ghép) ít nhất 2 lần
 
   const rxLevelPillsWrap = document.getElementById('rx-level-pills');
@@ -13076,6 +13120,12 @@
     } else {
       first.el.classList.add('is-wrong');
       second.el.classList.add('is-wrong');
+      if (window.addToNotebook) {
+        const w1 = rxActive.find(t => t.uid === first.uid);
+        const w2 = rxActive.find(t => t.uid === second.uid);
+        if (w1) window.addToNotebook(w1);
+        if (w2) window.addToNotebook(w2);
+      }
       setTimeout(() => {
         first.el.classList.remove('is-wrong', 'is-selected');
         second.el.classList.remove('is-wrong');
@@ -13101,6 +13151,7 @@
     }
     rxUnitWrap.classList.remove('hidden');
     rxUnitHint.textContent = `(${rxUnits.length} đơn nguyên · tối đa ${RX_CHUNK_SIZE} từ/đơn nguyên)`;
+    // ghi chú: nhãn này tự cập nhật theo RX_CHUNK_SIZE nên không cần sửa gì thêm khi đổi hằng số ở trên
     rxUnits.forEach((chunk, i) => {
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -13181,7 +13232,6 @@
     rxPlayEl.classList.add('hidden');
     rxRandomBanner.classList.add('hidden');
     rxCompleteSub.textContent = `bạn đã ghép đúng đủ ${RX_REQUIRED_REPEATS} lượt cho toàn bộ ${rxUnits[rxUnitIndex].length} từ trong đơn nguyên ${rxUnitIndex + 1}.`;
-    if (window.recordScore) window.recordScore('ghép cặp phản xạ nhanh', rxUnits[rxUnitIndex].length * 5);
     rxNextUnitBtn.classList.toggle('hidden', rxUnitIndex >= rxUnits.length - 1);
     rxCompleteEl.classList.remove('hidden');
     rxCompleteEl.classList.add('is-active');
@@ -14386,7 +14436,6 @@
     saveData();
     renderStreakWidget();
     renderHeatmap();
-    if (window.recordMonthlyStreak) window.recordMonthlyStreak(current); // đồng bộ lên Firestore để lên bảng vinh danh
   }
 
   /*
@@ -14434,7 +14483,6 @@
     if (!streakData.todayFlashcards.seen.includes(cardId)) {
       streakData.todayFlashcards.seen.push(cardId);
       saveData();
-      if (window.recordScore) window.recordScore('flashcard', 2); // 2 điểm/thẻ mới xem trong ngày, tránh spam 1 thẻ để cày điểm
     }
   };
 
