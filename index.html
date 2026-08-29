@@ -1747,12 +1747,31 @@ nhớ" rows="4"></textarea>
   const drawer = document.getElementById('mobile-drawer');
   const overlay = document.getElementById('drawer-overlay');
 
-  function showPage(target) {
+  // updateHash = true  -> gọi khi người dùng bấm chuyển mục (cần ghi hash mới lên URL)
+  // updateHash = false -> gọi khi đang đồng bộ theo hash có sẵn (từ link chia sẻ, nút back/forward
+  //                        của trình duyệt...), tránh việc ghi lại hash gây lặp vô hạn với hashchange
+  function showPage(target, updateHash = true) {
     pages.forEach(p => p.classList.toggle('is-active', p.id === target));
     navBtns.forEach(b => b.classList.toggle('active', b.dataset.target === target));
     window.scrollTo({ top: 0, behavior: 'auto' });
     closeDrawer();
     updateAiBubbleVisibility(target);
+
+    if (updateHash) {
+      const newHash = '#' + target;
+      if (window.location.hash !== newHash) {
+        history.pushState(null, '', newHash);
+      }
+    }
+  }
+
+  // Lấy tên mục hợp lệ từ hash hiện tại trên URL (vd: "#chinese" -> "chinese"),
+  // trả về null nếu hash rỗng hoặc không khớp mục nào đang có trên trang.
+  function getTargetFromHash() {
+    const hash = window.location.hash.replace(/^#/, '');
+    if (!hash) return null;
+    const match = Array.from(pages).some(p => p.id === hash);
+    return match ? hash : null;
   }
 
   // Nút/khung chatbot AI giờ nằm ở cấp <body> (xem lý do trong comment HTML phía trên nó),
@@ -1775,7 +1794,23 @@ nhớ" rows="4"></textarea>
       if (iconClose) iconClose.classList.add('hidden');
     }
   }
-  updateAiBubbleVisibility(document.querySelector('[data-page].is-active')?.id);
+  // Khi tải trang: nếu URL có sẵn hash hợp lệ (vd truy cập trực tiếp .../#chinese
+  // hoặc bấm link chia sẻ có hash) thì hiển thị đúng mục đó; ngược lại giữ nguyên
+  // mục mặc định (home) đã được đánh dấu is-active sẵn trong HTML.
+  const initialTarget = getTargetFromHash();
+  if (initialTarget) {
+    showPage(initialTarget, false);
+  } else {
+    updateAiBubbleVisibility(document.querySelector('[data-page].is-active')?.id);
+  }
+
+  // Đồng bộ khi hash trên URL thay đổi từ bên ngoài (bấm nút back/forward của
+  // trình duyệt, sửa tay thanh địa chỉ, hoặc bấm lại 1 link có hash trong khi
+  // trang đã mở sẵn). updateHash=false để tránh pushState lặp lại chính hash đó.
+  window.addEventListener('hashchange', () => {
+    const target = getTargetFromHash();
+    if (target) showPage(target, false);
+  });
 
   navBtns.forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.target)));
 
