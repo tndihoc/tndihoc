@@ -816,6 +816,7 @@
 <!-- ===== Chuyển nhanh trong mục "học tiếng trung" ===== -->
 <div class="flex flex-wrap gap-2 mb-8" id="chinese-quicknav">
 <a class="baidoc-pill" href="#streak-widget">Tổng quan</a>
+<a class="baidoc-pill" href="#vocab-mastery-widget">Từ đã ghi nhớ</a>
 <a class="baidoc-pill" href="#btvn-section">Bài tập về nhà</a>
 <a class="baidoc-pill" href="#vocab-games">Trò chơi</a>
 <a class="baidoc-pill" href="#baidoc-section" style="background:#FFE8D1;color:#FF7D00;border-color:#FFC98A;">📖 Bài đọc</a>
@@ -843,7 +844,9 @@
 </div>
 </div>
 <p class="text-xs text-slate mt-3">Học liên tục ở <strong>bất kỳ mục nào</strong> (flashcard, trò chơi, bài đọc, sổ tay, bài tập...) đủ <span id="streak-goal-label">10 phút</span> trong ngày, hoặc hoàn thành 1 bài tập, để tính là 1 ngày học.</p>
-<div class="mt-5 pt-5 border-t border-ink/10">
+<div class="mt-5 pt-5 border-t border-ink/10 grid grid-cols-1 md:grid-cols-2 gap-8" id="vocab-mastery-widget">
+<!-- Cột trái: Lịch heatmap -->
+<div>
 <div class="flex items-center justify-between mb-3">
 <p class="text-sm font-semibold text-ink" id="heatmap-month-label">—</p>
 <div class="flex gap-1.5">
@@ -854,6 +857,32 @@
 <div class="heatmap-compact-wrap">
 <div class="heatmap-compact text-[9px] text-slate font-semibold mb-1 text-center" id="heatmap-weekdays"></div>
 <div class="heatmap-compact" id="heatmap-grid"></div>
+</div>
+</div>
+<!-- Cột phải: Từ đã ghi nhớ -->
+<div class="md:border-l md:border-ink/10 md:pl-8 flex flex-col">
+<div class="flex items-center gap-3 mb-4">
+<span class="text-3xl leading-none">✅</span>
+<div>
+<p class="text-xs text-slate font-semibold uppercase tracking-wide mb-0.5">từ đã ghi nhớ</p>
+<p class="text-ink text-xs sm:text-sm">Tính từ những từ chọn đúng ở trò chơi và những từ bấm "Đã nhớ" ở flashcard.</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 flex-1">
+<div class="rounded-xl bg-mint-light border border-mint-border px-4 py-3.5 flex items-center justify-between flex-1">
+<p class="text-xs text-slate font-semibold">Hôm nay</p>
+<p class="font-hanzi font-black text-3xl text-mint" id="vocab-mastery-today">0</p>
+</div>
+<div class="rounded-xl bg-peach-light border border-peach-border px-4 py-3.5 flex items-center justify-between flex-1">
+<p class="text-xs text-slate font-semibold">Tuần này</p>
+<p class="font-hanzi font-black text-3xl" style="color:#FF7D00;" id="vocab-mastery-week">0</p>
+</div>
+<div class="rounded-xl bg-sky-light border border-sky-border px-4 py-3.5 flex items-center justify-between flex-1">
+<p class="text-xs text-slate font-semibold">Tháng này</p>
+<p class="font-hanzi font-black text-3xl" style="color:#6B8FE0;" id="vocab-mastery-month">0</p>
+</div>
+</div>
+<p class="text-xs text-slate mt-3">Tổng cộng đã ghi nhớ (không lặp từ): <span class="font-semibold text-ink" id="vocab-mastery-total">0</span> từ.</p>
 </div>
 </div>
 </div>
@@ -949,18 +978,47 @@ nhớ" rows="4"></textarea>
 <span class="seal-stamp" style="width:30px;height:30px;font-size:12px;">戏</span>
 <h3 class="font-sans font-semibold text-xl text-ink">Trò chơi ôn từ vựng</h3>
 </div>
-<p class="text-sm text-slate mb-5 max-w-2xl">4 Trò chơi + flashcard ôn tập từ vựng. chọn cấp độ hsk mong muốn bên dưới, dữ liệu từ vựng của game sẽ lấy đúng theo cấp độ đó (riêng "ghép cặp phản xạ nhanh" và "flashcard" có bộ chọn cấp độ tách biệt, xem trong tab của từng mục).</p>
-<div class="flex flex-wrap items-center gap-2.5 mb-6">
-<label class="text-sm font-semibold text-ink mr-1">Cấp độ chơi:</label>
-<button class="game-hsk-pill px-3.5 py-1.5 rounded-full bg-mint text-white text-sm font-semibold focus-ring" data-game-hsk="1">Hsk 1</button>
-<button class="game-hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring" data-game-hsk="2">Hsk 2</button>
-<button class="game-hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring" data-game-hsk="3">Hsk 3</button>
-<button class="game-hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring" data-game-hsk="4">Hsk 4</button>
-<button class="game-hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring" data-game-hsk="5">Hsk 5</button>
-<button class="game-hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring" data-game-hsk="6">Hsk 6</button>
-<button class="game-hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring" data-game-hsk="79">Hsk 7-9</button>
-<button class="game-hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring" data-game-hsk="notebook">📓 Sổ tay (<span id="game-hsk-nb-count">0</span>)</button>
-<span class="text-xs text-slate ml-1">Đang chơi: <span class="font-semibold text-mint" id="game-hsk-label">Hsk 1 · 149 từ</span></span>
+<p class="text-sm text-slate mb-5 max-w-2xl">4 Trò chơi + flashcard ôn tập từ vựng. chọn cấp độ hsk mong muốn bên dưới — cả 5 mục (nối cặp từ, trắc nghiệm, đấu trường sinh tồn, ghép cặp phản xạ nhanh, flashcard) đều dùng chung 1 cấp độ này, không cần chọn lại ở từng mục.</p>
+<div class="mb-7">
+<label class="text-sm font-semibold text-ink mb-2.5 block">Cấp độ chơi</label>
+<div class="bg-ink/[0.04] rounded-3xl p-3 sm:p-4">
+<div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5" id="game-hsk-pills">
+<button class="game-hsk-pill relative flex flex-col items-center justify-center gap-0.5 rounded-2xl py-5 px-2 border-4 border-transparent transition focus-ring" data-game-hsk="1" style="background:#EEF3FF;color:#1E2A5C;">
+<span class="gh-check hidden absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-white text-mint text-[11px] font-bold flex items-center justify-center shadow">✓</span>
+<span class="text-base font-black">HSK 1</span>
+</button>
+<button class="game-hsk-pill relative flex flex-col items-center justify-center gap-0.5 rounded-2xl py-5 px-2 border-4 border-transparent transition focus-ring" data-game-hsk="2" style="background:#D6E1FE;color:#1E2A5C;">
+<span class="gh-check hidden absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-white text-mint text-[11px] font-bold flex items-center justify-center shadow">✓</span>
+<span class="text-base font-black">HSK 2</span>
+</button>
+<button class="game-hsk-pill relative flex flex-col items-center justify-center gap-0.5 rounded-2xl py-5 px-2 border-4 border-transparent transition focus-ring" data-game-hsk="3" style="background:#AFC3FA;color:#152052;">
+<span class="gh-check hidden absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-white text-mint text-[11px] font-bold flex items-center justify-center shadow">✓</span>
+<span class="text-base font-black">HSK 3</span>
+</button>
+<button class="game-hsk-pill relative flex flex-col items-center justify-center gap-0.5 rounded-2xl py-5 px-2 border-4 border-transparent transition focus-ring" data-game-hsk="4" style="background:#7E98F0;color:#FFFFFF;">
+<span class="gh-check hidden absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-white text-mint text-[11px] font-bold flex items-center justify-center shadow">✓</span>
+<span class="text-base font-black">HSK 4</span>
+</button>
+<button class="game-hsk-pill relative flex flex-col items-center justify-center gap-0.5 rounded-2xl py-5 px-2 border-4 border-transparent transition focus-ring" data-game-hsk="5" style="background:#5170E0;color:#FFFFFF;">
+<span class="gh-check hidden absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-white text-mint text-[11px] font-bold flex items-center justify-center shadow">✓</span>
+<span class="text-base font-black">HSK 5</span>
+</button>
+<button class="game-hsk-pill relative flex flex-col items-center justify-center gap-0.5 rounded-2xl py-5 px-2 border-4 border-transparent transition focus-ring" data-game-hsk="6" style="background:#2E48C4;color:#FFFFFF;">
+<span class="gh-check hidden absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-white text-mint text-[11px] font-bold flex items-center justify-center shadow">✓</span>
+<span class="text-base font-black">HSK 6</span>
+</button>
+<button class="game-hsk-pill relative flex flex-col items-center justify-center gap-0.5 rounded-2xl py-5 px-2 border-4 border-transparent transition focus-ring" data-game-hsk="79" style="background:#0F1E7A;color:#FFFFFF;">
+<span class="gh-check hidden absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-white text-mint text-[11px] font-bold flex items-center justify-center shadow">✓</span>
+<span class="text-base font-black">HSK 7-9</span>
+</button>
+<button class="game-hsk-pill relative flex flex-col items-center justify-center gap-0.5 rounded-2xl py-5 px-2 border-4 border-transparent transition focus-ring" data-game-hsk="notebook" style="background:#FFE8D1;color:#7A3D00;">
+<span class="gh-check hidden absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-white text-mint text-[11px] font-bold flex items-center justify-center shadow">✓</span>
+<span class="text-base font-black">📓 Sổ tay</span>
+<span class="text-xs font-semibold opacity-80">(<span id="game-hsk-nb-count">0</span>)</span>
+</button>
+</div>
+</div>
+<p class="text-xs text-slate mt-2.5">Đang chơi: <span class="font-semibold text-mint" id="game-hsk-label">Hsk 1 · 149 từ</span></p>
 </div>
 <div class="flex flex-wrap gap-2 mb-7">
 <button class="game-tab active" data-game-tab="matchup">🧩 Nối cặp từ</button>
@@ -1131,18 +1189,7 @@ nhớ" rows="4"></textarea>
 </div>
 </div>
 <div class="jn-setup-card">
-<div class="mb-5">
-<label class="text-sm font-semibold text-ink mb-2 block">Cấp độ</label>
-<div class="flex flex-wrap gap-2" id="rx-level-pills">
-<button class="rx-pill active focus-ring" data-rx-level="1">Hsk 1</button>
-<button class="rx-pill focus-ring" data-rx-level="2">Hsk 2</button>
-<button class="rx-pill focus-ring" data-rx-level="3">Hsk 3</button>
-<button class="rx-pill focus-ring" data-rx-level="4">Hsk 4</button>
-<button class="rx-pill focus-ring" data-rx-level="5">Hsk 5</button>
-<button class="rx-pill focus-ring" data-rx-level="6">Hsk 6</button>
-<button class="rx-pill focus-ring" data-rx-level="79">Hsk 7-9</button>
-</div>
-</div>
+<p class="text-xs text-slate mb-5">Đang luyện: <span class="font-semibold text-mint" id="rx-current-level-label">Hsk 1</span> <span class="text-slate">(đổi cấp độ ở mục "Cấp độ chơi" phía trên đầu trang)</span></p>
 <div class="mb-5" id="rx-unit-wrap">
 <label class="text-sm font-semibold text-ink mb-2 block">Đơn nguyên <span class="text-slate font-normal" id="rx-unit-hint"></span></label>
 <div class="flex flex-wrap gap-2" id="rx-unit-pills"></div>
@@ -1196,18 +1243,7 @@ nhớ" rows="4"></textarea>
 <h3 class="font-sans font-semibold text-lg text-ink mb-2">Flashcard ôn tập từ vựng</h3>
 <p class="text-sm text-slate mb-5">Bấm vào thẻ để lật, dùng nút bên dưới để đánh giá và chuyển từ. bộ đang học: <span class="font-semibold text-mint" id="fc-deck-name">Hsk 1 · 149 từ</span>.</p>
 <div class="mb-6">
-<label class="text-sm font-semibold text-ink mb-2 block">Lộ trình hsk</label>
-<div class="flex flex-wrap gap-2.5" id="hsk-pills">
-<button class="hsk-pill px-3.5 py-1.5 rounded-full bg-mint text-white text-sm font-semibold focus-ring" data-hsk="1">Hsk 1</button>
-<button class="hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring" data-hsk="2">Hsk 2</button>
-<button class="hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring" data-hsk="3">Hsk 3</button>
-<button class="hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring" data-hsk="4">Hsk 4</button>
-<button class="hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring" data-hsk="5">Hsk 5</button>
-<button class="hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring" data-hsk="6">Hsk 6</button>
-<button class="hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring" data-hsk="79">Hsk 7-9</button>
-<button class="hsk-pill px-3.5 py-1.5 rounded-full bg-white border border-ink/15 text-slate text-sm font-semibold focus-ring" data-hsk="notebook">📓 Sổ tay (<span id="fc-hsk-nb-count">0</span>)</button>
-</div>
-<p class="text-xs text-slate mt-3">Bấm vào một cấp để nạp bộ từ tương ứng vào flashcard bên dưới. hsk 1-6: đầy đủ từ vựng theo giáo trình (có nghĩa). hsk 7-9: đầy đủ ~5.600 từ nâng cao (có nghĩa tiếng việt), đã loại bỏ trùng lặp. mục "sổ tay" chứa các từ bạn từng chọn/trả lời sai ở flashcard hoặc bất kỳ trò chơi nào.</p>
+<p class="text-xs text-slate">Bộ từ lấy theo mục "Cấp độ chơi" ở đầu trang. hsk 1-6: đầy đủ từ vựng theo giáo trình (có nghĩa). hsk 7-9: đầy đủ ~5.600 từ nâng cao (có nghĩa tiếng việt), đã loại bỏ trùng lặp. mục "sổ tay" chứa các từ bạn từng chọn/trả lời sai ở flashcard hoặc bất kỳ trò chơi nào.</p>
 </div>
 <div class="flex flex-col items-center">
 <div class="w-full max-w-md mb-2">
@@ -12643,6 +12679,7 @@ nhớ" rows="4"></textarea>
   function fcMarkKnown() {
     const word = fcDeck[fcIndex];
     if (window.removeFromNotebook) window.removeFromNotebook(word.hanzi, word.pinyin);
+    if (window.trackWordMemorized) window.trackWordMemorized(word);
     fcNext();
   }
 
@@ -12734,38 +12771,25 @@ nhớ" rows="4"></textarea>
     fcRender();
   });
 
-  const hskPills = document.querySelectorAll('.hsk-pill');
-  hskPills.forEach(pill => {
-    pill.addEventListener('click', () => {
-      const raw = pill.dataset.hsk;
-      const level = raw === 'notebook' ? 'notebook' : Number(raw);
-      const newDeck = fcDeckForLevel(level);
-      if (newDeck.length === 0) {
-        fcImportMsg.classList.remove('text-mint');
-        fcImportMsg.classList.add('text-seal');
-        fcImportMsg.textContent = 'sổ tay đang trống — chơi vài ván game, từ chọn sai sẽ tự xuất hiện ở đây để ôn.';
-        return;
-      }
-      currentLevel = level;
-      fcDeck = newDeck;
-      fcIndex = 0;
-      fcPaletteOrder = shufflePalette();
-      fcDeckName.textContent = fcLabelForLevel(level) + ' · ' + fcDeck.length + ' từ';
-      fcImportMsg.textContent = '';
-      document.getElementById('fc-import').value = '';
-      hskPills.forEach(p => {
-        const active = p === pill;
-        p.classList.toggle('bg-mint', active);
-        p.classList.toggle('text-white', active);
-        p.classList.toggle('bg-white', !active);
-        p.classList.toggle('border', !active);
-        p.classList.toggle('border-ink/15', !active);
-        p.classList.toggle('text-slate', !active);
-      });
-      fcRender();
-      document.getElementById('fc-card').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    });
-  });
+  // Nạp bộ từ theo cấp độ (được gọi từ bộ chọn "Cấp độ chơi" dùng chung ở đầu trang).
+  function fcApplyLevel(level) {
+    const newDeck = fcDeckForLevel(level);
+    if (newDeck.length === 0) {
+      fcImportMsg.classList.remove('text-mint');
+      fcImportMsg.classList.add('text-seal');
+      fcImportMsg.textContent = 'sổ tay đang trống — chơi vài ván game, từ chọn sai sẽ tự xuất hiện ở đây để ôn.';
+      return;
+    }
+    currentLevel = level;
+    fcDeck = newDeck;
+    fcIndex = 0;
+    fcPaletteOrder = shufflePalette();
+    fcDeckName.textContent = fcLabelForLevel(level) + ' · ' + fcDeck.length + ' từ';
+    fcImportMsg.textContent = '';
+    document.getElementById('fc-import').value = '';
+    fcRender();
+  }
+  window.fcSetLevel = fcApplyLevel;
 
   if (fcHskNbCount) fcHskNbCount.textContent = String(window.getNotebookCount ? window.getNotebookCount() : 0);
   window.updateFcNotebookBadge = function () {
@@ -12953,12 +12977,12 @@ nhớ" rows="4"></textarea>
   function updateGameHskUI() {
     gameHskPills.forEach(p => {
       const active = p.dataset.gameHsk === String(gameLevel);
-      p.classList.toggle('bg-mint', active);
-      p.classList.toggle('text-white', active);
-      p.classList.toggle('bg-white', !active);
-      p.classList.toggle('border', !active);
-      p.classList.toggle('border-ink/15', !active);
-      p.classList.toggle('text-slate', !active);
+      p.classList.toggle('border-ink', active);
+      p.classList.toggle('border-transparent', !active);
+      p.classList.toggle('shadow-lg', active);
+      p.classList.toggle('scale-[1.03]', active);
+      const check = p.querySelector('.gh-check');
+      if (check) check.classList.toggle('hidden', !active);
     });
     if (gameHskNbCount) gameHskNbCount.textContent = String(window.getNotebookCount ? window.getNotebookCount() : 0);
     const label = gameLevel === 'notebook'
@@ -12973,6 +12997,9 @@ nhớ" rows="4"></textarea>
       gameLevel = raw === 'notebook' ? 'notebook' : Number(raw);
       updateGameHskUI();
       gameAvailabilityChecks.forEach(fn => fn());
+      // Đồng bộ cấp độ này sang Flashcard và Ghép cặp phản xạ nhanh (2 mục dùng chung 1 bộ chọn cấp độ ở trên).
+      if (window.fcSetLevel) window.fcSetLevel(gameLevel);
+      if (gameLevel !== 'notebook' && window.rxSetLevel) window.rxSetLevel(gameLevel);
     });
   });
   updateGameHskUI();
@@ -13104,6 +13131,7 @@ nhớ" rows="4"></textarea>
         const isMatch = selectedWord.word.__muId === selectedMean.word.__muId;
         if (isMatch) {
           sndCorrect();
+          if (window.trackWordMemorized) window.trackWordMemorized(selectedWord.word);
           const wEl = selectedWord.el, mEl = selectedMean.el;
           [wEl, mEl].forEach(el => {
             el.classList.remove('is-selected');
@@ -13306,6 +13334,7 @@ nhớ" rows="4"></textarea>
       });
       if (isCorrect) {
         sndCorrect();
+        if (window.trackWordMemorized) window.trackWordMemorized(currentWord);
         const speedBonus = Math.round(Math.max(0, timeLeft / TIME_PER_Q) * 50);
         score += 100 + speedBonus;
         correctCount += 1;
@@ -13437,6 +13466,7 @@ nhớ" rows="4"></textarea>
       const correct = userSaysTrue === current.isTrue;
       if (correct) {
         sndCorrect();
+        if (window.trackWordMemorized) window.trackWordMemorized(current.word);
         streak += 1;
         score += 10 + streak * 2;
         streakEl.textContent = String(streak);
@@ -13506,7 +13536,7 @@ nhớ" rows="4"></textarea>
   const RX_MIN_REPEATS = 2;   // mỗi từ lặp lại ngắt quãng tối thiểu 2 lần
   const RX_MAX_REPEATS = 3;   // mỗi từ lặp lại ngắt quãng tối đa 3 lần
 
-  const rxLevelPillsWrap = document.getElementById('rx-level-pills');
+  const rxCurrentLevelLabel = document.getElementById('rx-current-level-label');
   const rxUnitWrap = document.getElementById('rx-unit-wrap');
   const rxUnitPillsWrap = document.getElementById('rx-unit-pills');
   const rxUnitHint = document.getElementById('rx-unit-hint');
@@ -13713,6 +13743,7 @@ nhớ" rows="4"></textarea>
       second.el.classList.add('is-correct');
       const tile = rxActive.find(t => t.uid === uid);
       if (tile) {
+        if (window.trackWordMemorized) window.trackWordMemorized(tile);
         const key = rxWordKey(tile);
         rxCorrectCounts[key] = (rxCorrectCounts[key] || 0) + 1;
         if (rxMode === 'unit' && rxCorrectCounts[key] <= (rxRepeatTarget[key] || RX_MIN_REPEATS)) {
@@ -13751,11 +13782,15 @@ nhớ" rows="4"></textarea>
     }
   }
 
-  function rxRenderLevelPills() {
-    rxLevelPillsWrap.querySelectorAll('.rx-pill').forEach(p => {
-      p.classList.toggle('active', Number(p.dataset.rxLevel) === rxLevel || p.dataset.rxLevel === String(rxLevel));
-    });
+  // Cập nhật lại cấp độ đang luyện, được gọi từ bộ chọn "Cấp độ chơi" dùng chung ở đầu trang.
+  function rxApplyLevel(level) {
+    rxLevel = level;
+    if (rxCurrentLevelLabel) {
+      rxCurrentLevelLabel.textContent = (levelLabels[level] || ('hsk ' + level));
+    }
+    rxRenderUnitPills();
   }
+  window.rxSetLevel = rxApplyLevel;
 
   function rxRenderUnitPills() {
     rxUnits = rxChunkDeck(decks[rxLevel]);
@@ -13859,15 +13894,6 @@ nhớ" rows="4"></textarea>
     rxRandomBanner.classList.add('hidden');
     rxSetupEl.classList.remove('hidden');
   }
-
-  // ---- Sự kiện chọn cấp độ ----
-  rxLevelPillsWrap.querySelectorAll('.rx-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      rxLevel = Number(pill.dataset.rxLevel) === 79 || pill.dataset.rxLevel === '79' ? 79 : Number(pill.dataset.rxLevel);
-      rxRenderLevelPills();
-      rxRenderUnitPills();
-    });
-  });
 
   rxBoardSizeSel.addEventListener('change', () => {
     rxBoardSize = Number(rxBoardSizeSel.value);
@@ -15233,6 +15259,117 @@ nhớ" rows="4"></textarea>
 
   renderStreakWidget();
   renderHeatmap();
+})();
+</script>
+<!-- ===== Từ đã ghi nhớ: đếm theo ngày / tuần / tháng ===== -->
+<script>
+(function () {
+  /*
+    ===== Đếm số từ đã ghi nhớ (theo ngày, tích luỹ theo tuần/tháng) =====
+    Một từ được tính là "đã ghi nhớ" khi:
+      1) Người chơi CHỌN ĐÚNG từ đó ở bất kỳ trò chơi ôn từ vựng nào (Nối cặp,
+         Trắc nghiệm, Đấu trường sinh tồn, Ghép cặp phản xạ nhanh); hoặc
+      2) Người học bấm "Đã nhớ" ở mục Flashcard.
+
+    Gọi window.trackWordMemorized(word) mỗi khi 1 trong 2 điều trên xảy ra.
+    `word` có thể là một object có field `hanzi`, hoặc trực tiếp là chuỗi chữ Hán.
+
+    Mỗi từ (theo chữ Hán) chỉ được tính 1 lần / ngày (tránh đếm trùng nếu người
+    học lặp lại đúng 1 từ nhiều lần trong cùng 1 ngày). Số liệu được lưu theo
+    từng ngày trong localStorage, từ đó tự tính ra tổng của tuần hiện tại
+    (Thứ 2 -> Chủ nhật) và tháng hiện tại.
+  */
+  const VOCAB_KEY = 'tn_vocab_mastery_v1';
+
+  function vTodayStr(d) {
+    const date = d || new Date();
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
+
+  function vParseDateStr(s) {
+    const [y, m, d] = s.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  function vLoadData() {
+    try {
+      const raw = localStorage.getItem(VOCAB_KEY);
+      if (!raw) return { days: {} };
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object' || !parsed.days) return { days: {} };
+      return parsed;
+    } catch (e) {
+      return { days: {} };
+    }
+  }
+
+  function vSaveData() {
+    try { localStorage.setItem(VOCAB_KEY, JSON.stringify(vocabData)); } catch (e) {}
+  }
+
+  let vocabData = vLoadData();
+
+  // Thứ 2 của tuần chứa ngày `d`.
+  function vStartOfWeek(d) {
+    const date = new Date(d);
+    const day = date.getDay(); // 0 = CN, 1 = T2, ...
+    const diff = (day === 0 ? -6 : 1) - day; // đưa về Thứ 2
+    date.setDate(date.getDate() + diff);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }
+
+  window.trackWordMemorized = function (word) {
+    if (!word) return;
+    const hanzi = typeof word === 'string' ? word.trim() : String(word.hanzi || '').trim();
+    if (!hanzi) return;
+
+    const t = vTodayStr();
+    if (!vocabData.days[t]) vocabData.days[t] = [];
+    if (!vocabData.days[t].includes(hanzi)) {
+      vocabData.days[t].push(hanzi);
+      vSaveData();
+      renderVocabMasteryWidget();
+    }
+  };
+
+  function renderVocabMasteryWidget() {
+    const todayEl = document.getElementById('vocab-mastery-today');
+    const weekEl = document.getElementById('vocab-mastery-week');
+    const monthEl = document.getElementById('vocab-mastery-month');
+    const totalEl = document.getElementById('vocab-mastery-total');
+    if (!todayEl) return; // widget chưa có trên trang này
+
+    const now = new Date();
+    const todayKey = vTodayStr(now);
+    const weekStart = vStartOfWeek(now);
+    const monthPrefix = todayKey.slice(0, 7); // "YYYY-MM"
+
+    const todayCount = (vocabData.days[todayKey] || []).length;
+
+    let weekTotal = 0;
+    let monthTotal = 0;
+    const allWordsSet = new Set();
+
+    Object.keys(vocabData.days).forEach((key) => {
+      const words = vocabData.days[key] || [];
+      words.forEach((w) => allWordsSet.add(w));
+
+      const cellDate = vParseDateStr(key);
+      if (cellDate >= weekStart) weekTotal += words.length;
+      if (key.slice(0, 7) === monthPrefix) monthTotal += words.length;
+    });
+
+    todayEl.textContent = String(todayCount);
+    weekEl.textContent = String(weekTotal);
+    monthEl.textContent = String(monthTotal);
+    if (totalEl) totalEl.textContent = String(allWordsSet.size);
+  }
+
+  renderVocabMasteryWidget();
 })();
 </script>
 <!-- ===== Trợ lý AI (Google Gemini) ===== -->
