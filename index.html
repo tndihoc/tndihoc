@@ -586,6 +586,42 @@
     .streak-celebrate-overlay, .streak-celebrate-overlay.is-leaving, .streak-celebrate-card { animation: none; }
     .streak-confetti-piece { display: none; }
   }
+  /* ===== Tài khoản: nút đăng nhập, avatar, menu, modal, trang admin ===== */
+  .auth-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:10px; font-size:13.5px; font-weight:600; background:#000080; color:#fff; transition:background .15s ease; white-space:nowrap; }
+  .auth-btn:hover { background:#00006a; }
+  .auth-btn.ghost { background:transparent; color:#000080; border:1px solid #A6A6D3; }
+  .auth-btn.ghost:hover { background:#E6E6F2; }
+  .auth-avatar { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:9999px; background:#FFE8D1; color:#FF7D00; font-weight:700; font-size:14px; border:1.5px solid #FFC98A; flex-shrink:0; }
+  .auth-avatar.sm { width:28px; height:28px; font-size:12px; }
+  #auth-menu { position:relative; }
+  .auth-dropdown { position:absolute; right:0; top:calc(100% + 8px); width:240px; background:#fff; border:1px solid rgba(46,52,64,.1); border-radius:14px; box-shadow:0 12px 32px rgba(46,52,64,.14); padding:8px; opacity:0; transform:translateY(-4px); pointer-events:none; transition:opacity .15s ease, transform .15s ease; z-index:40; }
+  #auth-menu.is-open .auth-dropdown { opacity:1; transform:none; pointer-events:auto; }
+  .auth-dropdown button { width:100%; text-align:left; display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:9px; font-size:14px; color:#2E3440; }
+  .auth-dropdown button:hover { background:#F0F2F5; }
+  .auth-modal { position:fixed; inset:0; z-index:70; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(46,52,64,.45); opacity:0; pointer-events:none; transition:opacity .2s ease; }
+  .auth-modal.is-open { opacity:1; pointer-events:auto; }
+  .auth-card { width:100%; max-width:400px; max-height:calc(100vh - 32px); overflow-y:auto; background:#fff; border-radius:20px; padding:28px 24px 24px; box-shadow:0 24px 60px rgba(46,52,64,.25); transform:translateY(10px) scale(.98); transition:transform .2s ease; position:relative; }
+  .auth-modal.is-open .auth-card { transform:none; }
+  .auth-tabs { display:grid; grid-template-columns:1fr 1fr; background:#F0F2F5; border-radius:12px; padding:4px; margin-bottom:18px; }
+  .auth-tabs button { padding:8px; border-radius:9px; font-size:14px; font-weight:600; color:#6B7280; transition:all .15s ease; }
+  .auth-tabs button.active { background:#fff; color:#000080; box-shadow:0 1px 4px rgba(46,52,64,.1); }
+  .auth-field label { display:block; font-size:12.5px; font-weight:600; color:#2E3440; margin-bottom:5px; }
+  .auth-field input { width:100%; border:1px solid rgba(46,52,64,.15); border-radius:11px; padding:10px 12px; font-size:14.5px; outline:none; transition:border-color .15s ease, box-shadow .15s ease; }
+  .auth-field input:focus { border-color:#000080; box-shadow:0 0 0 3px #E6E6F2; }
+  .auth-msg { font-size:13px; border-radius:10px; padding:0; }
+  .auth-msg.err { background:#FBE3E2; color:#b23b38; padding:9px 12px; }
+  .auth-msg.ok { background:#E6F4EA; color:#1e6b3a; padding:9px 12px; }
+  .auth-divider { display:flex; align-items:center; gap:10px; color:#6B7280; font-size:12px; margin:16px 0; }
+  .auth-divider::before, .auth-divider::after { content:""; flex:1; height:1px; background:rgba(46,52,64,.1); }
+  .auth-google { width:100%; display:flex; align-items:center; justify-content:center; gap:10px; padding:10px; border:1px solid rgba(46,52,64,.15); border-radius:11px; font-size:14px; font-weight:600; color:#2E3440; background:#fff; transition:background .15s ease; }
+  .auth-google:hover { background:#F7F8FA; }
+  .admin-stat { border-radius:16px; padding:16px 18px; border:1px solid; }
+  .admin-stat p.num { font-size:30px; font-weight:800; line-height:1.1; }
+  .admin-table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  .admin-table th { text-align:left; font-size:12px; font-weight:600; color:#6B7280; padding:10px 12px; background:#F7F8FA; border-bottom:1px solid rgba(46,52,64,.08); white-space:nowrap; }
+  .admin-table td { padding:10px 12px; border-bottom:1px solid rgba(46,52,64,.06); vertical-align:middle; }
+  .admin-table tr:hover td { background:#FAFBFC; }
+  .admin-badge { font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:9999px; background:#FFE8D1; color:#FF7D00; }
 </style>
 </head>
 <body class="antialiased">
@@ -601,10 +637,38 @@
 <button class="nav-link" data-nav-btn="" data-target="about"><span class="nav-dot"></span> giới thiệu về TN</button>
 <button class="nav-link" data-nav-btn="" data-target="chinese"><span class="nav-dot"></span> học tiếng trung</button>
 <button class="nav-link" data-nav-btn="" data-target="abroad"><span class="nav-dot"></span> du học Trung Quốc</button>
+<button class="nav-link" data-admin-only="" data-nav-btn="" data-target="admin" style="display:none"><span class="nav-dot"></span> quản trị</button>
 </nav>
+<div class="flex items-center gap-2 shrink-0">
+<button class="auth-btn" data-auth-guest="" data-auth-open="login" type="button">
+<svg fill="none" height="15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="15"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" x2="3" y1="12" y2="12"></line></svg>
+<span>Đăng nhập</span>
+</button>
+<div data-auth-user="" id="auth-menu" style="display:none">
+<button aria-label="Tài khoản" class="flex items-center gap-2 rounded-full p-0.5 pr-1 hover:bg-ink/5 focus-ring" id="auth-avatar-btn" type="button">
+<span class="auth-avatar" data-auth-initial="">?</span>
+<svg class="hidden sm:block text-slate" fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="14"><polyline points="6 9 12 15 18 9"></polyline></svg>
+</button>
+<div class="auth-dropdown">
+<div class="px-2.5 pt-1.5 pb-3 mb-1 border-b border-ink/10">
+<p class="font-semibold text-ink text-sm truncate" data-auth-name=""></p>
+<p class="text-xs text-slate truncate" data-auth-email=""></p>
+<p class="text-[11px] text-peach font-semibold mt-1" data-auth-role=""></p>
+</div>
+<button data-admin-only="" data-go-admin="" style="display:none" type="button">
+<svg fill="none" height="16" stroke="#000080" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="7" width="7" x="3" y="3"></rect><rect height="7" width="7" x="14" y="3"></rect><rect height="7" width="7" x="14" y="14"></rect><rect height="7" width="7" x="3" y="14"></rect></svg>
+Trang quản trị
+</button>
+<button data-auth-logout="" type="button">
+<svg fill="none" height="16" stroke="#D6524F" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" x2="9" y1="12" y2="12"></line></svg>
+Đăng xuất
+</button>
+</div>
+</div>
 <button aria-label="Mở menu điều hướng" class="lg:hidden p-2 rounded-lg hover:bg-ink/5 focus-ring shrink-0" id="drawer-open">
 <svg fill="none" height="22" stroke="currentColor" stroke-linecap="round" stroke-width="2" viewbox="0 0 24 24" width="22"><line x1="3" x2="21" y1="6" y2="6"></line><line x1="3" x2="21" y1="12" y2="12"></line><line x1="3" x2="21" y1="18" y2="18"></line></svg>
 </button>
+</div>
 </div>
 </header>
 <!-- Mobile drawer overlay + panel (chỉ dùng cho màn hình nhỏ, khi navbar ngang không đủ chỗ hiện hết tab) -->
@@ -624,8 +688,18 @@
 <button class="nav-link" data-nav-btn="" data-target="about"><span class="nav-dot"></span> giới thiệu về TN</button>
 <button class="nav-link" data-nav-btn="" data-target="chinese"><span class="nav-dot"></span> học tiếng trung</button>
 <button class="nav-link" data-nav-btn="" data-target="abroad"><span class="nav-dot"></span> du học Trung Quốc</button>
+<button class="nav-link" data-admin-only="" data-nav-btn="" data-target="admin" style="display:none"><span class="nav-dot"></span> quản trị</button>
 </nav>
 <div class="mt-auto pt-6 border-t border-ink/10">
+<div class="mb-4" data-auth-guest="">
+<button class="auth-btn w-full justify-center mb-2" data-auth-open="login" type="button">Đăng nhập</button>
+<button class="auth-btn ghost w-full justify-center" data-auth-open="register" type="button">Tạo tài khoản</button>
+</div>
+<div class="mb-4 flex items-center gap-3" data-auth-user="" style="display:none">
+<span class="auth-avatar" data-auth-initial="">?</span>
+<div class="min-w-0 flex-1"><p class="text-sm font-semibold text-ink truncate" data-auth-name=""></p><p class="text-xs text-slate truncate" data-auth-email=""></p></div>
+<button class="text-xs font-semibold text-seal px-2 py-1 rounded-lg hover:bg-seal-light" data-auth-logout="" type="button">Đăng xuất</button>
+</div>
 <p class="text-[12px] text-slate leading-relaxed">Phiên bản thử nghiệm.</p>
 </div>
 </aside>
@@ -1726,6 +1800,39 @@ nhớ" rows="4"></textarea>
   </div>
 </div>
 
+</section>
+<!-- ===== TRANG QUẢN TRỊ (chỉ tài khoản có role = "admin" mới xem được dữ liệu) ===== -->
+<section class="page-section" data-page="" id="admin">
+<div class="flex flex-wrap items-end justify-between gap-3 mb-6">
+<div>
+<p class="text-peach font-semibold text-sm tracking-wide mb-1">Quản trị</p>
+<h1 class="text-2xl sm:text-3xl font-extrabold text-ink">Người dùng tndihoc</h1>
+</div>
+</div>
+<div class="rounded-2xl bg-mint-light px-6 py-10 text-center" id="admin-locked">
+<p class="text-sm text-slate mb-4" id="admin-locked-text">Vui lòng đăng nhập bằng tài khoản quản trị để xem trang này.</p>
+<button class="auth-btn" data-auth-guest="" data-auth-open="login" type="button">Đăng nhập</button>
+</div>
+<div id="admin-panel" style="display:none">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+<div class="admin-stat bg-mint-light border-mint-border"><p class="text-xs font-semibold text-mint mb-1">Tổng người dùng</p><p class="num text-mint" id="admin-stat-total">—</p></div>
+<div class="admin-stat bg-peach-light border-peach-border"><p class="text-xs font-semibold text-peach mb-1">Đăng ký 7 ngày qua</p><p class="num text-peach" id="admin-stat-new">—</p></div>
+<div class="admin-stat bg-sky-light border-sky-border"><p class="text-xs font-semibold text-sky mb-1">Truy cập hôm nay</p><p class="num text-sky" id="admin-stat-today">—</p></div>
+<div class="admin-stat bg-seal-light border-seal-border"><p class="text-xs font-semibold text-seal mb-1">Quản trị viên</p><p class="num text-seal" id="admin-stat-admin">—</p></div>
+</div>
+<div class="flex flex-wrap items-center gap-2 mb-3">
+<input class="flex-1 min-w-[180px] text-sm rounded-xl border border-ink/15 px-3 py-2 focus-ring" id="admin-search" placeholder="Tìm theo tên hoặc email…" type="search"/>
+<button class="auth-btn ghost" id="admin-refresh" type="button">↻ Làm mới</button>
+<button class="auth-btn ghost" id="admin-export" type="button">⤓ Tải CSV</button>
+</div>
+<div class="flex justify-between text-xs text-slate mb-2"><span id="admin-count"></span><span id="admin-status"></span></div>
+<div class="rounded-2xl border border-ink/10 overflow-x-auto">
+<table class="admin-table">
+<thead><tr><th>#</th><th>Họ tên</th><th>Email</th><th>Ngày đăng ký</th><th>Truy cập gần nhất</th><th class="text-center">Số lần truy cập</th></tr></thead>
+<tbody id="admin-tbody"></tbody>
+</table>
+</div>
+</div>
 </section>
 </div>
 </main>
@@ -15898,5 +16005,40 @@ const readingLessons = [{"id": "hsk2-01", "title": "Tự giới thiệu bản th
     });
 })();
 </script>
+<!-- ===== Modal Đăng nhập / Đăng ký ===== -->
+<div aria-modal="true" class="auth-modal" id="auth-modal" role="dialog">
+<div class="auth-card">
+<button aria-label="Đóng" class="absolute top-3 right-3 p-2 rounded-lg hover:bg-ink/5 text-slate" id="auth-close" type="button">
+<svg fill="none" height="18" stroke="currentColor" stroke-linecap="round" stroke-width="2" viewbox="0 0 24 24" width="18"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
+</button>
+<p class="font-hanzi text-3xl text-mint mb-1">欢迎</p>
+<h2 class="text-xl font-extrabold text-ink" id="auth-title">Chào mừng quay lại</h2>
+<p class="text-sm text-slate mb-5" id="auth-sub">Một tài khoản — học trên mọi thiết bị.</p>
+<div class="auth-tabs" id="auth-tabs">
+<button class="active" data-auth-tab="login" type="button">Đăng nhập</button>
+<button data-auth-tab="register" type="button">Đăng ký</button>
+</div>
+<form class="flex flex-col gap-3.5" id="auth-form" novalidate="">
+<div class="auth-field" id="auth-name-row" style="display:none"><label for="auth-name">Họ và tên</label><input autocomplete="name" id="auth-name" placeholder="Nguyễn Văn A" type="text"/></div>
+<div class="auth-field"><label for="auth-email">Email</label><input autocomplete="email" id="auth-email" placeholder="email@gmail.com" type="email"/></div>
+<div class="auth-field" id="auth-pass-row"><label for="auth-pass">Mật khẩu</label><input autocomplete="current-password" id="auth-pass" placeholder="Ít nhất 6 ký tự" type="password"/></div>
+<div class="auth-field" id="auth-pass2-row" style="display:none"><label for="auth-pass2">Nhập lại mật khẩu</label><input autocomplete="new-password" id="auth-pass2" placeholder="Nhập lại mật khẩu" type="password"/></div>
+<div class="flex justify-between -mt-1">
+<button class="text-xs text-mint font-semibold hover:underline" id="auth-forgot" type="button">Quên mật khẩu?</button>
+<button class="text-xs text-mint font-semibold hover:underline" id="auth-back" style="display:none" type="button">← Quay lại đăng nhập</button>
+</div>
+<p class="auth-msg" id="auth-msg" role="alert"></p>
+<button class="auth-btn justify-center py-2.5 text-[15px]" id="auth-submit" type="submit">Đăng nhập</button>
+</form>
+<div id="auth-google-wrap">
+<div class="auth-divider">hoặc</div>
+<button class="auth-google" id="auth-google" type="button">
+<svg height="18" viewbox="0 0 48 48" width="18"><path d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z" fill="#FFC107"></path><path d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" fill="#FF3D00"></path><path d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z" fill="#4CAF50"></path><path d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z" fill="#1976D2"></path></svg>
+Tiếp tục với Google
+</button>
+</div>
+</div>
+</div>
+<script src="auth.js" type="module"></script>
 </body>
 </html>
