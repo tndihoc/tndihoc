@@ -290,6 +290,20 @@
     transition: background-color .15s ease, color .15s ease, border-color .15s ease;
   }
   .baidoc-pill.active { background: #FF7D00; color: #fff; border-color: #FF7D00; }
+  /* Bộ chọn cấp độ Bài đọc: khối vuông chuyển màu tông tím (oải hương nhạt → tím đậm) */
+  .baidoc-level {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    border-radius: 16px; padding: 20px 8px; border: 4px solid transparent;
+    transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  .baidoc-level:hover { transform: translateY(-2px); }
+  .baidoc-level.active { border-color: #2E3440; box-shadow: 0 10px 20px rgba(82,50,158,.22); transform: scale(1.03); }
+  .baidoc-level .bd-check {
+    display: none; position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; border-radius: 9999px;
+    background: #fff; color: #7C5CD6; font-size: 11px; font-weight: 700; align-items: center; justify-content: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,.15);
+  }
+  .baidoc-level.active .bd-check { display: flex; }
   .baidoc-card {
     text-align: left; background: #fff; border: 1px solid rgba(46,52,64,0.1); border-radius: 18px;
     padding: 18px 20px; cursor: pointer; opacity: 0; animation: fadeUp .4s ease both;
@@ -1397,13 +1411,33 @@ nhớ" rows="4"></textarea>
 <span class="seal-stamp" style="width:30px;height:30px;font-size:12px;background:#FF7D00;color:#FFE8D1;">读</span>
 <h3 class="font-sans font-semibold text-xl text-ink">Bài đọc</h3>
 </div>
-<div class="flex flex-wrap gap-2 mb-6" id="baidoc-filter-pills">
-<button class="baidoc-pill active focus-ring" data-baidoc-filter="all">Tất cả</button>
-<button class="baidoc-pill focus-ring" data-baidoc-filter="2">Hsk 2</button>
-<button class="baidoc-pill focus-ring" data-baidoc-filter="3">Hsk 3</button>
-<button class="baidoc-pill focus-ring" data-baidoc-filter="4">Hsk 4</button>
-<button class="baidoc-pill focus-ring" data-baidoc-filter="5">Hsk 5</button>
-<button class="baidoc-pill focus-ring" data-baidoc-filter="6">Hsk 6</button>
+<div class="bg-ink/[0.04] rounded-3xl p-3 sm:p-4 mb-6" id="baidoc-filter-pills">
+<div class="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
+<button class="baidoc-level active focus-ring" data-baidoc-filter="all" style="background:#F5F0FF;color:#3B1F6E;">
+<span class="bd-check">✓</span>
+<span class="text-base font-black">Tất cả</span>
+</button>
+<button class="baidoc-level focus-ring" data-baidoc-filter="2" style="background:#E6DAFD;color:#3B1F6E;">
+<span class="bd-check">✓</span>
+<span class="text-base font-black">HSK 2</span>
+</button>
+<button class="baidoc-level focus-ring" data-baidoc-filter="3" style="background:#CDB8FA;color:#2E1760;">
+<span class="bd-check">✓</span>
+<span class="text-base font-black">HSK 3</span>
+</button>
+<button class="baidoc-level focus-ring" data-baidoc-filter="4" style="background:#A98BF0;color:#24104F;">
+<span class="bd-check">✓</span>
+<span class="text-base font-black">HSK 4</span>
+</button>
+<button class="baidoc-level focus-ring" data-baidoc-filter="5" style="background:#7C5CD6;color:#FFFFFF;">
+<span class="bd-check">✓</span>
+<span class="text-base font-black">HSK 5</span>
+</button>
+<button class="baidoc-level focus-ring" data-baidoc-filter="6" style="background:#52329E;color:#FFFFFF;">
+<span class="bd-check">✓</span>
+<span class="text-base font-black">HSK 6</span>
+</button>
+</div>
 </div>
 <!-- LIST VIEW -->
 <div class="grid sm:grid-cols-2 gap-4" id="baidoc-list"></div>
@@ -15958,9 +15992,9 @@ const readingLessons = [{"id": "hsk2-01", "title": "Tự giới thiệu bản th
 
   document.getElementById('baidoc-back').addEventListener('click', backToList);
 
-  pillsWrap.querySelectorAll('.baidoc-pill').forEach(pill => {
+  pillsWrap.querySelectorAll('.baidoc-level').forEach(pill => {
     pill.addEventListener('click', () => {
-      pillsWrap.querySelectorAll('.baidoc-pill').forEach(p => p.classList.remove('active'));
+      pillsWrap.querySelectorAll('.baidoc-level').forEach(p => p.classList.remove('active'));
       pill.classList.add('active');
       currentFilter = pill.dataset.baidocFilter;
       renderList();
