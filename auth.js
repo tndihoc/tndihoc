@@ -1,5 +1,5 @@
 /* =====================================================================
-   ĐĂNG NHẬP / ĐĂNG KÝ + TRANG QUẢN TRỊ (ADMIN) + BẢNG XẾP HẠNG — tndihoc
+   ĐĂNG NHẬP / ĐĂNG KÝ + TRANG QUẢN TRỊ (ADMIN) + BẢNG XẾP HẠNG + ĐỒNG BỘ TIẾN ĐỘ — tndihoc
    ---------------------------------------------------------------------
    Dùng Firebase (dịch vụ miễn phí của Google) để lưu tài khoản người dùng,
    nhờ vậy 1 tài khoản đăng nhập được trên mọi thiết bị.
@@ -216,6 +216,7 @@ function toggleMenu(force) {
 
 async function logout() {
   toggleMenu(false);
+  await syncBeforeLogout();
   if (state.fb) await state.fb.A.signOut(state.fb.auth);
   if (location.hash === "#admin") location.hash = "#home";
 }
@@ -497,6 +498,178 @@ function lbBind() {
   lbState.tick = setInterval(() => { if (lbVisible()) lbTickCountdown(); }, 60000);
 }
 
+/* ---------- ĐỒNG BỘ TIẾN ĐỘ HỌC THEO TÀI KHOẢN ----------
+   Chuỗi ngày học, từ đã nhớ, sổ tay từ vựng, kỷ lục trò chơi vốn lưu riêng trên từng máy
+   (localStorage). Khi đã đăng nhập, các dữ liệu này được lưu thêm lên Firestore tại
+   progress/{uid}, để học trên máy nào cũng thấy cùng 1 tiến độ.
+   - Lần đầu đăng nhập trên 1 máy: gộp tiến độ đang có trên máy (lúc học chưa đăng nhập) với tiến độ trên tài khoản.
+   - Những lần sau: lấy tiến độ trên tài khoản làm chuẩn (kể cả khi đã xoá từ khỏi sổ tay ở máy khác).
+   - Đăng xuất: xoá tiến độ khỏi máy (đã lưu an toàn trên tài khoản), để người sau dùng máy không bị lẫn.
+------------------------------------------------------------------ */
+const SYNC_KEYS = ["tndihoc_notebook_v1", "tn_streak_v1", "tn_vocab_mastery_v1", "tndihoc_qz_best", "tndihoc_ar_best_streak"];
+const SYNC_PREFIXES = ["tndihoc_mu_best_"];
+const SYNC_META = "tn_sync_meta_v1"; // { uid, dirty }
+const syncState = { ready: false, timer: null, pushing: null, lastOk: null, applying: false };
+const rawSet = Storage.prototype.setItem, rawRemove = Storage.prototype.removeItem, rawGet = Storage.prototype.getItem;
+
+function isSyncKey(k) { return SYNC_KEYS.includes(k) || SYNC_PREFIXES.some(p => String(k).startsWith(p)); }
+function syncKeysPresent() {
+  const out = [];
+  for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (isSyncKey(k)) out.push(k); }
+  return out;
+}
+function readMeta() { try { return JSON.parse(rawGet.call(localStorage, SYNC_META) || "{}") || {}; } catch (e) { return {}; } }
+function writeMeta(m) { try { rawSet.call(localStorage, SYNC_META, JSON.stringify(m)); } catch (e) {} }
+function localSnapshot() {
+  const d = {};
+  syncKeysPresent().forEach(k => { const v = rawGet.call(localStorage, k); if (v != null) d[k] = v; });
+  return d;
+}
+
+/* Theo dõi mọi lần web lưu tiến độ → đánh dấu "chưa đồng bộ" và hẹn lưu lên tài khoản sau 2 giây */
+Storage.prototype.setItem = function (k, v) {
+  rawSet.call(this, k, v);
+  if (this === localStorage && !syncState.applying && isSyncKey(k)) onLocalProgressChange();
+};
+Storage.prototype.removeItem = function (k) {
+  rawRemove.call(this, k);
+  if (this === localStorage && !syncState.applying && isSyncKey(k)) onLocalProgressChange();
+};
+function onLocalProgressChange() {
+  const m = readMeta();
+  if (!m.uid) return;                                   // máy chưa gắn tài khoản (khách): chỉ lưu trên máy như trước
+  if (state.user && m.uid !== state.user.uid) return;
+  // Đánh dấu "chưa đồng bộ" kể cả khi chưa kết nối được Firebase (mất mạng / chưa bật VPN),
+  // để lần sau kết nối được sẽ gộp lên tài khoản thay vì bị ghi đè.
+  if (!m.dirty) writeMeta({ ...m, dirty: true });
+  if (!state.user || !syncState.ready) return;
+  clearTimeout(syncState.timer);
+  syncState.timer = setTimeout(pushProgress, 2000);
+  setSyncStatus("Đang lưu tiến độ…");
+}
+
+async function pushProgress() {
+  clearTimeout(syncState.timer);
+  if (!state.user || !state.fb || !syncState.ready) return;
+  const uid = state.user.uid;
+  const { db, D } = state.fb;
+  const run = (async () => {
+    try {
+      await D.setDoc(D.doc(db, "progress", uid), { data: localSnapshot(), updatedAt: D.serverTimestamp() });
+      if (state.user && state.user.uid === uid) {
+        writeMeta({ uid, dirty: false });
+        syncState.lastOk = new Date();
+        setSyncStatus("☁️ Tiến độ đã lưu vào tài khoản");
+      }
+    } catch (err) {
+      console.error("Lưu tiến độ lên tài khoản lỗi:", err);
+      setSyncStatus(err.code === "permission-denied" ? "⚠️ Chưa lưu được tiến độ (cần cập nhật Rules)" : "⚠️ Chưa lưu được tiến độ — sẽ thử lại");
+      if (err.code !== "permission-denied") syncState.timer = setTimeout(pushProgress, 30000);
+    }
+  })();
+  syncState.pushing = run;
+  return run;
+}
+
+/* ---- Gộp 2 bản tiến độ (dùng khi lần đầu đăng nhập trên máy, hoặc máy có thay đổi chưa kịp lưu) ---- */
+function parseJ(s, fb) { try { const v = JSON.parse(s); return v == null ? fb : v; } catch (e) { return fb; } }
+function mergeValue(k, a, b) {
+  if (a == null) return b;
+  if (b == null) return a;
+  if (k === "tndihoc_notebook_v1") {
+    const map = new Map();
+    [...parseJ(a, []), ...parseJ(b, [])].forEach(w => {
+      if (!w || !w.hanzi) return;
+      const id = w.hanzi + "|" + (w.pinyin || "");
+      const o = map.get(id);
+      if (!o) map.set(id, { ...w });
+      else { o.wrongCount = Math.max(o.wrongCount || 1, w.wrongCount || 1); o.updatedAt = Math.max(o.updatedAt || 0, w.updatedAt || 0); if (!o.mean && w.mean) o.mean = w.mean; }
+    });
+    return JSON.stringify([...map.values()]);
+  }
+  if (k === "tn_streak_v1") {
+    const x = parseJ(a, {}), y = parseJ(b, {});
+    const dates = [...new Set([...(x.studyDates || []), ...(y.studyDates || [])])].sort();
+    const tx = x.todayFlashcards || {}, ty = y.todayFlashcards || {};
+    let today = tx.date === ty.date ? { date: tx.date, seen: [...new Set([...(tx.seen || []), ...(ty.seen || [])])] }
+      : ((tx.date || "") > (ty.date || "") ? tx : ty);
+    return JSON.stringify({
+      ...y, ...x,
+      studyDates: dates,
+      longestStreak: Math.max(x.longestStreak || 0, y.longestStreak || 0),
+      lastStudyDate: dates.length ? dates[dates.length - 1] : null,
+      todayFlashcards: today,
+      celebratedMilestones: [...new Set([...(x.celebratedMilestones || []), ...(y.celebratedMilestones || [])])],
+    });
+  }
+  if (k === "tn_vocab_mastery_v1") {
+    const x = parseJ(a, {}), y = parseJ(b, {});
+    const days = { ...(y.days || {}) };
+    Object.entries(x.days || {}).forEach(([d, list]) => { days[d] = [...new Set([...(days[d] || []), ...(list || [])])]; });
+    return JSON.stringify({ ...y, ...x, days });
+  }
+  if (k.startsWith("tndihoc_mu_best_")) return String(Math.min(Number(a) || Infinity, Number(b) || Infinity)); // thời gian: càng nhỏ càng tốt
+  return String(Math.max(Number(a) || 0, Number(b) || 0)); // điểm / streak: càng lớn càng tốt
+}
+
+function applyToLocal(data) {
+  syncState.applying = true;
+  try {
+    syncKeysPresent().forEach(k => { if (!(k in data)) rawRemove.call(localStorage, k); });
+    Object.entries(data).forEach(([k, v]) => { if (isSyncKey(k) && typeof v === "string") rawSet.call(localStorage, k, v); });
+  } finally { syncState.applying = false; }
+  refreshProgressUI();
+}
+function refreshProgressUI() {
+  ["__tnReloadStreak", "__tnReloadVocab", "renderNotebookUI", "updateNotebookPillLabels", "updateFcNotebookBadge"]
+    .forEach(fn => { try { if (typeof window[fn] === "function") window[fn](); } catch (e) { console.error(fn, e); } });
+}
+
+async function syncOnLogin(user) {
+  syncState.ready = false;
+  const { db, D } = state.fb;
+  setSyncStatus("Đang tải tiến độ từ tài khoản…");
+  try {
+    const snap = await D.getDoc(D.doc(db, "progress", user.uid));
+    if (!state.user || state.user.uid !== user.uid) return;
+    const cloud = (snap.exists() && snap.data().data) || {};
+    const local = localSnapshot();
+    const meta = readMeta();
+    let result, needPush;
+    if (meta.uid && meta.uid !== user.uid) {          // tiến độ trên máy là của tài khoản khác → bỏ, dùng bản của tài khoản
+      result = cloud; needPush = false;
+    } else if (!meta.uid || meta.dirty) {             // tiến độ học lúc chưa đăng nhập / chưa kịp lưu → gộp
+      result = {};
+      new Set([...Object.keys(local), ...Object.keys(cloud)]).forEach(k => { result[k] = mergeValue(k, local[k], cloud[k]); });
+      needPush = JSON.stringify(result) !== JSON.stringify(cloud);
+    } else {                                           // máy đã đồng bộ trước đó → bản trên tài khoản là mới nhất
+      result = cloud; needPush = false;
+    }
+    applyToLocal(result);
+    writeMeta({ uid: user.uid, dirty: needPush });
+    syncState.ready = true;
+    if (needPush) await pushProgress(); else setSyncStatus("☁️ Tiến độ đã đồng bộ với tài khoản");
+  } catch (err) {
+    console.error("Tải tiến độ từ tài khoản lỗi:", err);
+    setSyncStatus(err.code === "permission-denied" ? "⚠️ Chưa đồng bộ được tiến độ (cần cập nhật Rules)" : "⚠️ Chưa đồng bộ được tiến độ");
+  }
+}
+
+/* Gọi trước khi đăng xuất: lưu nốt thay đổi còn dở, rồi xoá tiến độ khỏi máy */
+async function syncBeforeLogout() {
+  try {
+    if (readMeta().dirty) await pushProgress();
+    else if (syncState.pushing) await syncState.pushing;
+  } catch (e) {}
+  syncState.ready = false;
+  clearTimeout(syncState.timer);
+  if (readMeta().dirty) return; // chưa lưu được lên tài khoản → giữ lại trên máy để không mất
+  applyToLocal({});
+  try { rawRemove.call(localStorage, SYNC_META); } catch (e) {}
+}
+
+function setSyncStatus(t) { document.querySelectorAll("[data-sync-status]").forEach(el => el.textContent = t || ""); }
+
 function watchAuth(fb) {
   const { auth, A } = fb;
   A.onAuthStateChanged(auth, async (user) => {
@@ -508,12 +681,15 @@ function watchAuth(fb) {
       try { state.profile = await ensureProfile(user); } catch (err) { console.error(err); }
     }
     renderUser();
+    if (user) await syncOnLogin(user); else setSyncStatus("");
   });
 }
 
 (async function init() {
   bind();
   lbBind();
+  // Rời trang / chuyển app khi còn thay đổi chưa lưu → cố gắng lưu ngay
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && readMeta().dirty && syncState.ready) pushProgress(); });
   renderUser();
   await startLoadFb();
   if (!state.fb) console.info("tndihoc: chưa tải được Firebase — sẽ thử lại khi người dùng bấm Đăng nhập.");
