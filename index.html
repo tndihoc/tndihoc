@@ -13213,7 +13213,9 @@ Trang quản trị
       }
       if (selectedWord && selectedMean) {
         locked = true;
-        const isMatch = selectedWord.word.__muId === selectedMean.word.__muId;
+        const sw = selectedWord.word, sm = selectedMean.word;
+        const isMatch = sw.__muId === sm.__muId || sw.hanzi === sm.hanzi ||
+          (sw.mean || '').trim().toLowerCase() === (sm.mean || '').trim().toLowerCase();
         if (isMatch) {
           sndCorrect();
           if (window.trackWordMemorized) window.trackWordMemorized(selectedWord.word);
@@ -13722,8 +13724,11 @@ Trang quản trị
     }
     if (rxQueue.length === 0) return null;
     const activeKeys = new Set(rxActive.map(t => rxWordKey(t)));
-    let idx = rxQueue.findIndex(w => !activeKeys.has(rxWordKey(w)));
-    if (idx === -1) idx = 0; // không tìm được từ không trùng (hiếm khi gần hết hàng đợi) -> vẫn lấy đại
+    const activeMeans = new Set(rxActive.map(t => (t.mean || '').trim()));
+    const idx = rxQueue.findIndex(w => !activeKeys.has(rxWordKey(w)) && !activeMeans.has((w.mean || '').trim()));
+    // Không còn từ nào khác với các từ đang trên bàn -> tạm chưa đưa thêm, đợi từ đó được ghép xong
+    // (tránh 2 cặp giống hệt nhau cùng xuất hiện gây nhầm lẫn).
+    if (idx === -1) return null;
     return rxQueue.splice(idx, 1)[0];
   }
 
@@ -13740,7 +13745,7 @@ Trang quản trị
       btn.innerHTML = `<span class="rx-tile-mean-text text-ink">${word.mean}</span>`;
     }
     btn.addEventListener('animationend', () => btn.classList.remove('rx-tile-enter'), { once: true });
-    btn.addEventListener('click', () => rxHandleTileClick(word.uid, type, btn));
+    btn.addEventListener('click', () => rxHandleTileClick(btn.dataset.rxUid, type, btn));
     return btn;
   }
 
@@ -13821,7 +13826,45 @@ Trang quản trị
     const first = rxSelected;
     const second = { uid, type, el };
     rxBusy = true;
-    const isMatch = first.uid === second.uid;
+    // Chấp nhận đúng nếu: cùng 1 cặp, HOẶC cùng chữ Hán, HOẶC nghĩa tiếng Việt giống hệt nhau
+    // (phòng trường hợp 2 từ đồng nghĩa / 2 bản lặp của cùng 1 từ cùng nằm trên bàn).
+    const tA = rxActive.find(t => t.uid === first.uid);
+    const tB = rxActive.find(t => t.uid === second.uid);
+    const isMatch = first.uid === second.uid || (!!tA && !!tB && (
+      tA.hanzi === tB.hanzi ||
+      (tA.mean || '').trim().toLowerCase() === (tB.mean || '').trim().toLowerCase()
+    ));
+
+    if (isMatch && first.uid !== second.uid) {
+      // Ghép chéo giữa 2 cặp: 2 ô còn lại (của 2 cặp) gộp thành 1 cặp mới để vẫn ghép được với nhau.
+      const wordTile = first.type === 'word' ? tA : tB;
+      const meanTile = first.type === 'word' ? tB : tA;
+      // wordTile mất ô chữ, meanTile mất ô nghĩa -> ô nghĩa còn lại của wordTile chuyển sang meanTile.
+      meanTile.meanEl = wordTile.meanEl;
+      meanTile.meanEl.dataset.rxUid = meanTile.uid;
+      rxActive = rxActive.filter(t => t !== wordTile);
+      // tính điểm cho từ của ô chữ Hán được chọn
+      if (window.trackWordMemorized) window.trackWordMemorized(wordTile);
+      const k = rxWordKey(wordTile);
+      rxCorrectCounts[k] = (rxCorrectCounts[k] || 0) + 1;
+      if (rxMode === 'unit' && rxCorrectCounts[k] <= (rxRepeatTarget[k] || RX_MIN_REPEATS)) rxTotalDone++;
+      first.el.classList.add('is-correct');
+      second.el.classList.add('is-correct');
+      rxUpdateProgress();
+      setTimeout(() => {
+        rxReflow(() => {
+          first.el.remove();
+          second.el.remove();
+          rxFillBoard();
+        });
+        rxSelected = null;
+        rxBusy = false;
+        if (rxMode === 'unit' && rxTotalDone >= rxTotalRequired && rxTotalRequired > 0) {
+          rxShowComplete();
+        }
+      }, 320);
+      return;
+    }
 
     if (isMatch) {
       first.el.classList.add('is-correct');
@@ -14935,6 +14978,6 @@ Tiếp tục với Google
 </div>
 </div>
 </div>
-<script src="auth.js" type="module"></script>
+<script src="auth.js?v=20260924" type="module"></script>
 </body>
 </html>

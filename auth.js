@@ -127,9 +127,28 @@ function setBusy(b) {
   $("auth-submit").style.opacity = b ? ".6" : "";
 }
 
+/* ---------- Đảm bảo Firebase đã tải xong trước khi đăng nhập/đăng ký ---------- */
+let fbPromise = null;
+function startLoadFb() {
+  if (!fbPromise) {
+    fbPromise = loadFirebase().then(fb => { state.fb = fb; if (fb) watchAuth(fb); return fb; })
+      .catch(err => { console.error("Không tải được Firebase:", err); fbPromise = null; return null; });
+  }
+  return fbPromise;
+}
+async function ensureFb() {
+  if (state.fb) return true;
+  if (!CONFIG_READY) { showMsg("Chức năng tài khoản chưa được cấu hình (thiếu firebaseConfig trong file auth.js)."); return false; }
+  showMsg("Đang kết nối máy chủ đăng nhập…", true);
+  const fb = await Promise.race([startLoadFb(), new Promise(r => setTimeout(() => r(null), 15000))]);
+  if (fb) { showMsg(""); return true; }
+  showMsg("Không kết nối được máy chủ đăng nhập (dịch vụ của Google). Hãy kiểm tra mạng rồi tải lại trang. Nếu bạn đang ở Trung Quốc, cần bật VPN mới đăng nhập được.");
+  return false;
+}
+
 async function handleSubmit(e) {
   e.preventDefault();
-  if (!state.fb) { showMsg("Chức năng tài khoản chưa được cấu hình (thiếu firebaseConfig trong file auth.js)."); return; }
+  if (!(await ensureFb())) return;
   const { auth, A } = state.fb;
   const email = $("auth-email").value.trim();
   const pass = $("auth-pass").value;
@@ -156,7 +175,12 @@ async function handleSubmit(e) {
 }
 
 async function handleGoogle() {
-  if (!state.fb) { showMsg("Chức năng tài khoản chưa được cấu hình (thiếu firebaseConfig trong file auth.js)."); return; }
+  // Trình duyệt trong ứng dụng (Facebook, Messenger, Zalo, Instagram, TikTok, WeChat...) bị Google chặn đăng nhập.
+  if (/FBAN|FBAV|FB_IAB|Messenger|Instagram|Zalo|TikTok|musical_ly|Line\/|MicroMessenger/i.test(navigator.userAgent)) {
+    showMsg("Đăng nhập Google không dùng được trong trình duyệt của Facebook/Zalo/Messenger. Hãy bấm dấu ⋯ góc trên → \"Mở bằng trình duyệt\" (Chrome/Safari), hoặc đăng nhập bằng email + mật khẩu.");
+    return;
+  }
+  if (!(await ensureFb())) return;
   const { auth, A } = state.fb;
   setBusy(true); showMsg("");
   try {
@@ -292,17 +316,8 @@ function bind() {
   $("admin-export").addEventListener("click", exportCsv);
 }
 
-(async function init() {
-  bind();
-  renderUser();
-  try {
-    state.fb = await loadFirebase();
-  } catch (err) {
-    console.error("Không tải được Firebase:", err);
-    return;
-  }
-  if (!state.fb) { console.info("tndihoc: chưa dán firebaseConfig vào auth.js nên chức năng đăng nhập đang tắt."); return; }
-  const { auth, A } = state.fb;
+function watchAuth(fb) {
+  const { auth, A } = fb;
   A.onAuthStateChanged(auth, async (user) => {
     state.user = user;
     state.adminUsers = [];
@@ -313,4 +328,11 @@ function bind() {
     }
     renderUser();
   });
+}
+
+(async function init() {
+  bind();
+  renderUser();
+  await startLoadFb();
+  if (!state.fb) console.info("tndihoc: chưa tải được Firebase — sẽ thử lại khi người dùng bấm Đăng nhập.");
 })();
