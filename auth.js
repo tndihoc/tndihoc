@@ -1,5 +1,5 @@
 /* =====================================================================
-   ĐĂNG NHẬP / ĐĂNG KÝ + TRANG QUẢN TRỊ (ADMIN) — tndihoc
+   ĐĂNG NHẬP / ĐĂNG KÝ + TRANG QUẢN TRỊ (ADMIN) + BẢNG XẾP HẠNG — tndihoc
    ---------------------------------------------------------------------
    Dùng Firebase (dịch vụ miễn phí của Google) để lưu tài khoản người dùng,
    nhờ vậy 1 tài khoản đăng nhập được trên mọi thiết bị.
@@ -205,6 +205,7 @@ function renderUser() {
   document.querySelectorAll("[data-admin-only]").forEach(el => el.style.display = isAdmin ? "" : "none");
   document.querySelectorAll("[data-auth-role]").forEach(el => el.textContent = isAdmin ? "Quản trị viên" : "Học viên");
   renderAdmin();
+  lbOnAuthChange();
 }
 
 function toggleMenu(force) {
@@ -316,6 +317,186 @@ function bind() {
   $("admin-export").addEventListener("click", exportCsv);
 }
 
+/* ---------- BẢNG XẾP HẠNG (top 10 tuần / tháng) ----------
+   - Điểm cộng dồn từ 2 trò chơi có điểm: "Trắc nghiệm" và "Đấu trường sinh tồn".
+   - Chỉ tính cho người đã đăng nhập. Tuần bắt đầu thứ Hai, tháng bắt đầu ngày 1 (giờ Việt Nam).
+   - Dữ liệu lưu ở Firestore: leaderboard/{kỳ}/scores/{uid}  (kỳ ví dụ: w-2026-09-21, m-2026-09)
+------------------------------------------------------------------ */
+const LB_TZ_HOURS = 7;          // giờ Việt Nam (UTC+7)
+const LB_MAX_PER_GAME = 20000;  // giới hạn điểm 1 ván (khớp với luật bảo mật Firestore)
+const LB_GAME_NAMES = { quiz: "Trắc nghiệm", arena: "Đấu trường sinh tồn" };
+const lbState = { kind: "week", loading: false, loadedOnce: false, rows: [], tick: null };
+
+function lbPad(n) { return String(n).padStart(2, "0"); }
+function lbPeriod(kind, now = Date.now()) {
+  const d = new Date(now + LB_TZ_HOURS * 3600e3); // đọc bằng getUTC* = giờ Việt Nam
+  const y = d.getUTCFullYear(), m = d.getUTCMonth(), day = d.getUTCDate();
+  if (kind === "month") {
+    const start = Date.UTC(y, m, 1) - LB_TZ_HOURS * 3600e3;
+    const end = Date.UTC(y, m + 1, 1) - LB_TZ_HOURS * 3600e3;
+    return { id: `m-${y}-${lbPad(m + 1)}`, label: `Tháng ${m + 1}/${y}`, end };
+  }
+  const dow = (d.getUTCDay() + 6) % 7; // 0 = thứ Hai
+  const mon = new Date(Date.UTC(y, m, day - dow));
+  const sun = new Date(Date.UTC(y, m, day - dow + 6));
+  const f = (x) => `${lbPad(x.getUTCDate())}/${lbPad(x.getUTCMonth() + 1)}`;
+  return {
+    id: `w-${mon.getUTCFullYear()}-${lbPad(mon.getUTCMonth() + 1)}-${lbPad(mon.getUTCDate())}`,
+    label: `Tuần ${f(mon)} – ${f(sun)}`,
+    end: mon.getTime() + 7 * 864e5 - LB_TZ_HOURS * 3600e3,
+  };
+}
+function lbFmtNum(n) { return Number(n || 0).toLocaleString("vi-VN"); }
+function lbRemaining(end) {
+  const ms = Math.max(0, end - Date.now());
+  const d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 3600e3), mi = Math.floor(ms % 3600e3 / 60e3);
+  return d > 0 ? `${d} ngày ${h} giờ` : h > 0 ? `${h} giờ ${mi} phút` : `${mi} phút`;
+}
+function lbName() {
+  const p = state.profile, u = state.user;
+  return String((p && p.name) || (u && (u.displayName || (u.email || "").split("@")[0])) || "Học viên").trim().slice(0, 60) || "Học viên";
+}
+
+/* Gọi từ trò chơi khi kết thúc 1 ván: window.tnSubmitScore('quiz' | 'arena', điểm, phầnTửHiểnThịThôngBáo) */
+async function submitScore(game, points, noteEl) {
+  const note = (text, cls) => { if (noteEl) { noteEl.textContent = text; noteEl.className = "lb-note " + (cls || ""); } };
+  points = Math.min(LB_MAX_PER_GAME, Math.floor(Number(points) || 0));
+  if (points <= 0) { note(""); return; }
+  if (!state.user) { note("Đăng nhập để điểm của bạn được tính vào bảng xếp hạng tuần & tháng.", "is-guest"); return; }
+  if (!state.fb) { note("Chưa kết nối được máy chủ nên điểm lần này chưa được ghi vào bảng xếp hạng.", "is-err"); return; }
+  const { db, D } = state.fb;
+  const uid = state.user.uid;
+  note("Đang ghi điểm vào bảng xếp hạng…");
+  try {
+    const batch = D.writeBatch(db);
+    const data = { name: lbName(), points: D.increment(points), games: D.increment(1), updatedAt: D.serverTimestamp() };
+    ["week", "month"].forEach(k => batch.set(D.doc(db, "leaderboard", lbPeriod(k).id, "scores", uid), data, { merge: true }));
+    await batch.commit();
+    note(`+${lbFmtNum(points)} điểm đã được cộng vào bảng xếp hạng tuần & tháng 🏆`, "is-ok");
+    lbState.loadedOnce = false;
+    if (lbVisible()) loadLeaderboard();
+  } catch (err) {
+    console.error("Ghi điểm bảng xếp hạng lỗi:", err);
+    note("Không ghi được điểm vào bảng xếp hạng" + (err.code === "permission-denied" ? " (chưa cập nhật Rules của Firestore)." : ". Kiểm tra mạng rồi thử lại."), "is-err");
+  }
+}
+window.tnSubmitScore = submitScore;
+
+function lbVisible() { const p = $("game-leaderboard"); return !!(p && p.classList.contains("active")); }
+
+async function loadLeaderboard() {
+  if (!$("lb-list")) return;
+  const per = lbPeriod(lbState.kind);
+  $("lb-period").textContent = per.label;
+  lbTickCountdown();
+  if (!state.fb) {
+    const fb = await Promise.race([startLoadFb(), new Promise(r => setTimeout(() => r(null), 15000))]);
+    if (!fb) {
+      $("lb-list").innerHTML = `<p class="lb-empty">Không kết nối được máy chủ (dịch vụ của Google). Hãy kiểm tra mạng rồi bấm "Làm mới". Nếu bạn đang ở Trung Quốc, cần bật VPN.</p>`;
+      return;
+    }
+  }
+  const { db, D } = state.fb;
+  const kind = lbState.kind;
+  lbState.loading = true;
+  $("lb-refresh").disabled = true;
+  if (!lbState.rows.length) $("lb-list").innerHTML = `<p class="lb-empty">Đang tải bảng xếp hạng…</p>`;
+  try {
+    const col = D.collection(db, "leaderboard", per.id, "scores");
+    const snap = await D.getDocs(D.query(col, D.orderBy("points", "desc"), D.limit(10)));
+    if (kind !== lbState.kind) return; // người dùng đã đổi tab trong lúc tải
+    lbState.rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    let me = null;
+    if (state.user) {
+      const mine = lbState.rows.findIndex(r => r.id === state.user.uid);
+      if (mine >= 0) me = { rank: mine + 1, ...lbState.rows[mine] };
+      else {
+        const ms = await D.getDoc(D.doc(col, state.user.uid));
+        if (ms.exists()) {
+          const pts = ms.data().points || 0;
+          const c = await D.getCountFromServer(D.query(col, D.where("points", ">", pts)));
+          me = { rank: c.data().count + 1, ...ms.data() };
+        } else me = { rank: null, points: 0, games: 0 };
+      }
+    }
+    lbState.loadedOnce = true;
+    drawLeaderboard(me);
+  } catch (err) {
+    console.error("Tải bảng xếp hạng lỗi:", err);
+    $("lb-list").innerHTML = `<p class="lb-empty">${esc(viError(err))}${err.code === "permission-denied" ? " Cần cập nhật Rules của Firestore." : ""}</p>`;
+  } finally {
+    lbState.loading = false;
+    $("lb-refresh").disabled = false;
+  }
+}
+
+function drawLeaderboard(me) {
+  const isAdmin = !!(state.profile && state.profile.role === "admin");
+  const uid = state.user && state.user.uid;
+  const medals = ["🥇", "🥈", "🥉"];
+  $("lb-list").innerHTML = lbState.rows.length ? lbState.rows.map((r, i) => `
+    <div class="lb-row${i < 3 ? " lb-top lb-top-" + (i + 1) : ""}${r.id === uid ? " is-me" : ""}">
+      <span class="lb-rank">${i < 3 ? medals[i] : i + 1}</span>
+      <span class="auth-avatar sm">${esc(initialOf(r.name))}</span>
+      <span class="lb-name">${esc(r.name || "Học viên")}${r.id === uid ? ' <span class="lb-you">bạn</span>' : ""}<span class="lb-games">${r.games || 0} ván</span></span>
+      <span class="lb-points">${lbFmtNum(r.points)}<small>điểm</small></span>
+      ${isAdmin ? `<button class="lb-del" data-lb-del="${esc(r.id)}" title="Xoá khỏi bảng xếp hạng kỳ này" type="button">✕</button>` : ""}
+    </div>`).join("")
+    : `<p class="lb-empty">Chưa có ai ghi điểm trong ${lbState.kind === "week" ? "tuần" : "tháng"} này. Chơi 1 ván Trắc nghiệm hoặc Đấu trường sinh tồn để giành vị trí số 1! 🚀</p>`;
+
+  const meEl = $("lb-me"), guestEl = $("lb-guest");
+  guestEl.style.display = state.user ? "none" : "";
+  if (!me) { meEl.style.display = "none"; return; }
+  meEl.style.display = "";
+  meEl.innerHTML = me.rank
+    ? `<span>Hạng của bạn: <strong>#${me.rank}</strong></span><span><strong>${lbFmtNum(me.points)}</strong> điểm · ${me.games || 0} ván</span>`
+    : `<span>Bạn chưa có điểm trong ${lbState.kind === "week" ? "tuần" : "tháng"} này — chơi ngay để lên bảng!</span>`;
+}
+
+async function lbDelete(id) {
+  const row = lbState.rows.find(r => r.id === id);
+  if (!row || !confirm(`Xoá "${row.name}" khỏi bảng xếp hạng ${lbState.kind === "week" ? "tuần" : "tháng"} này?`)) return;
+  const { db, D } = state.fb;
+  try {
+    await D.deleteDoc(D.doc(db, "leaderboard", lbPeriod(lbState.kind).id, "scores", id));
+    loadLeaderboard();
+  } catch (err) { alert(viError(err)); }
+}
+
+function lbTickCountdown() {
+  const el = $("lb-countdown");
+  if (el) el.textContent = "Còn " + lbRemaining(lbPeriod(lbState.kind).end);
+}
+
+function lbOnAuthChange() {
+  if (!$("lb-list")) return;
+  lbState.rows = [];
+  lbState.loadedOnce = false;
+  $("lb-guest").style.display = state.user ? "none" : "";
+  if (lbVisible() && state.fb) loadLeaderboard();
+}
+
+function lbBind() {
+  if (!$("lb-list")) return;
+  document.querySelectorAll("[data-lb-kind]").forEach(b => b.addEventListener("click", () => {
+    if (lbState.kind === b.dataset.lbKind) return;
+    lbState.kind = b.dataset.lbKind;
+    lbState.rows = [];
+    document.querySelectorAll("[data-lb-kind]").forEach(x => x.classList.toggle("active", x === b));
+    loadLeaderboard();
+  }));
+  $("lb-refresh").addEventListener("click", loadLeaderboard);
+  $("lb-list").addEventListener("click", e => {
+    const b = e.target.closest("[data-lb-del]");
+    if (b) lbDelete(b.dataset.lbDel);
+  });
+  document.querySelectorAll('[data-game-tab="leaderboard"]').forEach(t => t.addEventListener("click", () => {
+    if (!lbState.loadedOnce && !lbState.loading) loadLeaderboard();
+  }));
+  lbTickCountdown();
+  lbState.tick = setInterval(() => { if (lbVisible()) lbTickCountdown(); }, 60000);
+}
+
 function watchAuth(fb) {
   const { auth, A } = fb;
   A.onAuthStateChanged(auth, async (user) => {
@@ -332,6 +513,7 @@ function watchAuth(fb) {
 
 (async function init() {
   bind();
+  lbBind();
   renderUser();
   await startLoadFb();
   if (!state.fb) console.info("tndihoc: chưa tải được Firebase — sẽ thử lại khi người dùng bấm Đăng nhập.");

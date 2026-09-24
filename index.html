@@ -711,6 +711,45 @@
   .home-fab.show { opacity:1; pointer-events:auto; transform:translateY(0); }
   .home-fab:hover { background:#000080; }
   .ai-panel.hidden, .ai-typing.hidden { display:none !important; }
+  /* ===== Bảng xếp hạng (top 10 tuần / tháng) ===== */
+  .game-tab--lb { color:#B35900; border-color:#FFC98A; background:#FFF6EC; }
+  .game-tab--lb:hover { background:#FFE8D1; }
+  .game-tab--lb.active { background:#FF7D00; color:#fff; border-color:#FF7D00; }
+  .lb-card { background:#fff; border:1px solid rgba(46,52,64,.1); border-radius:20px; padding:22px; }
+  @media (min-width:640px){ .lb-card { padding:28px; } }
+  .lb-switch { display:inline-flex; padding:4px; border-radius:12px; background:#F3F4F6; gap:4px; }
+  .lb-switch button { padding:7px 16px; border-radius:9px; font-size:13.5px; font-weight:600; color:#6B7280; transition:background .15s ease,color .15s ease; }
+  .lb-switch button.active { background:#fff; color:#2E3440; box-shadow:0 1px 3px rgba(46,52,64,.12); }
+  .lb-refresh { font-size:12.5px; font-weight:600; color:#6B7280; padding:7px 12px; border-radius:9px; border:1px solid rgba(46,52,64,.12); background:#fff; }
+  .lb-refresh:hover { background:#F7F8FA; }
+  .lb-refresh:disabled { opacity:.5; cursor:wait; }
+  .lb-meta { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px; margin:18px 0 12px; font-size:13px; color:#6B7280; }
+  .lb-meta strong { color:#2E3440; font-weight:700; }
+  .lb-countdown { font-size:12px; font-weight:600; color:#B35900; background:#FFF6EC; border:1px solid #FFE8D1; border-radius:9999px; padding:3px 10px; }
+  .lb-list { display:flex; flex-direction:column; gap:6px; }
+  .lb-row { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:14px; border:1px solid rgba(46,52,64,.07); background:#fff; animation:fadeUp .3s ease both; }
+  .lb-row.lb-top-1 { background:#FFF4E5; border-color:#FFD9A8; }
+  .lb-row.lb-top-2 { background:#F2F5FB; border-color:#DCE3F2; }
+  .lb-row.lb-top-3 { background:#FBF1EC; border-color:#F2D9CC; }
+  .lb-row.is-me { outline:2px solid #FF7D00; outline-offset:-1px; }
+  .lb-rank { width:28px; text-align:center; font-weight:800; font-size:14px; color:#6B7280; flex-shrink:0; }
+  .lb-top .lb-rank { font-size:20px; }
+  .lb-name { flex:1; min-width:0; font-weight:600; color:#2E3440; font-size:14px; overflow-wrap:anywhere; line-height:1.35; }
+  @media (max-width:480px){ .lb-row { gap:9px; padding:10px 11px; } .lb-card { padding:18px 14px; } }
+  .lb-games { display:block; font-weight:400; font-size:11.5px; color:#6B7280; }
+  .lb-you { font-size:10.5px; font-weight:700; padding:1px 7px; border-radius:9999px; background:#FF7D00; color:#fff; vertical-align:middle; }
+  .lb-points { font-weight:800; font-size:16px; color:#000080; text-align:right; white-space:nowrap; }
+  .lb-points small { display:block; font-size:10.5px; font-weight:500; color:#6B7280; }
+  .lb-del { width:26px; height:26px; border-radius:8px; font-size:12px; color:#D6524F; background:#FBE3E2; flex-shrink:0; }
+  .lb-empty { text-align:center; font-size:13.5px; color:#6B7280; padding:28px 10px; }
+  .lb-me { display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px; margin-top:14px; padding:12px 16px; border-radius:14px; background:#E6E6F2; color:#000080; font-size:13.5px; }
+  .lb-guest { margin-top:14px; padding:14px 16px; border-radius:14px; background:#FFF6EC; border:1px dashed #FFC98A; font-size:13.5px; color:#7A3D00; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; }
+  .lb-guest button { padding:8px 16px; border-radius:10px; background:#FF7D00; color:#fff; font-weight:600; font-size:13px; }
+  .lb-note { font-size:12.5px; margin:-8px auto 16px; max-width:420px; color:#6B7280; }
+  .lb-note:empty { display:none; }
+  .lb-note.is-ok { color:#16A34A; font-weight:600; }
+  .lb-note.is-guest { color:#B35900; }
+  .lb-note.is-err { color:#D6524F; }
 </style>
 </head>
 <body class="antialiased">
@@ -1034,7 +1073,7 @@ Trang quản trị
 <span class="seal-stamp" style="width:30px;height:30px;font-size:12px;">戏</span>
 <h3 class="font-sans font-semibold text-xl text-ink">Trò chơi ôn từ vựng</h3>
 </div>
-<p class="text-sm text-slate mb-5 max-w-2xl">4 Trò chơi + flashcard ôn tập từ vựng. chọn cấp độ hsk mong muốn bên dưới — cả 5 mục (nối cặp từ, trắc nghiệm, đấu trường sinh tồn, ghép cặp phản xạ nhanh, flashcard) đều dùng chung 1 cấp độ này, không cần chọn lại ở từng mục.</p>
+<p class="text-sm text-slate mb-5 max-w-2xl">4 Trò chơi + flashcard ôn tập từ vựng, kèm bảng xếp hạng tuần/tháng. chọn cấp độ hsk mong muốn bên dưới — cả 5 mục (nối cặp từ, trắc nghiệm, đấu trường sinh tồn, ghép cặp phản xạ nhanh, flashcard) đều dùng chung 1 cấp độ này, không cần chọn lại ở từng mục.</p>
 <div class="mb-7">
 <label class="text-sm font-semibold text-ink mb-2.5 block">Cấp độ chơi</label>
 <div class="bg-ink/[0.04] rounded-3xl p-3 sm:p-4">
@@ -1082,6 +1121,7 @@ Trang quản trị
 <button class="game-tab" data-game-tab="arena">⚡ Đấu trường sinh tồn</button>
 <button class="game-tab" data-game-tab="reflex">🃏 Ghép cặp phản xạ nhanh</button>
 <button class="game-tab" data-game-tab="flashcard">🎴 Flashcard</button>
+<button class="game-tab game-tab--lb" data-game-tab="leaderboard">🏆 Bảng xếp hạng</button>
 </div>
 <!-- ---------- GAME 1: MATCH UP (NỐI CẶP) ---------- -->
 <div class="game-panel active" id="game-matchup">
@@ -1180,6 +1220,7 @@ Trang quản trị
 <p class="font-hanzi font-black text-2xl text-ink" id="qz-best-score">—</p>
 </div>
 </div>
+<p class="lb-note" id="qz-lb-note"></p>
 <button class="px-5 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring" id="qz-play-again">Chơi lại</button>
 </div>
 </div>
@@ -1226,6 +1267,7 @@ Trang quản trị
 <h3 class="font-sans font-semibold text-xl text-ink mb-1">Thua trận!</h3>
 <p class="text-sm text-ink/80 mb-1">Trụ được <span class="font-semibold text-ink" id="ar-final-streak">0</span> câu liên tiếp — tổng điểm <span class="font-semibold text-peach" id="ar-final-score">0</span></p>
 <p class="text-xs text-ink/70 mb-5">Kỷ lục streak: <span class="font-semibold text-peach" id="ar-best-streak">—</span></p>
+<p class="lb-note" id="ar-lb-note"></p>
 <button class="px-5 py-2.5 rounded-xl bg-peach text-white text-sm font-semibold hover:opacity-90 focus-ring" id="ar-play-again">Chơi lại</button>
 </div>
 </div>
@@ -1290,6 +1332,31 @@ Trang quản trị
 <button class="px-4 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring" id="rx-next-unit" type="button">Đơn nguyên tiếp theo</button>
 <button class="px-4 py-2.5 rounded-xl bg-peach text-white text-sm font-semibold hover:opacity-90 focus-ring" id="rx-go-random" type="button">Ôn tập tự do (random)</button>
 </div>
+</div>
+</div>
+</div>
+<!-- ---------- BẢNG XẾP HẠNG (top 10 tuần / tháng) ---------- -->
+<div class="game-panel" id="game-leaderboard">
+<div class="lb-card">
+<div class="flex flex-wrap items-start justify-between gap-4">
+<div>
+<h3 class="font-sans font-semibold text-lg text-ink">🏆 Bảng xếp hạng</h3>
+<p class="text-xs text-slate mt-1 max-w-md">Top 10 học viên có tổng điểm cao nhất, cộng dồn từ <strong>Trắc nghiệm</strong> và <strong>Đấu trường sinh tồn</strong>. Bảng tuần làm mới vào thứ Hai, bảng tháng làm mới vào ngày 1 (giờ Việt Nam).</p>
+</div>
+<div class="flex items-center gap-2">
+<div class="lb-switch" role="tablist">
+<button class="active" data-lb-kind="week" type="button">Tuần này</button>
+<button data-lb-kind="month" type="button">Tháng này</button>
+</div>
+<button class="lb-refresh focus-ring" id="lb-refresh" title="Làm mới" type="button">↻ Làm mới</button>
+</div>
+</div>
+<div class="lb-meta"><strong id="lb-period">—</strong><span class="lb-countdown" id="lb-countdown">—</span></div>
+<div class="lb-list" id="lb-list"><p class="lb-empty">Đang tải bảng xếp hạng…</p></div>
+<div class="lb-me" id="lb-me" style="display:none"></div>
+<div class="lb-guest" id="lb-guest">
+<span>Bạn đang chơi với tư cách khách — điểm chưa được tính. Đăng nhập để có tên trên bảng xếp hạng!</span>
+<button data-auth-open="login" type="button">Đăng nhập</button>
 </div>
 </div>
 </div>
@@ -1839,6 +1906,13 @@ Trang quản trị
 </section>
 </div>
 </main>
+<!-- ===== Bản quyền ===== -->
+<footer class="border-t border-ink/10 mt-10">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 text-center text-xs text-slate leading-relaxed">
+<p>© 2026 <span class="font-semibold text-ink">Thúy Ngô – tndihoc</span>. Bảo lưu mọi quyền.</p>
+<p>Toàn bộ nội dung, bài đọc, dữ liệu từ vựng và thiết kế trên trang thuộc quyền sở hữu của tác giả. Nghiêm cấm sao chép, phát tán hoặc tạo trang web khác từ nội dung này khi chưa được cho phép.</p>
+</div>
+</footer>
 <!-- ===== Trợ lý AI: ĐẶT Ở CẤP BODY (không nằm trong bất kỳ .page-section nào) =====
      Lý do: .page-section.is-active có "animation: fadeUp" tác động lên transform.
      Một phần tử cha có transform (kể cả translateY(0) sau khi animation kết thúc, vì
@@ -13083,6 +13157,7 @@ Trang quản trị
     arena: document.getElementById('game-arena'),
     reflex: document.getElementById('game-reflex'),
     flashcard: document.getElementById('game-flashcard'),
+    leaderboard: document.getElementById('game-leaderboard'),
   };
   gameTabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -13489,6 +13564,8 @@ Trang quản trị
       finalCorrectEl.textContent = String(correctCount);
       finalTotalEl.textContent = String(totalAnswered);
       finalScoreEl.textContent = String(score);
+      // Cộng điểm ván này vào bảng xếp hạng tuần & tháng (chỉ khi đã đăng nhập)
+      if (window.tnSubmitScore) window.tnSubmitScore('quiz', score, document.getElementById('qz-lb-note'));
       const key = 'tndihoc_qz_best';
       const best = Number(localStorage.getItem(key) || '0');
       if (score > best) {
@@ -13613,6 +13690,8 @@ Trang quản trị
       resultEmojiEl.textContent = streak >= 10 ? '👑' : streak >= 5 ? '🔥' : '💀';
       finalStreakEl.textContent = String(streak);
       finalScoreEl.textContent = String(score);
+      // Cộng điểm ván này vào bảng xếp hạng tuần & tháng (chỉ khi đã đăng nhập)
+      if (window.tnSubmitScore) window.tnSubmitScore('arena', score, document.getElementById('ar-lb-note'));
       const key = 'tndihoc_ar_best_streak';
       const best = Number(localStorage.getItem(key) || '0');
       if (streak > best) {
