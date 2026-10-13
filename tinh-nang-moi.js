@@ -107,6 +107,11 @@ async function fbReady() {
   if (window.tnEnsureFb) { const fb = await Promise.race([window.tnEnsureFb(), sleep(15000).then(() => null)]); if (fb) T.fb = fb; }
   return T.fb;
 }
+/** Mở đúng thẻ trong trang "Học tiếng Trung" chứa khối id rồi cuộn tới */
+function showSec(id) {
+  if (window.tnHocOpen && window.tnHocOpen(id)) return;
+  $(id)?.scrollIntoView({ behavior: "smooth" });
+}
 function needLoginHtml(what) {
   return `<div class="tt-lock"><div class="ico">🔐</div><b>Đăng nhập để ${esc(what)}</b><p>Một tài khoản — học trên mọi thiết bị, giáo viên có thể xem và nhận xét bài của bạn.</p><button class="tt-btn" data-tt-login>Đăng nhập / Đăng ký</button></div>`;
 }
@@ -128,8 +133,10 @@ function setProg(fn) { const p = getProg(); fn(p); localStorage.setItem(PKEY, JS
 const TTS = {
   ok: typeof window.speechSynthesis !== "undefined",
   voice() { const vs = speechSynthesis.getVoices(); return vs.find(v => /zh[-_]CN/i.test(v.lang)) || vs.find(v => /^zh/i.test(v.lang)) || null; },
-  stop() { if (this.ok) speechSynthesis.cancel(); },
+  stop() { if (window.tnVoice) return window.tnVoice.stop(); if (this.ok) speechSynthesis.cancel(); },
   speak(text, rate = 0.85) {
+    // Dùng giọng đọc chung (hoc-tieng-trung.js): giọng tốt nhất, pitch 1.0, có ngắt nghỉ giữa câu
+    if (window.tnVoice) return window.tnVoice.speak(text, { rate, pitch: 1.0 });
     return new Promise(res => {
       if (!this.ok) return res(false);
       speechSynthesis.cancel();
@@ -615,13 +622,13 @@ async function postHandwriting(l, f, caption) {
     });
     toast("✅ Đã đăng lên Góc luyện chữ!");
     renderHand(); GAL.items = null; renderGallery();
-    $("tt-gallery")?.scrollIntoView({ behavior: "smooth" });
+    showSec("tt-gallery");
   } catch (e) { toast(errText(e)); btn.disabled = false; btn.textContent = "Đăng lên Góc luyện chữ"; }
 }
 window.ttDictOpen = (id) => {
   const l = lessonById(id); if (!l) return;
   stopDict(); DICT.level = String(l.hsk); DICT.lessonId = id; DICT.tab = "type"; resetDict();
-  renderDictation(); $("tt-dictation")?.scrollIntoView({ behavior: "smooth" });
+  renderDictation(); showSec("tt-dictation");
 };
 onState(renderDictation);
 
@@ -639,7 +646,7 @@ async function renderGallery() {
       ${can("dictation") ? `<a class="tt-btn soft sm" href="#tt-dictation" id="g-new">＋ Đăng bài mới</a>` : ""}</div>
     <div class="tt-gallery" id="g-list"></div><div id="g-more" style="text-align:center;margin-top:.8rem"></div>`;
   box.querySelectorAll("[data-g]").forEach(b => b.addEventListener("click", () => { GAL.mineOnly = b.dataset.g === "mine"; GAL.items = null; renderGallery(); }));
-  $("g-new")?.addEventListener("click", () => { DICT.tab = "hand"; renderDictation(); });
+  $("g-new")?.addEventListener("click", (e) => { e.preventDefault(); DICT.tab = "hand"; renderDictation(); showSec("tt-dictation"); });
   if (!GAL.items) await loadGallery(true); else drawGallery();
 }
 async function loadGallery(reset) {
@@ -902,8 +909,14 @@ async function loadVipData() {
   VIP.loading = true; VIP.err = "";
   try {
     if (!(await fbReady())) throw new Error("Không kết nối được máy chủ.");
-    const snap = await D().getDoc(D().doc(db(), "vip", "gt1"));
-    if (!snap.exists()) VIP.err = isAdmin() ? "Chưa nạp dữ liệu giáo trình. Vào trang “Lớp học & phân quyền” → tab “Dữ liệu 贯通中文” để nạp file gt1-vip.json." : "Giáo viên chưa nạp dữ liệu giáo trình. Vui lòng quay lại sau.";
+    // Lần đọc đầu tiên ngay khi vừa mở trang đôi khi trả về "chưa có" → thử lại vài lần trước khi kết luận
+    let snap = null;
+    for (let k = 0; k < 4; k++) {
+      try { snap = await D().getDoc(D().doc(db(), "vip", "gt1")); } catch (e) { if (k === 3) throw e; }
+      if (snap && snap.exists()) break;
+      await sleep(1200 * (k + 1));
+    }
+    if (!snap || !snap.exists()) VIP.err = isAdmin() ? "Chưa nạp dữ liệu giáo trình. Vào trang “Lớp học & phân quyền” → tab “Dữ liệu 贯通中文” để nạp file gt1-vip.json." : "Giáo viên chưa nạp dữ liệu giáo trình. Vui lòng quay lại sau.";
     else VIP.data = snap.data();
   } catch (e) { VIP.err = errText(e); }
   VIP.loading = false;
@@ -1123,7 +1136,7 @@ document.addEventListener("click", e => {
   if (e.target.closest("[data-go-myclass], [data-go-lophoc]")) document.getElementById("auth-menu")?.classList.remove("is-open");
   if (e.target.closest("[data-go-myclass]")) {
     const nav = document.querySelector('[data-nav-btn][data-target="chinese"]'); if (nav) nav.click();
-    setTimeout(() => $("tt-myclass")?.scrollIntoView({ behavior: "smooth" }), 120);
+    setTimeout(() => showSec("tt-myclass"), 60);
   }
   if (e.target.closest("[data-go-lophoc]")) {
     const nav = document.querySelector('[data-nav-btn][data-target="lophoc"]'); if (nav) nav.click(); else location.hash = "#lophoc";
@@ -1461,7 +1474,9 @@ function lmsVipData() {
     const log = $("vd-log"); const tracks = Object.keys(pkg.audio || {});
     try {
       log.innerHTML = `<div class="tt-note">Đang nạp nội dung bài khoá…</div>`;
-      await D().setDoc(D().doc(db(), "vip", "gt1"), { book: pkg.book, version: pkg.version || 1, lessons: pkg.lessons, updatedAt: D().serverTimestamp() });
+      // Firestore không nhận mảng lồng mảng → mốc thời gian [bắt đầu, kết thúc] đổi thành {0: bắt đầu, 1: kết thúc}
+      const lessons = pkg.lessons.map(l => ({ ...l, texts: l.texts.map(t => ({ ...t, segs: (t.segs || []).map(x => Array.isArray(x) ? { 0: x[0], 1: x[1] } : x) })) }));
+      await D().setDoc(D().doc(db(), "vip", "gt1"), { book: pkg.book, version: pkg.version || 1, lessons, updatedAt: D().serverTimestamp() });
       for (let k = 0; k < tracks.length; k++) {
         const t = tracks[k];
         log.innerHTML = `<div class="tt-note">Đang nạp file nghe ${k + 1}/${tracks.length} (track ${esc(t)})…</div><div class="tt-progress"><i style="width:${(k + 1) / tracks.length * 100}%"></i></div>`;

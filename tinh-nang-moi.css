@@ -184,3 +184,35 @@
 .tt-radio { display:inline-flex; align-items:center; gap:6px; font-size:13.5px; color:var(--tt-ink); cursor:pointer; padding:6px 10px; border:1px solid var(--tt-line); border-radius:10px; background:#fff; }
 .tt-radio input { accent-color: var(--tt-peach); }
 .tt-radio:has(input:checked) { border-color:var(--tt-peach-b); background:#FFF8F0; }
+
+/* =====================================================================
+   HỌC TIẾNG TRUNG — màn hình thẻ lớn (hoc-tieng-trung.js)
+   ===================================================================== */
+#chinese .hub-part:not(.hub-show) { display: none !important; }
+#chinese .hub-part.hub-show.border-t { margin-top: 0; padding-top: 0; border-top: 0; }
+#chinese .hub-part.hub-show { animation: tt-in .22s ease-out; }
+.hoc-hub { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-bottom: 2rem; }
+@media (min-width: 640px) { .hoc-hub { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .hoc-hub { grid-template-columns: repeat(3, 1fr); } }
+.hoc-hub[hidden], .hoc-bar[hidden] { display: none; }
+.hoc-card { position: relative; text-align: left; display: flex; flex-direction: column; gap: .35rem; min-height: 190px; padding: 1.4rem 1.4rem 1.2rem;
+  border-radius: 1.25rem; background: linear-gradient(160deg, var(--c-bg) 0%, #fff 78%); border: 1px solid var(--c-line); color: var(--tt-ink);
+  cursor: pointer; transition: transform .18s ease, box-shadow .18s ease, border-color .18s; animation: tt-in .3s ease-out both; overflow: hidden; }
+.hoc-card:hover { transform: translateY(-4px); box-shadow: 0 16px 32px rgba(46,52,64,.12); border-color: var(--c-ink); }
+.hoc-card:active { transform: translateY(-1px); }
+.hoc-num { position: absolute; top: .6rem; right: 1rem; font-size: 64px; font-weight: 800; line-height: 1; color: var(--c-ink); opacity: .08; }
+.hoc-ico { font-size: 34px; line-height: 1; margin-bottom: .2rem; }
+.hoc-title { font-size: 1.2rem; font-weight: 800; color: var(--c-ink); }
+.hoc-desc { font-size: 13.5px; color: var(--tt-slate); line-height: 1.55; }
+.hoc-subs { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .2rem; }
+.hoc-subs span { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: #fff; border: 1px solid var(--c-line); color: var(--c-ink); }
+.hoc-go { margin-top: auto; padding-top: .5rem; font-size: 13px; font-weight: 700; color: var(--c-ink); }
+.hoc-bar { margin-bottom: 1.4rem; }
+.hoc-bar-top { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; }
+.hoc-back { font-size: 13.5px; font-weight: 700; color: var(--tt-navy); background: var(--tt-navy-l); border-radius: 999px; padding: 7px 14px; }
+.hoc-back:hover { background: #D9D9EE; }
+.hoc-bar-title { font-size: 1.25rem; font-weight: 800; }
+.hoc-tabs { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .9rem; }
+.hoc-tab { padding: 8px 16px; border-radius: 999px; font-size: 13.5px; font-weight: 700; color: var(--tt-slate); background: #fff; border: 1px solid var(--tt-line); }
+.hoc-tab:hover { color: var(--c-ink); }
+.hoc-tab.active { background: var(--c-ink); border-color: var(--c-ink); color: #fff; }

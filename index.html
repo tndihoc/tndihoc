@@ -8,7 +8,7 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&amp;family=Noto+Serif+SC:wght@500;700;900&amp;display=swap" rel="stylesheet"/>
 <link href="giao-dien.css?v=ade39f6a" rel="stylesheet"/>
-<link href="tinh-nang-moi.css?v=1" rel="stylesheet"/>
+<link href="tinh-nang-moi.css?v=2" rel="stylesheet"/>
 
 <style>
   html { scroll-behavior: smooth; }
@@ -988,19 +988,9 @@ Trang quản trị
 <section class="page-section" data-page="" id="chinese">
 <button class="back-home-btn focus-ring" data-go-home="" type="button"><svg fill="none" height="15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewbox="0 0 24 24" width="15"><polyline points="15 18 9 12 15 6"></polyline></svg>Trang chủ</button>
 <h2 class="font-sans font-semibold text-2xl sm:text-3xl text-ink mb-5">Học tiếng trung</h2>
-<!-- ===== Chuyển nhanh trong mục "học tiếng trung" ===== -->
-<div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-8" id="chinese-quicknav">
-<a class="cn-nav-btn focus-ring" href="#streak-widget" style="background:#E8F6EE;color:#1E7A46;border-color:#BFE5CD;"><span class="cn-nav-ico">📊</span><span>Tổng quan</span></a>
-<a class="cn-nav-btn focus-ring" href="#vocab-mastery-widget" style="background:#EEF2FC;color:#2E48C4;border-color:#D6E0F7;"><span class="cn-nav-ico">✅</span><span>Từ đã ghi nhớ</span></a>
-<a class="cn-nav-btn focus-ring" href="#vocab-games" style="background:#F0EAFE;color:#52329E;border-color:#D9CCFA;"><span class="cn-nav-ico">🎮</span><span>Trò chơi</span></a>
-<a class="cn-nav-btn focus-ring" href="#baidoc-section" style="background:#FDE8F1;color:#B0306A;border-color:#F7C6DB;"><span class="cn-nav-ico">📖</span><span>Bài đọc</span></a>
-<a class="cn-nav-btn focus-ring" href="#notebook-section" style="background:#FFE8D1;color:#B35600;border-color:#FFC98A;"><span class="cn-nav-ico">📓</span><span>Sổ tay từ vựng</span></a>
-<a class="cn-nav-btn focus-ring" href="#tt-dictation" style="background:#E6F4F1;color:#1F6F62;border-color:#BCE3DA;"><span class="cn-nav-ico">✍️</span><span>Chép chính tả</span></a>
-<a class="cn-nav-btn focus-ring" href="#tt-gallery" style="background:#FFF4E5;color:#A65400;border-color:#FFD9A8;"><span class="cn-nav-ico">🖼️</span><span>Góc luyện chữ</span></a>
-<a class="cn-nav-btn focus-ring" href="#tt-speaking" style="background:#EEF2FC;color:#3550B8;border-color:#D6E0F7;"><span class="cn-nav-ico">🎙️</span><span>Khẩu ngữ</span></a>
-<a class="cn-nav-btn focus-ring" href="#tt-vip" style="background:#FFF0E0;color:#B35600;border-color:#FFC98A;"><span class="cn-nav-ico">⭐</span><span>Hội thoại 贯通</span></a>
-<a class="cn-nav-btn focus-ring col-span-2 sm:col-span-1" href="#tt-myclass" style="background:#F3F0FA;color:#4B3C8C;border-color:#DCD3F2;"><span class="cn-nav-ico">🏫</span><span>Lớp của tôi</span></a>
-</div>
+<!-- ===== Màn hình thẻ lớn của mục "học tiếng trung" (do hoc-tieng-trung.js vẽ) ===== -->
+<div class="hoc-hub" id="hoc-hub"></div>
+<div class="hoc-bar" hidden="" id="hoc-bar"></div>
 <!-- ===== Streak & Heatmap widget ===== -->
 <div class="bg-white border border-ink/10 rounded-2xl p-6 sm:p-7 mb-8" id="streak-widget">
 <div class="flex items-center justify-between flex-wrap gap-5">
@@ -1488,7 +1478,7 @@ Trang quản trị
 <button class="baidoc-audio-btn focus-ring" id="baidoc-audio-btn" type="button">🔊 Nghe bài đọc</button>
 <select class="baidoc-audio-rate focus-ring" id="baidoc-audio-rate" title="Tốc độ đọc">
 <option value="0.7">Chậm</option>
-<option selected="" value="0.9">Vừa</option>
+<option selected="" value="0.85">Vừa</option>
 <option value="1.1">Nhanh</option>
 </select>
 <span class="text-xs text-slate" id="baidoc-audio-hint">Cần trình duyệt hỗ trợ giọng đọc tiếng Trung</span>
@@ -2098,7 +2088,7 @@ Trang quản trị
   document.getElementById('drawer-close').addEventListener('click', closeDrawer);
   overlay.addEventListener('click', closeDrawer);
 </script>
-<script src="tu-vung.js?v=9a2c38be"></script>
+<script src="tu-vung.js?v=tt1"></script>
 <script>
   /* =====================================================================
      SỔ TAY TỪ VỰNG — tự động ghi lại từ mà người chơi trả lời/chọn SAI
@@ -3822,7 +3812,8 @@ Trang quản trị
   renderHistoryToUI();
 })();
 </script>
-<script src="bai-doc.js?v=tt1" defer></script>
+<script src="bai-doc.js?v=tt2" defer></script>
+<script src="hoc-tieng-trung.js?v=1" defer></script>
 <!-- ===== Bộ đếm lượt truy cập hôm nay (dùng dịch vụ CountAPI miễn phí, không cần backend riêng) ===== -->
 <script>
 (function () {
@@ -3893,6 +3884,6 @@ Tiếp tục với Google
 </div>
 </div>
 <script src="auth.js?v=tt1" type="module"></script>
-<script src="tinh-nang-moi.js?v=1" type="module"></script>
+<script src="tinh-nang-moi.js?v=3" type="module"></script>
 </body>
 </html>

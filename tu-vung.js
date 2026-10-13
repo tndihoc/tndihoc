@@ -10712,16 +10712,15 @@
 
   function fcSpeak(text) {
     if (!fcSpeechSupported || !text) return;
-    window.speechSynthesis.cancel(); // huỷ câu đang đọc dở (nếu có) trước khi đọc câu mới
+    [fcSpeakFront, fcSpeakBack].forEach(btn => btn && btn.classList.add('is-speaking'));
+    const done = () => [fcSpeakFront, fcSpeakBack].forEach(btn => btn && btn.classList.remove('is-speaking'));
+    if (window.tnVoice) { window.tnVoice.speak(text, { rate: 0.85, pitch: 1.0 }).finally(done); return; } // giọng đọc dùng chung
+    window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = 'zh-CN';
     if (fcZhVoice) utter.voice = fcZhVoice;
-    utter.rate = 0.9; // đọc chậm lại một chút cho dễ nghe khi học từ mới
-
-    [fcSpeakFront, fcSpeakBack].forEach(btn => btn && btn.classList.add('is-speaking'));
-    utter.onend = utter.onerror = () => {
-      [fcSpeakFront, fcSpeakBack].forEach(btn => btn && btn.classList.remove('is-speaking'));
-    };
+    utter.rate = 0.85;
+    utter.onend = utter.onerror = done;
     window.speechSynthesis.speak(utter);
   }
 

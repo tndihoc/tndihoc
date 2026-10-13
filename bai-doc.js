@@ -219,33 +219,23 @@ const readingLessons = [{"id": "hsk2-01", "title": "Tự giới thiệu bản th
     audioHint.textContent = 'Trình duyệt hiện tại không hỗ trợ tính năng đọc bài.';
   }
 
-  function pickZhVoice() {
-    const voices = speechSynthesis.getVoices();
-    return voices.find(v => /^zh/i.test(v.lang)) || null;
-  }
-
   function stopAudio() {
-    if (speechSupported) speechSynthesis.cancel();
+    if (speechSupported) { if (window.tnVoice) window.tnVoice.stop(); else speechSynthesis.cancel(); }
     audioBtn.textContent = '🔊 Nghe bài đọc';
   }
 
   if (speechSupported) {
     audioBtn.addEventListener('click', () => {
-      if (speechSynthesis.speaking) { stopAudio(); return; }
+      if (audioBtn.dataset.playing) { stopAudio(); delete audioBtn.dataset.playing; return; }
       if (!currentLessonText) return;
       if (window.trackStudyActivity) window.trackStudyActivity();
-      speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(currentLessonText);
-      utter.lang = 'zh-CN';
-      utter.rate = parseFloat(audioRate.value || '0.9');
-      const voice = pickZhVoice();
-      if (voice) utter.voice = voice;
-      utter.onstart = () => { audioBtn.textContent = '⏸️ Đang đọc — bấm để dừng'; };
-      utter.onend = () => { audioBtn.textContent = '🔊 Nghe bài đọc'; };
-      utter.onerror = () => { audioBtn.textContent = '🔊 Nghe bài đọc'; };
-      speechSynthesis.speak(utter);
+      // Giọng đọc dùng chung (hoc-tieng-trung.js): chọn giọng tốt nhất, chia câu có ngắt nghỉ
+      audioBtn.dataset.playing = '1';
+      audioBtn.textContent = '⏸️ Đang đọc — bấm để dừng';
+      window.tnVoice.speak(currentLessonText, { rate: parseFloat(audioRate.value || '0.85'), pitch: 1.0 })
+        .finally(() => { delete audioBtn.dataset.playing; audioBtn.textContent = '🔊 Nghe bài đọc'; });
     });
-    audioRate.addEventListener('change', () => { if (speechSynthesis.speaking) stopAudio(); });
+    audioRate.addEventListener('change', () => { if (audioBtn.dataset.playing) { stopAudio(); delete audioBtn.dataset.playing; } });
   }
 
   function openDetail(id) {
