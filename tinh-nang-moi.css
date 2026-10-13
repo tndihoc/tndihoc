@@ -216,3 +216,44 @@
 .hoc-tab { padding: 8px 16px; border-radius: 999px; font-size: 13.5px; font-weight: 700; color: var(--tt-slate); background: #fff; border: 1px solid var(--tt-line); }
 .hoc-tab:hover { color: var(--c-ink); }
 .hoc-tab.active { background: var(--c-ink); border-color: var(--c-ink); color: #fff; }
+
+/* ===== Ôn từ vựng theo bài (Lớp học của tôi) ===== */
+.tt-unit-mode .tt-hsk-picker, .tt-unit-mode .game-tab[data-game-tab="leaderboard"], .tt-unit-mode > p { display: none !important; }
+.tt-unit-mode { margin-top: .8rem !important; }
+.rv-banner { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .8rem; padding: .9rem 1.1rem; margin-bottom: 1rem;
+  border-radius: 14px; background: linear-gradient(135deg, #FFE8D1, #FFF8F1); border: 1px solid #FFC98A; }
+.rv-banner-t { font-weight: 800; font-size: 1.05rem; color: #A65400; }
+.rv-banner-t .tt-hz { font-size: 1.3rem; }
+/* ===== Bộ thủ ===== */
+.hoc-ico { font-family: "Kaiti SC","STKaiti","KaiTi","Noto Serif SC",serif; }
+.rad-grid { display: grid; gap: .6rem; grid-template-columns: repeat(auto-fill, minmax(98px, 1fr)); }
+.rad-tile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: .7rem .35rem .55rem; border-radius: 14px; background: #fff;
+  border: 1px solid var(--tt-line); cursor: pointer; transition: transform .15s, box-shadow .15s, border-color .15s; }
+.rad-tile:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(46,52,64,.1); border-color: #DCD3F2; }
+.rad-tile.learned { background: linear-gradient(180deg, #fff, #F4FBF7); border-color: #BFE5CD; }
+.rad-n { position: absolute; top: 5px; left: 8px; font-size: 10.5px; color: var(--tt-slate); }
+.rad-ok { position: absolute; top: 4px; right: 7px; font-size: 11px; color: var(--tt-green); font-weight: 800; }
+.rad-ch { font-family: "Kaiti SC","STKaiti","KaiTi","Noto Serif SC",serif; font-size: 34px; line-height: 1.15; color: #4B3C8C; }
+.rad-v { font-family: "Kaiti SC","STKaiti","KaiTi","Noto Serif SC",serif; font-size: 13px; color: var(--tt-slate); }
+.rad-hv { font-size: 13px; font-weight: 700; color: var(--tt-ink); text-transform: capitalize; }
+.rad-s { font-size: 11px; color: var(--tt-slate); text-align: center; line-height: 1.3; }
+.rad-hero { display: flex; gap: 1.2rem; align-items: center; margin-top: .6rem; }
+.rad-big { font-family: "Kaiti SC","STKaiti","KaiTi","Noto Serif SC",serif; font-size: 84px; line-height: 1; color: #4B3C8C; background: #F3F0FA; border-radius: 18px; padding: .6rem 1.1rem; min-width: 120px; text-align: center; }
+.rad-name { font-size: 1.35rem; font-weight: 800; color: var(--tt-ink); }
+.rad-py { font-size: 15px; color: var(--tt-navy); margin-top: 2px; }
+.rad-mean { font-size: 15px; color: var(--tt-ink); margin-top: 4px; }
+.rad-ex { display: grid; grid-template-columns: 52px 1fr 2fr auto; align-items: center; gap: .6rem; padding: .45rem .7rem; border: 1px solid var(--tt-line); border-radius: 12px; }
+.rad-ex .tt-hz { font-size: 26px; color: var(--tt-ink); }
+.rad-ex .py { font-size: 13.5px; color: var(--tt-navy); }
+.rad-ex .vi { font-size: 13.5px; color: var(--tt-slate); }
+.rad-q { text-align: center; margin: .8rem 0 1rem; }
+.rad-q .rad-big { display: inline-block; margin-bottom: .4rem; }
+.rad-opts { display: grid; gap: .55rem; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .rad-opts { grid-template-columns: 1fr 1fr; } }
+.rad-opts.chars { grid-template-columns: repeat(4, 1fr); }
+.rad-opt { text-align: left; padding: .75rem 1rem; border-radius: 12px; border: 1px solid var(--tt-line); background: #fff; font-size: 14px; cursor: pointer; transition: background .15s, border-color .15s; }
+.rad-opts.chars .rad-opt { text-align: center; }
+.rad-opt:hover { border-color: #DCD3F2; background: #FAF8FE; }
+.rad-opt.right { background: var(--tt-green-l); border-color: #8FD3A9; }
+.rad-opt.wrong { background: var(--tt-seal-l); border-color: #F4A7A4; }
+.rad-opt-ch { font-family: "Kaiti SC","STKaiti","KaiTi","Noto Serif SC",serif; font-size: 40px; color: #4B3C8C; }

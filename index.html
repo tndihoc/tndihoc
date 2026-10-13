@@ -8,7 +8,7 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&amp;family=Noto+Serif+SC:wght@500;700;900&amp;display=swap" rel="stylesheet"/>
 <link href="giao-dien.css?v=ade39f6a" rel="stylesheet"/>
-<link href="tinh-nang-moi.css?v=2" rel="stylesheet"/>
+<link href="tinh-nang-moi.css?v=3" rel="stylesheet"/>
 
 <style>
   html { scroll-behavior: smooth; }
@@ -1513,6 +1513,8 @@ Trang quản trị
 <div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-speaking"></div>
 <div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-vip"></div>
 <div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-myclass"></div>
+<div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-review"></div>
+<div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-radicals"></div>
 <!-- ===== SỔ TAY TỪ VỰNG ===== -->
 <div class="mt-10 pt-8 border-t border-ink/10" id="notebook-section">
 <div class="flex items-center gap-2 mb-1">
@@ -2294,6 +2296,15 @@ Trang quản trị
     });
   });
   updateGameHskUI();
+  // Cho mục "Ôn từ vựng" (Lớp học của tôi) đổi bộ từ của MỌI trò chơi sang từ vựng 1 bài giáo trình
+  window.tnGetGameLevel = () => gameLevel;
+  window.tnSetGameLevel = function (level) {
+    gameLevel = level;
+    updateGameHskUI();
+    gameAvailabilityChecks.forEach(fn => fn());
+    if (window.fcSetLevel) window.fcSetLevel(gameLevel);
+    if (gameLevel !== 'notebook' && window.rxSetLevel) window.rxSetLevel(gameLevel);
+  };
 
   /* ============ GAME 1: NỐI CẶP TỪ (MATCH UP) — lưới ô trộn lẫn, bấm chọn cặp đôi ============ */
   (function () {
@@ -2653,7 +2664,7 @@ Trang quản trị
       finalTotalEl.textContent = String(totalAnswered);
       finalScoreEl.textContent = String(score);
       // Cộng điểm ván này vào bảng xếp hạng tuần & tháng (chỉ khi đã đăng nhập)
-      if (window.tnSubmitScore) window.tnSubmitScore('quiz', score, document.getElementById('qz-lb-note'));
+      if (window.tnSubmitScore && !String(gameLevel).startsWith('gt')) window.tnSubmitScore('quiz', score, document.getElementById('qz-lb-note'));
       const key = 'tndihoc_qz_best';
       const best = Number(localStorage.getItem(key) || '0');
       if (score > best) {
@@ -2779,7 +2790,7 @@ Trang quản trị
       finalStreakEl.textContent = String(streak);
       finalScoreEl.textContent = String(score);
       // Cộng điểm ván này vào bảng xếp hạng tuần & tháng (chỉ khi đã đăng nhập)
-      if (window.tnSubmitScore) window.tnSubmitScore('arena', score, document.getElementById('ar-lb-note'));
+      if (window.tnSubmitScore && !String(gameLevel).startsWith('gt')) window.tnSubmitScore('arena', score, document.getElementById('ar-lb-note'));
       const key = 'tndihoc_ar_best_streak';
       const best = Number(localStorage.getItem(key) || '0');
       if (streak > best) {
@@ -3813,7 +3824,9 @@ Trang quản trị
 })();
 </script>
 <script src="bai-doc.js?v=tt2" defer></script>
-<script src="hoc-tieng-trung.js?v=1" defer></script>
+<script src="bo-thu.js?v=1" defer></script>
+<script src="tu-vung-gt1.js?v=1" defer></script>
+<script src="hoc-tieng-trung.js?v=2" defer></script>
 <!-- ===== Bộ đếm lượt truy cập hôm nay (dùng dịch vụ CountAPI miễn phí, không cần backend riêng) ===== -->
 <script>
 (function () {
@@ -3883,7 +3896,7 @@ Tiếp tục với Google
 </div>
 </div>
 </div>
-<script src="auth.js?v=tt1" type="module"></script>
-<script src="tinh-nang-moi.js?v=3" type="module"></script>
+<script src="auth.js?v=tt2" type="module"></script>
+<script src="tinh-nang-moi.js?v=4" type="module"></script>
 </body>
 </html>

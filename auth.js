@@ -629,7 +629,7 @@ function mergeValue(k, a, b) {
       const o = dict[id];
       dict[id] = !o ? r : { ...o, ...r, bestCpm: Math.max(o.bestCpm || 0, r.bestCpm || 0), bestAcc: Math.max(o.bestAcc || 0, r.bestAcc || 0), times: Math.max(o.times || 0, r.times || 0) };
     });
-    return JSON.stringify({ ...y, ...x, dict, vip: { ...(y.vip || {}), ...(x.vip || {}) } });
+    return JSON.stringify({ ...y, ...x, dict, vip: { ...(y.vip || {}), ...(x.vip || {}) }, rad: { ...(y.rad || {}), ...(x.rad || {}) }, units: { ...(y.units || {}), ...(x.units || {}) } });
   }
   if (k.startsWith("tndihoc_mu_best_")) return String(Math.min(Number(a) || Infinity, Number(b) || Infinity)); // thời gian: càng nhỏ càng tốt
   return String(Math.max(Number(a) || 0, Number(b) || 0)); // điểm / streak: càng lớn càng tốt

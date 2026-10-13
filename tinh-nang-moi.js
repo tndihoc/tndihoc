@@ -209,7 +209,12 @@ async function compressImage(file, maxSide, maxChars, q = 0.8) {
 /* ---------------- Tải dữ liệu theo tài khoản ---------------- */
 const listeners = [];
 function onState(fn) { listeners.push(fn); }
-function emit() { listeners.forEach(fn => { try { fn(); } catch (e) { console.error(e); } }); }
+function emit() {
+  listeners.forEach(fn => { try { fn(); } catch (e) { console.error(e); } });
+  document.dispatchEvent(new CustomEvent("tt-state")); // cho hoc-tieng-trung.js (ôn từ vựng, bộ thủ) cập nhật theo quyền
+}
+window.tnCan = (feat) => can(feat);
+window.tnIsStaff = () => isStaff();
 
 async function loadAccountData() {
   const fb = T.fb; if (!fb) return;
