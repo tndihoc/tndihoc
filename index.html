@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&amp;family=Noto+Serif+SC:wght@500;700;900&amp;display=swap" rel="stylesheet"/>
 <link href="giao-dien.css?v=ade39f6a" rel="stylesheet"/>
 <link href="tinh-nang-moi.css?v=3" rel="stylesheet"/>
+<link href="phong-van.css?v=1" rel="stylesheet"/>
 
 <style>
   html { scroll-behavior: smooth; }
@@ -746,6 +747,7 @@
 <button class="nav-link" data-nav-btn="" data-target="about"><span class="nav-dot"></span> giới thiệu về TN</button>
 <button class="nav-link" data-nav-btn="" data-target="chinese"><span class="nav-dot"></span> học tiếng trung</button>
 <button class="nav-link" data-nav-btn="" data-target="abroad"><span class="nav-dot"></span> du học Trung Quốc</button>
+<button class="nav-link" data-nav-btn="" data-target="phongvan"><span class="nav-dot"></span> phỏng vấn</button>
 <button class="nav-link" data-staff-only="" data-nav-btn="" data-target="lophoc" style="display:none"><span class="nav-dot"></span> lớp học</button>
 <button class="nav-link" data-admin-only="" data-nav-btn="" data-target="admin" style="display:none"><span class="nav-dot"></span> quản trị</button>
 </nav>
@@ -807,6 +809,7 @@ Trang quản trị
 <button class="nav-link" data-nav-btn="" data-target="about"><span class="nav-dot"></span> giới thiệu về TN</button>
 <button class="nav-link" data-nav-btn="" data-target="chinese"><span class="nav-dot"></span> học tiếng trung</button>
 <button class="nav-link" data-nav-btn="" data-target="abroad"><span class="nav-dot"></span> du học Trung Quốc</button>
+<button class="nav-link" data-nav-btn="" data-target="phongvan"><span class="nav-dot"></span> phỏng vấn</button>
 <button class="nav-link" data-staff-only="" data-nav-btn="" data-target="lophoc" style="display:none"><span class="nav-dot"></span> lớp học</button>
 <button class="nav-link" data-admin-only="" data-nav-btn="" data-target="admin" style="display:none"><span class="nav-dot"></span> quản trị</button>
 </nav>
@@ -842,7 +845,7 @@ Trang quản trị
   Lượt truy cập hôm nay: <span id="visit-counter-num">—</span>
 </span>
 </div>
-<div class="grid md:grid-cols-3 gap-5">
+<div class="home-grid-4">
 <button class="nav-jump home-block focus-ring" data-target="about" style="background:linear-gradient(135deg,#4F8DF0 0%,#2F62D6 100%);--hb-ink:#2F62D6;--hb-shadow:rgba(47,98,214,.55);" type="button">
 <span class="hb-title">Giới thiệu về TN</span>
 <span class="hb-cta">KHÁM PHÁ <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" viewbox="0 0 24 24" width="14"><line x1="5" x2="19" y1="12" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
@@ -853,6 +856,10 @@ Trang quản trị
 </button>
 <button class="nav-jump home-block focus-ring" data-target="abroad" style="background:linear-gradient(135deg,#EC6A88 0%,#C93A60 100%);--hb-ink:#C93A60;--hb-shadow:rgba(240,96,126,.5);" type="button">
 <span class="hb-title">Du học Trung Quốc</span>
+<span class="hb-cta">KHÁM PHÁ <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" viewbox="0 0 24 24" width="14"><line x1="5" x2="19" y1="12" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
+</button>
+<button class="nav-jump home-block focus-ring" data-target="phongvan" style="background:linear-gradient(135deg,#FFA040 0%,#F07400 100%);--hb-ink:#F07400;--hb-shadow:rgba(240,116,0,.5);" type="button">
+<span class="hb-title">Training phỏng vấn</span>
 <span class="hb-cta">KHÁM PHÁ <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" viewbox="0 0 24 24" width="14"><line x1="5" x2="19" y1="12" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
 </button>
 </div>
@@ -1865,6 +1872,11 @@ Trang quản trị
   </div>
 </div>
 
+</section>
+<!-- ===== TRAINING PHỎNG VẤN (VIP) — nội dung do phong-van.js vẽ ===== -->
+<section class="page-section" data-page="" id="phongvan">
+<button class="back-home-btn focus-ring" data-go-home="" type="button"><svg fill="none" height="15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewbox="0 0 24 24" width="15"><polyline points="15 18 9 12 15 6"></polyline></svg>Trang chủ</button>
+<div id="pv-root"><div class="tt-empty"><span class="tt-spin"></span></div></div>
 </section>
 <!-- ===== TRANG QUẢN TRỊ (chỉ tài khoản có role = "admin" mới xem được dữ liệu) ===== -->
 <section class="page-section" data-page="" id="lophoc">
@@ -3897,6 +3909,7 @@ Tiếp tục với Google
 </div>
 </div>
 <script src="auth.js?v=tt2" type="module"></script>
-<script src="tinh-nang-moi.js?v=4" type="module"></script>
+<script src="tinh-nang-moi.js?v=5" type="module"></script>
+<script src="phong-van.js?v=1" type="module"></script>
 </body>
 </html>

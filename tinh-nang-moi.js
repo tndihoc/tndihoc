@@ -73,7 +73,7 @@ function dataURLToBlob(url) {
 /* ---------------- Trạng thái đăng nhập + Firebase ---------------- */
 const T = {
   user: null, profile: null, fb: null,
-  defaults: { dictation: true, speakingTasks: true, contributeEdits: true, vipDialogue: false },
+  defaults: { dictation: true, speakingTasks: true, contributeEdits: true, vipDialogue: false, interview: false },
   myClasses: [], ready: false,
 };
 const FLAGS = [
@@ -81,6 +81,7 @@ const FLAGS = [
   { perm: "can_access_speaking_tasks", feat: "speakingTasks", label: "Khẩu ngữ theo chủ đề", icon: "🎙️" },
   { perm: "can_access_vip_dialogue", feat: "vipDialogue", label: "Hội thoại 贯通中文 (VIP)", icon: "⭐" },
   { perm: "can_contribute_edits", feat: "contributeEdits", label: "Góp ý sửa bản dịch", icon: "📝" },
+  { perm: "can_access_interview", feat: "interview", label: "Training phỏng vấn (VIP)", icon: "🎤" },
 ];
 const flagOf = (feat) => FLAGS.find(f => f.feat === feat);
 const role = () => (T.profile && T.profile.role) || "user";
@@ -118,7 +119,7 @@ function needLoginHtml(what) {
 function lockedHtml(feat) {
   const f = flagOf(feat);
   if (!T.user) return `<div class="tt-lock"><div class="ico">${f.icon}</div><b>${esc(f.label)}</b><p>Tính năng này dành cho học viên đã đăng nhập và được giáo viên mở quyền.</p><button class="tt-btn" data-tt-login>Đăng nhập</button></div>`;
-  return `<div class="tt-lock"><div class="ico">🔒</div><b>${esc(f.label)} chưa được mở cho tài khoản của bạn</b><p>${feat === "vipDialogue" ? "Đây là tính năng VIP dành cho học viên lớp giáo trình 《贯通中文》. " : ""}Hãy nhập <b>mã lớp</b> giáo viên gửi ở mục “Lớp của tôi”, hoặc liên hệ cô Thúy để được mở quyền.</p><a class="tt-btn peach" href="#tt-myclass">🏫 Nhập mã lớp</a></div>`;
+  return `<div class="tt-lock"><div class="ico">🔒</div><b>${esc(f.label)} chưa được mở cho tài khoản của bạn</b><p>${feat === "vipDialogue" ? "Đây là tính năng VIP dành cho học viên lớp giáo trình 《贯通中文》. " : feat === "interview" ? "Đây là tính năng VIP dành cho học viên được cô Thúy cấp quyền luyện phỏng vấn du học. " : ""}Hãy nhập <b>mã lớp</b> giáo viên gửi ở mục “Lớp của tôi”, hoặc liên hệ cô Thúy để được mở quyền.</p><button type="button" class="tt-btn peach" data-go-myclass>🏫 Nhập mã lớp</button></div>`;
 }
 document.addEventListener("click", e => {
   if (e.target.closest("[data-tt-login]")) { e.preventDefault(); window.tnOpenLogin ? window.tnOpenLogin("login") : alert("Đang tải chức năng đăng nhập, thử lại sau giây lát."); }
@@ -873,7 +874,7 @@ async function renderMySubs(el) {
     }
     const list = $("ms-list"); if (!list) return;
     list.innerHTML = SPK.mySubs.length ? SPK.mySubs.slice(0, 30).map(s => `<div class="tt-sub">
-        <div class="tt-row between"><div><b>${s.type === "vip" ? "⭐ " : "🎙️ "}${esc(s.taskTitle)}</b> <span class="tt-small">· ${fmtTime(s.createdAt)}</span></div>
+        <div class="tt-row between"><div><b>${s.type === "vip" ? "⭐ " : s.type === "interview" ? "🎤 " : "🎙️ "}${esc(s.taskTitle)}</b> <span class="tt-small">· ${fmtTime(s.createdAt)}</span></div>
         ${s.status === "reviewed" ? `<span class="tt-badge green">đã nhận xét${s.score ? " · " + esc(s.score) : ""}</span>` : `<span class="tt-badge">đang chờ chấm</span>`}</div>
         ${s.feedback ? `<div class="tt-fb">👩‍🏫 <b>${esc(s.reviewerName || "Giáo viên")}:</b> ${esc(s.feedback)}</div>` : ""}
         <div class="tt-row" style="margin-top:.4rem"><button class="tt-link" data-listen="${s.id}">▶ Nghe lại bài của tôi</button></div><div data-audio-of="${s.id}"></div></div>`).join("")
@@ -1161,6 +1162,7 @@ const LMS_TABS = [
   { id: "topics", label: "🗣️ Chủ đề khẩu ngữ" },
   { id: "defaults", label: "⚙️ Mặc định", admin: true },
   { id: "vipdata", label: "⭐ Dữ liệu 贯通中文", admin: true },
+  { id: "pvdata", label: "🎤 Dữ liệu phỏng vấn", admin: true },
 ];
 function renderLms() {
   const box = $("tt-lms"); if (!box) return;
@@ -1172,7 +1174,8 @@ function renderLms() {
   if (!tabs.some(t => t.id === LMS.tab)) LMS.tab = "classes";
   box.innerHTML = `<div class="tt-tabs">${tabs.map(t => `<button class="tt-tab ${t.id === LMS.tab ? "active" : ""}" data-lt="${t.id}">${t.label}</button>`).join("")}</div><div id="lms-body" class="tt-fade"></div>`;
   box.querySelectorAll("[data-lt]").forEach(b => b.addEventListener("click", () => { LMS.tab = b.dataset.lt; renderLms(); }));
-  ({ classes: lmsClasses, users: lmsUsers, subs: lmsSubs, contrib: lmsContrib, topics: lmsTopics, defaults: lmsDefaults, vipdata: lmsVipData })[LMS.tab]();
+  ({ classes: lmsClasses, users: lmsUsers, subs: lmsSubs, contrib: lmsContrib, topics: lmsTopics, defaults: lmsDefaults, vipdata: lmsVipData,
+    pvdata: () => window.tnInterviewAdmin ? window.tnInterviewAdmin(lmsBody()) : (lmsBody().innerHTML = `<div class="tt-note warn">Chưa tải được phong-van.js — hãy kiểm tra file này đã có trên GitHub.</div>`) })[LMS.tab]();
 }
 const lmsBody = () => $("lms-body");
 const loading = () => { lmsBody().innerHTML = `<div class="tt-empty"><span class="tt-spin"></span> Đang tải…</div>`; };
@@ -1206,7 +1209,7 @@ async function lmsClasses() {
       for (let k = 0; k < 5 && (await D().getDoc(D().doc(db(), "classes", code))).exists(); k++) code = randomCode();
       await D().setDoc(D().doc(db(), "classes", code), {
         name, teacherId: T.user.uid, teacherName: myName(), studentIds: [], students: {}, joinOpen: true,
-        enabledFeatures: { dictation: true, speakingTasks: true, vipDialogue: false, contributeEdits: true }, createdAt: D().serverTimestamp(),
+        enabledFeatures: { dictation: true, speakingTasks: true, vipDialogue: false, contributeEdits: true, interview: false }, createdAt: D().serverTimestamp(),
       });
       LMS.classes = null; LMS.openClass = code; toast("✅ Đã tạo lớp — mã mời: " + code); lmsClasses();
     } catch (e) { toast(errText(e)); $("cl-create").disabled = false; }
@@ -1324,18 +1327,21 @@ async function lmsSubs() {
   } catch (e) { lmsBody().innerHTML = `<div class="tt-note err">${esc(errText(e))}</div>`; return; }
   const cls = LMS.classes || [];
   const fc = LMS.subClass || "";
-  const list = LMS.subs.filter(s => (LMS.subFilter === "all" || s.status === LMS.subFilter) && (!fc || (s.classIds || []).includes(fc)));
+  const ft = LMS.subType || "";
+  const list = LMS.subs.filter(s => (LMS.subFilter === "all" || s.status === LMS.subFilter) && (!fc || (s.classIds || []).includes(fc)) && (!ft || (s.type || "speaking") === ft));
   lmsBody().innerHTML = `<div class="tt-card">
     <div class="tt-row" style="margin-bottom:.8rem">
       <select class="tt-select" id="sb-st"><option value="submitted">⏳ Chờ nhận xét</option><option value="reviewed">✓ Đã nhận xét</option><option value="all">Tất cả</option></select>
+      <select class="tt-select" id="sb-ty"><option value="">Mọi loại bài</option><option value="speaking">🎙️ Khẩu ngữ</option><option value="vip">⭐ 贯通中文</option><option value="interview">🎤 Phỏng vấn</option></select>
       <select class="tt-select" id="sb-cl"><option value="">Mọi lớp</option>${cls.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("")}</select>
       <button class="tt-btn ghost sm" id="sb-reload">↻ Làm mới</button><span class="tt-small">${list.length} bài</span></div>
     ${list.length ? list.map(s => `<div class="tt-sub" data-sub="${s.id}">
-        <div class="tt-row between"><div><b>${esc(s.name)}</b> <span class="tt-small">${esc(s.email || "")} · ${fmtTime(s.createdAt)}</span><div>${s.type === "vip" ? "⭐ " : "🎙️ "}${esc(s.taskTitle)}${s.role && s.role !== "all" ? ` <span class="tt-badge">vai ${esc(s.role)}</span>` : ""}${s.duration ? ` <span class="tt-small">· ${fmtClock(s.duration)}</span>` : ""}</div></div>
+        <div class="tt-row between"><div><b>${esc(s.name)}</b> <span class="tt-small">${esc(s.email || "")} · ${fmtTime(s.createdAt)}</span><div>${s.type === "vip" ? "⭐ " : s.type === "interview" ? "🎤 " : "🎙️ "}${esc(s.taskTitle)}${s.role && s.role !== "all" ? ` <span class="tt-badge">vai ${esc(s.role)}</span>` : ""}${s.duration ? ` <span class="tt-small">· ${fmtClock(s.duration)}</span>` : ""}</div></div>
           ${s.status === "reviewed" ? `<span class="tt-badge green">đã nhận xét${s.score ? " · " + esc(s.score) : ""}</span>` : `<span class="tt-badge peach">chờ nhận xét</span>`}</div>
         <div class="tt-row" style="margin-top:.4rem"><button class="tt-btn ghost sm" data-review="${s.id}">${s.status === "reviewed" ? "Xem / sửa nhận xét" : "▶ Nghe & nhận xét"}</button></div>
         <div data-review-box="${s.id}"></div></div>`).join("") : `<div class="tt-empty">Không có bài nộp nào.</div>`}</div>`;
-  $("sb-st").value = LMS.subFilter; $("sb-cl").value = fc;
+  $("sb-st").value = LMS.subFilter; $("sb-cl").value = fc; $("sb-ty").value = ft;
+  $("sb-ty").addEventListener("change", e => { LMS.subType = e.target.value; lmsSubs(); });
   $("sb-st").addEventListener("change", e => { LMS.subFilter = e.target.value; lmsSubs(); });
   $("sb-cl").addEventListener("change", e => { LMS.subClass = e.target.value; lmsSubs(); });
   $("sb-reload").addEventListener("click", () => { LMS.subs = null; lmsSubs(); });
@@ -1443,7 +1449,7 @@ async function lmsTopics() {
 /* ---------- Mặc định cho mọi tài khoản (admin) ---------- */
 function lmsDefaults() {
   lmsBody().innerHTML = `<div class="tt-card"><b>Tính năng mở sẵn cho MỌI người</b>
-    <p class="tt-small" style="margin:.3rem 0 .8rem">Bật ở đây = ai cũng dùng được (kể cả chưa vào lớp). Tắt = chỉ người được lớp hoặc quyền riêng mở mới dùng được. Gợi ý: để <b>Hội thoại 贯通中文</b> ở trạng thái tắt (tính năng VIP).</p>
+    <p class="tt-small" style="margin:.3rem 0 .8rem">Bật ở đây = ai cũng dùng được (kể cả chưa vào lớp). Tắt = chỉ người được lớp hoặc quyền riêng mở mới dùng được. Gợi ý: để <b>Hội thoại 贯通中文</b> và <b>Training phỏng vấn</b> ở trạng thái tắt (tính năng VIP).</p>
     <div class="tt-switch-list">${FLAGS.map(f => `<label class="tt-switch"><input type="checkbox" data-def="${f.feat}" ${T.defaults[f.feat] ? "checked" : ""}><span class="knob"></span> ${f.icon} ${esc(f.label)}</label>`).join("")}</div></div>`;
   lmsBody().querySelectorAll("[data-def]").forEach(i => i.addEventListener("change", async () => {
     const next = { ...T.defaults, [i.dataset.def]: i.checked };
@@ -1494,6 +1500,11 @@ function lmsVipData() {
   });
 }
 onState(() => { LMS.classes = null; LMS.users = null; LMS.subs = null; renderLms(); });
+
+/* ---------------- Cho các file khác dùng chung (phong-van.js) ---------------- */
+window.tnApi = { T, can, isStaff, isAdmin, myName, fbReady, db, D, REC, TTS, toast, errText, esc, modal, fmtClock, fmtTime, blobToDataURL,
+  lockedHtml, needLoginHtml, onState, showSubAudio, invalidateMySubs: () => { SPK.mySubs = null; renderSpeaking(); } };
+document.dispatchEvent(new CustomEvent("tn-api-ready"));
 
 /* ---------------- Khởi động ---------------- */
 // auth.js chạy trước file này nên có thể đã phát sự kiện "tn-auth" từ trước → đọc lại trạng thái hiện có
