@@ -8,6 +8,7 @@
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&amp;family=Noto+Serif+SC:wght@500;700;900&amp;display=swap" rel="stylesheet"/>
 <link href="giao-dien.css?v=ade39f6a" rel="stylesheet"/>
+<link href="tinh-nang-moi.css?v=1" rel="stylesheet"/>
 
 <style>
   html { scroll-behavior: smooth; }
@@ -745,6 +746,7 @@
 <button class="nav-link" data-nav-btn="" data-target="about"><span class="nav-dot"></span> giới thiệu về TN</button>
 <button class="nav-link" data-nav-btn="" data-target="chinese"><span class="nav-dot"></span> học tiếng trung</button>
 <button class="nav-link" data-nav-btn="" data-target="abroad"><span class="nav-dot"></span> du học Trung Quốc</button>
+<button class="nav-link" data-staff-only="" data-nav-btn="" data-target="lophoc" style="display:none"><span class="nav-dot"></span> lớp học</button>
 <button class="nav-link" data-admin-only="" data-nav-btn="" data-target="admin" style="display:none"><span class="nav-dot"></span> quản trị</button>
 </nav>
 <div class="flex items-center gap-2 shrink-0">
@@ -764,6 +766,14 @@
 <p class="text-[11px] text-peach font-semibold mt-1" data-auth-role=""></p>
 <p class="text-[11px] text-slate mt-1" data-sync-status=""></p>
 </div>
+<button data-staff-only="" data-go-lophoc="" style="display:none" type="button">
+<svg fill="none" height="16" stroke="#FF7D00" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+Lớp học &amp; phân quyền
+</button>
+<button data-go-myclass="" type="button">
+<svg fill="none" height="16" stroke="#000080" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+Lớp của tôi
+</button>
 <button data-admin-only="" data-go-admin="" style="display:none" type="button">
 <svg fill="none" height="16" stroke="#000080" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><rect height="7" width="7" x="3" y="3"></rect><rect height="7" width="7" x="14" y="3"></rect><rect height="7" width="7" x="14" y="14"></rect><rect height="7" width="7" x="3" y="14"></rect></svg>
 Trang quản trị
@@ -797,6 +807,7 @@ Trang quản trị
 <button class="nav-link" data-nav-btn="" data-target="about"><span class="nav-dot"></span> giới thiệu về TN</button>
 <button class="nav-link" data-nav-btn="" data-target="chinese"><span class="nav-dot"></span> học tiếng trung</button>
 <button class="nav-link" data-nav-btn="" data-target="abroad"><span class="nav-dot"></span> du học Trung Quốc</button>
+<button class="nav-link" data-staff-only="" data-nav-btn="" data-target="lophoc" style="display:none"><span class="nav-dot"></span> lớp học</button>
 <button class="nav-link" data-admin-only="" data-nav-btn="" data-target="admin" style="display:none"><span class="nav-dot"></span> quản trị</button>
 </nav>
 <div class="mt-auto pt-6 border-t border-ink/10">
@@ -983,7 +994,12 @@ Trang quản trị
 <a class="cn-nav-btn focus-ring" href="#vocab-mastery-widget" style="background:#EEF2FC;color:#2E48C4;border-color:#D6E0F7;"><span class="cn-nav-ico">✅</span><span>Từ đã ghi nhớ</span></a>
 <a class="cn-nav-btn focus-ring" href="#vocab-games" style="background:#F0EAFE;color:#52329E;border-color:#D9CCFA;"><span class="cn-nav-ico">🎮</span><span>Trò chơi</span></a>
 <a class="cn-nav-btn focus-ring" href="#baidoc-section" style="background:#FDE8F1;color:#B0306A;border-color:#F7C6DB;"><span class="cn-nav-ico">📖</span><span>Bài đọc</span></a>
-<a class="cn-nav-btn focus-ring col-span-2 sm:col-span-1" href="#notebook-section" style="background:#FFE8D1;color:#B35600;border-color:#FFC98A;"><span class="cn-nav-ico">📓</span><span>Sổ tay từ vựng</span></a>
+<a class="cn-nav-btn focus-ring" href="#notebook-section" style="background:#FFE8D1;color:#B35600;border-color:#FFC98A;"><span class="cn-nav-ico">📓</span><span>Sổ tay từ vựng</span></a>
+<a class="cn-nav-btn focus-ring" href="#tt-dictation" style="background:#E6F4F1;color:#1F6F62;border-color:#BCE3DA;"><span class="cn-nav-ico">✍️</span><span>Chép chính tả</span></a>
+<a class="cn-nav-btn focus-ring" href="#tt-gallery" style="background:#FFF4E5;color:#A65400;border-color:#FFD9A8;"><span class="cn-nav-ico">🖼️</span><span>Góc luyện chữ</span></a>
+<a class="cn-nav-btn focus-ring" href="#tt-speaking" style="background:#EEF2FC;color:#3550B8;border-color:#D6E0F7;"><span class="cn-nav-ico">🎙️</span><span>Khẩu ngữ</span></a>
+<a class="cn-nav-btn focus-ring" href="#tt-vip" style="background:#FFF0E0;color:#B35600;border-color:#FFC98A;"><span class="cn-nav-ico">⭐</span><span>Hội thoại 贯通</span></a>
+<a class="cn-nav-btn focus-ring col-span-2 sm:col-span-1" href="#tt-myclass" style="background:#F3F0FA;color:#4B3C8C;border-color:#DCD3F2;"><span class="cn-nav-ico">🏫</span><span>Lớp của tôi</span></a>
 </div>
 <!-- ===== Streak & Heatmap widget ===== -->
 <div class="bg-white border border-ink/10 rounded-2xl p-6 sm:p-7 mb-8" id="streak-widget">
@@ -1500,6 +1516,13 @@ Trang quản trị
 </div>
 </div>
 </div>
+<!-- ===== TÍNH NĂNG MỚI (giao diện do tinh-nang-moi.js vẽ) ===== -->
+<div class="tt-reading-extra" id="tt-reading-extra" hidden></div>
+<div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-dictation"></div>
+<div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-gallery"></div>
+<div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-speaking"></div>
+<div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-vip"></div>
+<div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-myclass"></div>
 <!-- ===== SỔ TAY TỪ VỰNG ===== -->
 <div class="mt-10 pt-8 border-t border-ink/10" id="notebook-section">
 <div class="flex items-center gap-2 mb-1">
@@ -1852,6 +1875,14 @@ Trang quản trị
 
 </section>
 <!-- ===== TRANG QUẢN TRỊ (chỉ tài khoản có role = "admin" mới xem được dữ liệu) ===== -->
+<section class="page-section" data-page="" id="lophoc">
+<button class="back-home-btn focus-ring" data-go-home="" type="button"><svg fill="none" height="15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewbox="0 0 24 24" width="15"><polyline points="15 18 9 12 15 6"></polyline></svg>Trang chủ</button>
+<div class="mb-6">
+<p class="text-peach font-semibold text-sm tracking-wide mb-1">Giáo viên &amp; quản trị</p>
+<h1 class="text-2xl sm:text-3xl font-extrabold text-ink">Lớp học &amp; phân quyền</h1>
+</div>
+<div id="tt-lms"></div>
+</section>
 <section class="page-section" data-page="" id="admin">
 <button class="back-home-btn focus-ring" data-go-home="" type="button"><svg fill="none" height="15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewbox="0 0 24 24" width="15"><polyline points="15 18 9 12 15 6"></polyline></svg>Trang chủ</button>
 <div class="flex flex-wrap items-end justify-between gap-3 mb-6">
@@ -3791,7 +3822,7 @@ Trang quản trị
   renderHistoryToUI();
 })();
 </script>
-<script src="bai-doc.js?v=68cde347" defer></script>
+<script src="bai-doc.js?v=tt1" defer></script>
 <!-- ===== Bộ đếm lượt truy cập hôm nay (dùng dịch vụ CountAPI miễn phí, không cần backend riêng) ===== -->
 <script>
 (function () {
@@ -3861,6 +3892,7 @@ Tiếp tục với Google
 </div>
 </div>
 </div>
-<script src="auth.js?v=ea4c7979" type="module"></script>
+<script src="auth.js?v=tt1" type="module"></script>
+<script src="tinh-nang-moi.js?v=1" type="module"></script>
 </body>
 </html>

@@ -203,10 +203,24 @@ function renderUser() {
   document.querySelectorAll("[data-auth-email]").forEach(el => el.textContent = (u && u.email) || "");
   document.querySelectorAll("[data-auth-initial]").forEach(el => el.textContent = initialOf(name));
   document.querySelectorAll("[data-admin-only]").forEach(el => el.style.display = isAdmin ? "" : "none");
-  document.querySelectorAll("[data-auth-role]").forEach(el => el.textContent = isAdmin ? "Quản trị viên" : "Học viên");
+  const role = (p && p.role) || "user";
+  document.querySelectorAll("[data-auth-role]").forEach(el => el.textContent = isAdmin ? "Quản trị viên" : role === "teacher" ? "Giáo viên" : "Học viên");
   renderAdmin();
   lbOnAuthChange();
+  // Cho các tính năng mới (tinh-nang-moi.js) biết trạng thái đăng nhập hiện tại
+  window.tnAuth = { user: u, profile: p, fb: state.fb };
+  document.dispatchEvent(new CustomEvent("tn-auth", { detail: window.tnAuth }));
 }
+window.tnOpenLogin = (m) => openModal(m || "login");
+window.tnEnsureFb = async () => { if (!state.fb) await startLoadFb(); return state.fb; };
+window.tnReloadProfile = async () => {
+  if (!state.user || !state.fb) return null;
+  const { db, D } = state.fb;
+  const snap = await D.getDoc(D.doc(db, "users", state.user.uid));
+  state.profile = snap.exists() ? snap.data() : state.profile;
+  renderUser();
+  return state.profile;
+};
 
 function toggleMenu(force) {
   const m = $("auth-menu");
@@ -506,7 +520,7 @@ function lbBind() {
    - Những lần sau: lấy tiến độ trên tài khoản làm chuẩn (kể cả khi đã xoá từ khỏi sổ tay ở máy khác).
    - Đăng xuất: xoá tiến độ khỏi máy (đã lưu an toàn trên tài khoản), để người sau dùng máy không bị lẫn.
 ------------------------------------------------------------------ */
-const SYNC_KEYS = ["tndihoc_notebook_v1", "tn_streak_v1", "tn_vocab_mastery_v1", "tndihoc_qz_best", "tndihoc_ar_best_streak"];
+const SYNC_KEYS = ["tndihoc_notebook_v1", "tn_streak_v1", "tn_vocab_mastery_v1", "tndihoc_qz_best", "tndihoc_ar_best_streak", "tn_tt_progress_v1"];
 const SYNC_PREFIXES = ["tndihoc_mu_best_"];
 const SYNC_META = "tn_sync_meta_v1"; // { uid, dirty }
 const syncState = { ready: false, timer: null, pushing: null, lastOk: null, applying: false };
@@ -607,6 +621,15 @@ function mergeValue(k, a, b) {
     const days = { ...(y.days || {}) };
     Object.entries(x.days || {}).forEach(([d, list]) => { days[d] = [...new Set([...(days[d] || []), ...(list || [])])]; });
     return JSON.stringify({ ...y, ...x, days });
+  }
+  if (k === "tn_tt_progress_v1") { // chép chính tả + hội thoại 贯通中文: gộp theo từng bài
+    const x = parseJ(a, {}), y = parseJ(b, {});
+    const dict = { ...(y.dict || {}) };
+    Object.entries(x.dict || {}).forEach(([id, r]) => {
+      const o = dict[id];
+      dict[id] = !o ? r : { ...o, ...r, bestCpm: Math.max(o.bestCpm || 0, r.bestCpm || 0), bestAcc: Math.max(o.bestAcc || 0, r.bestAcc || 0), times: Math.max(o.times || 0, r.times || 0) };
+    });
+    return JSON.stringify({ ...y, ...x, dict, vip: { ...(y.vip || {}), ...(x.vip || {}) } });
   }
   if (k.startsWith("tndihoc_mu_best_")) return String(Math.min(Number(a) || Infinity, Number(b) || Infinity)); // thời gian: càng nhỏ càng tốt
   return String(Math.max(Number(a) || 0, Number(b) || 0)); // điểm / streak: càng lớn càng tốt
