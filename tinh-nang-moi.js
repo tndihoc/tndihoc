@@ -406,6 +406,8 @@ document.addEventListener("click", e => {
   const l = lessonById(READ.openId); if (l) openSuggest(l, Number(s.dataset.line || 0));
 });
 onState(() => { loadOverrides(); if (READ.openId) renderReadingExtra(); });
+// Kho bài đọc được tải từ máy chủ sau khi đăng nhập (bai-doc.js) → áp bản dịch đã duyệt, vẽ lại chép chính tả
+document.addEventListener("tn-readings-ready", () => { READ.overridesLoaded = false; loadOverrides(); renderDictation(); });
 
 /* =====================================================================
    2) CHÉP CHÍNH TẢ — đánh máy (đo tốc độ) + chép tay (đăng ảnh)
@@ -436,6 +438,7 @@ function renderDictation() {
   const box = $("tt-dictation"); if (!box) return;
   const head = `<div class="tt-head"><span class="tt-stamp">听</span><h3>Chép chính tả</h3><span class="tt-badge peach">mới</span></div>
     <p class="tt-desc">Nghe từng câu trong kho bài đọc HSK rồi <b>gõ lại</b> (đo tốc độ chữ/phút) hoặc <b>chép tay</b> ra giấy, chụp ảnh và chia sẻ ở <a href="#tt-gallery" class="tt-link">Góc luyện chữ</a>.</p>`;
+  if (!T.user) { box.innerHTML = head + needLoginHtml("luyện chép chính tả với kho bài đọc HSK"); return; }
   if (!can("dictation")) { box.innerHTML = head + lockedHtml("dictation"); return; }
   const all = dictLessons();
   if (!all.length) { box.innerHTML = head + `<div class="tt-empty">Đang tải kho bài đọc…</div>`; return; }
@@ -1163,6 +1166,7 @@ const LMS_TABS = [
   { id: "defaults", label: "⚙️ Mặc định", admin: true },
   { id: "vipdata", label: "⭐ Dữ liệu 贯通中文", admin: true },
   { id: "pvdata", label: "🎤 Dữ liệu phỏng vấn", admin: true },
+  { id: "readdata", label: "📖 Dữ liệu bài đọc", admin: true },
 ];
 function renderLms() {
   const box = $("tt-lms"); if (!box) return;
@@ -1174,7 +1178,7 @@ function renderLms() {
   if (!tabs.some(t => t.id === LMS.tab)) LMS.tab = "classes";
   box.innerHTML = `<div class="tt-tabs">${tabs.map(t => `<button class="tt-tab ${t.id === LMS.tab ? "active" : ""}" data-lt="${t.id}">${t.label}</button>`).join("")}</div><div id="lms-body" class="tt-fade"></div>`;
   box.querySelectorAll("[data-lt]").forEach(b => b.addEventListener("click", () => { LMS.tab = b.dataset.lt; renderLms(); }));
-  ({ classes: lmsClasses, users: lmsUsers, subs: lmsSubs, contrib: lmsContrib, topics: lmsTopics, defaults: lmsDefaults, vipdata: lmsVipData,
+  ({ classes: lmsClasses, users: lmsUsers, subs: lmsSubs, contrib: lmsContrib, topics: lmsTopics, defaults: lmsDefaults, vipdata: lmsVipData, readdata: lmsReadData,
     pvdata: () => window.tnInterviewAdmin ? window.tnInterviewAdmin(lmsBody()) : (lmsBody().innerHTML = `<div class="tt-note warn">Chưa tải được phong-van.js — hãy kiểm tra file này đã có trên GitHub.</div>`) })[LMS.tab]();
 }
 const lmsBody = () => $("lms-body");
@@ -1376,7 +1380,7 @@ async function lmsContrib() {
   } catch (e) { lmsBody().innerHTML = `<div class="tt-note err">${esc(errText(e))}</div>`; return; }
   lmsBody().innerHTML = `<div class="tt-card">
     <div class="tt-row between" style="margin-bottom:.7rem"><span class="tt-small"><b>${LMS.contribs.length}</b> góp ý đang chờ. Bấm <b>Duyệt</b> → bài đọc trên web cập nhật ngay cho mọi người.</span>
-      ${isAdmin() ? `<button class="tt-btn ghost sm" id="ct-export" title="Tải file bai-doc.js đã gộp mọi bản dịch được duyệt, để thay file cũ trên GitHub">⤓ Tải bai-doc.js đã cập nhật</button>` : ""}</div>
+      ${isAdmin() ? `<button class="tt-btn ghost sm" id="ct-export" title="Ghi các bản dịch đã duyệt thẳng vào kho bài đọc trên máy chủ">⤒ Gộp bản dịch đã duyệt vào kho bài đọc</button>` : ""}</div>
     ${LMS.contribs.length ? LMS.contribs.map(c => `<div class="tt-sub" data-c="${c.id}">
       <div class="tt-row between"><div><span class="tt-badge">${c.hsk ? "HSK " + esc(c.hsk) : ""}</span> <b>${esc(c.readingTitle)}</b> <span class="tt-small">· câu ${c.lineIndex + 1} · ${c.field === "note" ? "💡 ghi chú" : "✏️ bản dịch"}</span></div><span class="tt-small">${esc(c.name)} · ${fmtTime(c.createdAt)}</span></div>
       <div class="tt-hz" style="font-size:18px;margin:.4rem 0 .2rem">${esc(c.cn)}</div>
@@ -1406,14 +1410,63 @@ async function decideContrib(id, ok) {
   } catch (e) { toast(errText(e)); }
 }
 async function exportBaiDoc() {
-  try {
-    const src = await (await fetch("bai-doc.js", { cache: "no-store" })).text();
-    const key = "const readingLessons = "; const i = src.indexOf(key); const j = src.indexOf("];\n", i);
-    if (i < 0 || j < 0) throw new Error("Không nhận dạng được cấu trúc bai-doc.js");
-    const out = src.slice(0, i + key.length) + JSON.stringify(lessons()) + src.slice(j + 1);
-    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([out], { type: "text/javascript" })); a.download = "bai-doc.js"; a.click();
-    toast("Đã tải bai-doc.js — tải file này lên GitHub để thay file cũ.");
-  } catch (e) { toast(errText(e)); }
+  if (!confirm("Ghi toàn bộ kho bài đọc (đã gộp các bản dịch được duyệt) lên máy chủ?")) return;
+  try { const n = await publishReadings(lessons()); toast(`✅ Đã cập nhật kho bài đọc (${n} bài).`); }
+  catch (e) { toast(errText(e)); }
+}
+
+/* ---------- Kho bài đọc trên máy chủ (chỉ tài khoản đã đăng nhập mới đọc được) ---------- */
+/** Chia mảng bài đọc thành nhiều tài liệu ≤ ~850 KB (Firestore giới hạn 1 MB/tài liệu) rồi ghi lên readings/* */
+async function publishReadings(arr, onStep) {
+  if (!Array.isArray(arr) || !arr.length) throw new Error("Không có bài đọc nào để lưu.");
+  const enc = new TextEncoder(), LIMIT = 850000;
+  const parts = []; let cur = [], size = 2;
+  arr.forEach(l => {
+    const b = enc.encode(JSON.stringify(l)).length + 1;
+    if (cur.length && size + b > LIMIT) { parts.push(cur); cur = []; size = 2; }
+    cur.push(l); size += b;
+  });
+  if (cur.length) parts.push(cur);
+  const ids = parts.map((_, i) => "p" + (i + 1));
+  for (let i = 0; i < parts.length; i++) {
+    onStep && onStep(i + 1, parts.length);
+    await D().setDoc(D().doc(db(), "readings", ids[i]), { json: JSON.stringify(parts[i]), count: parts[i].length });
+  }
+  await D().setDoc(D().doc(db(), "readings", "_meta"), { version: Date.now(), parts: ids, count: arr.length, updatedAt: D().serverTimestamp() });
+  return arr.length;
+}
+async function lmsReadData() {
+  lmsBody().innerHTML = `<div class="tt-card"><b>Kho bài đọc trên máy chủ</b>
+    <p class="tt-small" style="margin:.4rem 0 .8rem;line-height:1.7">Nội dung bài đọc không còn nằm trên GitHub — chỉ tài khoản <b>đã đăng nhập</b> mới tải được.
+      Muốn thêm/sửa nhiều bài: nhờ Claude sửa file <b>bai-doc-data.json</b> rồi nạp lại ở đây (ghi đè toàn bộ kho). Bản dịch học viên góp ý được duyệt vẫn tự cập nhật như cũ.</p>
+    <div id="rd-now" class="tt-small" style="margin-bottom:.6rem"><span class="tt-spin"></span></div>
+    <input type="file" accept=".json,application/json" id="rd-file" class="tt-input" style="width:100%">
+    <div class="tt-row" style="justify-content:flex-end;margin-top:.6rem"><button class="tt-btn peach" id="rd-go" disabled>⤒ Nạp lên máy chủ</button></div>
+    <div id="rd-log" style="margin-top:.7rem"></div></div>`;
+  (async () => {
+    try { const m = await D().getDoc(D().doc(db(), "readings", "_meta"));
+      $("rd-now") && ($("rd-now").innerHTML = m.exists() ? `✓ Đang có <b>${m.data().count}</b> bài · ${m.data().parts.length} phần · cập nhật ${esc(fmtTime(m.data().updatedAt))}` : "✗ Chưa nạp kho bài đọc — web đang hiện “Đang tải…” cho học viên.");
+    } catch (e) { $("rd-now") && ($("rd-now").textContent = errText(e)); }
+  })();
+  let arr = null;
+  $("rd-file").addEventListener("change", async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const pkg = JSON.parse(await f.text());
+      if (pkg.kind !== "tndihoc-readings" || !Array.isArray(pkg.lessons)) throw new Error("File không đúng định dạng bai-doc-data.json");
+      arr = pkg.lessons;
+      const lv = {}; arr.forEach(l => lv[l.hsk] = (lv[l.hsk] || 0) + 1);
+      $("rd-log").innerHTML = `<div class="tt-note ok">Đã đọc ${arr.length} bài: ${Object.entries(lv).map(([k, v]) => `HSK ${esc(k)}: ${v}`).join(" · ")}</div>`;
+      $("rd-go").disabled = false;
+    } catch (err) { arr = null; $("rd-log").innerHTML = `<div class="tt-note err">${esc(err.message)}</div>`; }
+  });
+  $("rd-go").addEventListener("click", async () => {
+    if (!arr) return; const b = $("rd-go"); b.disabled = true;
+    try {
+      await publishReadings(arr, (i, n) => { $("rd-log").innerHTML = `<div class="tt-note">Đang nạp phần ${i}/${n}…</div><div class="tt-progress"><i style="width:${i / n * 100}%"></i></div>`; });
+      $("rd-log").innerHTML = `<div class="tt-note ok">🎉 Xong! Đã nạp ${arr.length} bài. Tải lại trang để thấy kho bài đọc mới.</div>`;
+    } catch (e) { $("rd-log").innerHTML = `<div class="tt-note err">${esc(errText(e))}</div>`; b.disabled = false; }
+  });
 }
 
 /* ---------- Chủ đề khẩu ngữ do giáo viên giao ---------- */

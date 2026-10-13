@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&amp;family=Noto+Serif+SC:wght@500;700;900&amp;display=swap" rel="stylesheet"/>
 <link href="giao-dien.css?v=ade39f6a" rel="stylesheet"/>
 <link href="tinh-nang-moi.css?v=3" rel="stylesheet"/>
-<link href="phong-van.css?v=1" rel="stylesheet"/>
+<link href="phong-van.css?v=2" rel="stylesheet"/>
 
 <style>
   html { scroll-behavior: smooth; }
@@ -24,7 +24,6 @@
     text-transform: uppercase;
   }
   .brand-name,
-  .ai-messages, .ai-messages *,
   input, textarea, select, option,
   .watermark-hanzi, .font-hanzi, [lang="zh"] {
     text-transform: none !important;
@@ -421,73 +420,6 @@
     #streak-flame.is-active { animation: none; }
   }
 
-  /* ===== Trợ lý AI ===== */
-  /* Vị trí: sát mép trái (chiều ngang), canh giữa màn hình (chiều dọc) */
-  .ai-bubble-btn {
-    position: fixed; left: 20px; top: 50%; transform: translateY(-50%); z-index: 999;
-    width: 56px; height: 56px; border-radius: 9999px;
-    background: #FF7D00; color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 8px 20px rgba(255,125,0,0.35);
-    border: 2px solid rgba(255,255,255,0.6);
-    transition: transform .15s ease, box-shadow .15s ease;
-  }
-  .ai-bubble-btn:hover { transform: translateY(-50%) translateY(-2px); box-shadow: 0 12px 24px rgba(255,125,0,0.4); }
-  .ai-bubble-btn.is-open { background: #2E3440; }
-
-  .ai-panel {
-    position: fixed; left: 88px; top: 50%; transform: translateY(-50%); z-index: 999;
-    width: min(360px, calc(100vw - 32px)); height: min(520px, calc(100vh - 140px));
-    background: #FFFFFF; border: 1px solid rgba(46,52,64,0.12); border-radius: 18px;
-    box-shadow: 0 20px 45px rgba(46,52,64,0.18);
-    display: flex; flex-direction: column; overflow: hidden;
-    animation: aiPanelIn .18s ease both;
-  }
-  @keyframes aiPanelIn { from { opacity: 0; transform: translateY(-50%) translateY(10px) scale(.98); } to { opacity: 1; transform: translateY(-50%) translateY(0) scale(1); } }
-  @media (prefers-reduced-motion: reduce) { .ai-panel { animation: none; } }
-  @media (max-width: 480px) {
-    .ai-panel { left: 12px; width: calc(100vw - 24px); }
-  }
-
-  .ai-panel-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 14px; border-bottom: 1px solid rgba(46,52,64,0.08); background: #fff; flex-shrink: 0;
-  }
-  .ai-icon-btn {
-    width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
-    color: #6B7280; transition: background-color .15s ease, color .15s ease;
-  }
-  .ai-icon-btn:hover { background: #F0F2F5; color: #2E3440; }
-
-  .ai-settings-box { padding: 12px 14px; border-bottom: 1px solid rgba(46,52,64,0.08); background: #FFE8D1; flex-shrink: 0; }
-
-  .ai-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
-  .ai-msg { max-width: 86%; font-size: 13.5px; line-height: 1.55; border-radius: 14px; padding: 9px 12px; white-space: pre-wrap; word-break: break-word; animation: aiMsgIn .15s ease both; }
-  @keyframes aiMsgIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-  .ai-msg.is-user { align-self: flex-end; background: #000080; color: #fff; border-bottom-right-radius: 4px; }
-  .ai-msg.is-ai { align-self: flex-start; background: #F0F2F5; color: #2E3440; border-bottom-left-radius: 4px; }
-  .ai-msg.is-system { align-self: center; background: transparent; color: #6B7280; font-size: 12px; text-align: center; max-width: 100%; }
-  .ai-msg.is-error { align-self: flex-start; background: #FBE3E2; color: #B3413E; border-bottom-left-radius: 4px; }
-  .ai-msg strong { font-weight: 700; }
-  .ai-msg .ai-hanzi { font-family: '"Kaiti SC"', '"STKaiti"', '"KaiTi"', '"Noto Serif SC"', serif; font-weight: 700; }
-
-  .ai-typing { display: flex; gap: 4px; align-items: center; padding: 0 14px 10px; flex-shrink: 0; }
-  .ai-typing-dot { width: 6px; height: 6px; border-radius: 9999px; background: #C7C2B4; animation: aiTypingBounce 1.1s ease-in-out infinite; }
-  .ai-typing-dot:nth-child(2) { animation-delay: .15s; }
-  .ai-typing-dot:nth-child(3) { animation-delay: .3s; }
-  @keyframes aiTypingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-4px); opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .ai-typing-dot { animation: none; } }
-
-  .ai-input-row { display: flex; align-items: flex-end; gap: 8px; padding: 10px 12px; border-top: 1px solid rgba(46,52,64,0.08); background: #fff; flex-shrink: 0; }
-  .ai-textarea { flex: 1; resize: none; max-height: 96px; border: 1px solid rgba(46,52,64,0.15); border-radius: 12px; padding: 8px 11px; font-size: 13.5px; line-height: 1.4; font-family: inherit; }
-  .ai-textarea:focus { outline: 2px solid #000080; }
-  .ai-send-btn {
-    width: 36px; height: 36px; border-radius: 10px; background: #000080; color: #fff; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center; transition: opacity .15s ease;
-  }
-  .ai-send-btn:hover { opacity: .9; }
-  .ai-send-btn:disabled { opacity: .5; cursor: not-allowed; }
-
   /* ===== Trò chơi từ vựng ===== */
   .game-tab {
     padding: 9px 16px; border-radius: 10px; font-size: 13.5px; font-weight: 600;
@@ -692,7 +624,6 @@
   }
   .home-fab.show { opacity:1; pointer-events:auto; transform:translateY(0); }
   .home-fab:hover { background:#000080; }
-  .ai-panel.hidden, .ai-typing.hidden { display:none !important; }
   /* ===== Bảng xếp hạng (top 10 tuần / tháng) ===== */
   .game-tab--lb { color:#B35900; border-color:#FFC98A; background:#FFF6EC; }
   .game-tab--lb:hover { background:#FFE8D1; }
@@ -747,7 +678,6 @@
 <button class="nav-link" data-nav-btn="" data-target="about"><span class="nav-dot"></span> giới thiệu về TN</button>
 <button class="nav-link" data-nav-btn="" data-target="chinese"><span class="nav-dot"></span> học tiếng trung</button>
 <button class="nav-link" data-nav-btn="" data-target="abroad"><span class="nav-dot"></span> du học Trung Quốc</button>
-<button class="nav-link" data-nav-btn="" data-target="phongvan"><span class="nav-dot"></span> phỏng vấn</button>
 <button class="nav-link" data-staff-only="" data-nav-btn="" data-target="lophoc" style="display:none"><span class="nav-dot"></span> lớp học</button>
 <button class="nav-link" data-admin-only="" data-nav-btn="" data-target="admin" style="display:none"><span class="nav-dot"></span> quản trị</button>
 </nav>
@@ -809,7 +739,6 @@ Trang quản trị
 <button class="nav-link" data-nav-btn="" data-target="about"><span class="nav-dot"></span> giới thiệu về TN</button>
 <button class="nav-link" data-nav-btn="" data-target="chinese"><span class="nav-dot"></span> học tiếng trung</button>
 <button class="nav-link" data-nav-btn="" data-target="abroad"><span class="nav-dot"></span> du học Trung Quốc</button>
-<button class="nav-link" data-nav-btn="" data-target="phongvan"><span class="nav-dot"></span> phỏng vấn</button>
 <button class="nav-link" data-staff-only="" data-nav-btn="" data-target="lophoc" style="display:none"><span class="nav-dot"></span> lớp học</button>
 <button class="nav-link" data-admin-only="" data-nav-btn="" data-target="admin" style="display:none"><span class="nav-dot"></span> quản trị</button>
 </nav>
@@ -845,7 +774,7 @@ Trang quản trị
   Lượt truy cập hôm nay: <span id="visit-counter-num">—</span>
 </span>
 </div>
-<div class="home-grid-4">
+<div class="grid md:grid-cols-3 gap-5">
 <button class="nav-jump home-block focus-ring" data-target="about" style="background:linear-gradient(135deg,#4F8DF0 0%,#2F62D6 100%);--hb-ink:#2F62D6;--hb-shadow:rgba(47,98,214,.55);" type="button">
 <span class="hb-title">Giới thiệu về TN</span>
 <span class="hb-cta">KHÁM PHÁ <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" viewbox="0 0 24 24" width="14"><line x1="5" x2="19" y1="12" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
@@ -856,10 +785,6 @@ Trang quản trị
 </button>
 <button class="nav-jump home-block focus-ring" data-target="abroad" style="background:linear-gradient(135deg,#EC6A88 0%,#C93A60 100%);--hb-ink:#C93A60;--hb-shadow:rgba(240,96,126,.5);" type="button">
 <span class="hb-title">Du học Trung Quốc</span>
-<span class="hb-cta">KHÁM PHÁ <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" viewbox="0 0 24 24" width="14"><line x1="5" x2="19" y1="12" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
-</button>
-<button class="nav-jump home-block focus-ring" data-target="phongvan" style="background:linear-gradient(135deg,#FFA040 0%,#F07400 100%);--hb-ink:#F07400;--hb-shadow:rgba(240,116,0,.5);" type="button">
-<span class="hb-title">Training phỏng vấn</span>
 <span class="hb-cta">KHÁM PHÁ <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" viewbox="0 0 24 24" width="14"><line x1="5" x2="19" y1="12" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
 </button>
 </div>
@@ -1535,7 +1460,6 @@ Trang quản trị
 </div>
 <button class="mt-3 text-xs font-semibold text-slate hover:text-seal underline" id="notebook-clear" type="button">Xoá toàn bộ sổ tay</button>
 </div>
-<!-- ===== Trợ lý AI (chỉ hiện trong mục "học tiếng trung") ===== -->
 </section>
 <!-- ===== DU HỌC ===== -->
 <section class="page-section" data-page="" id="abroad">
@@ -1543,13 +1467,14 @@ Trang quản trị
 <h2 class="font-sans font-semibold text-2xl sm:text-3xl text-ink mb-5">Du học Trung Quốc</h2>
 
 <!-- ===== 3 nhánh: Dịch vụ / Kết quả đạt được / Feedback ===== -->
-<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8 abroad-tabs">
 <button class="abroad-tab active focus-ring" data-abroad-tab="services" style="--t-bg:#FFF4E2;--t-fg:#7A5320;--t-bd:#F6D9AE;--t-on:#C98B3C;" type="button"><span class="at-ico">💼</span><span>Dịch vụ</span></button>
 <button class="abroad-tab focus-ring" data-abroad-tab="results" style="--t-bg:#FFF3B8;--t-fg:#735400;--t-bd:#FFE066;--t-on:#F5B800;--t-onfg:#3D2C00;" type="button"><span class="at-ico">🏆</span><span>Kết quả đạt được</span></button>
 <button class="abroad-tab focus-ring" data-abroad-tab="feedback" style="--t-bg:#FFE2C2;--t-fg:#A14800;--t-bd:#FFC080;--t-on:#EF6C00;" type="button"><span class="at-ico">💬</span><span>Feedback</span></button>
 <button class="abroad-tab focus-ring" data-abroad-tab="casestudy" style="--t-bg:#FFD6CC;--t-fg:#C0392B;--t-bd:#FFAE9C;--t-on:#F4502F;" type="button"><span class="at-ico">📂</span><span>Case study</span></button>
 <button class="abroad-tab focus-ring" data-abroad-tab="community" style="--t-bg:#FFD9E6;--t-fg:#B8255F;--t-bd:#FFADC8;--t-on:#E83E7E;" type="button"><span class="at-ico">🤝</span><span>Tham gia cộng đồng của tôi</span></button>
 <button class="abroad-tab focus-ring" data-abroad-tab="register" style="--t-bg:#FFCFBF;--t-fg:#9E2F10;--t-bd:#F79C7D;--t-on:#D9481F;" type="button"><span class="at-ico">📝</span><span>Đăng ký tư vấn</span></button>
+<button class="abroad-tab focus-ring" data-abroad-tab="interview" style="--t-bg:#EEEAFE;--t-fg:#4B3C8C;--t-bd:#D3CCF7;--t-on:#6B57C9;" type="button"><span class="at-ico">🎤</span><span>Training phỏng vấn <span class="at-vip">VIP</span></span></button>
 </div>
 
 <!-- ===== Nhánh: Dịch vụ ===== -->
@@ -1857,6 +1782,11 @@ Trang quản trị
   </div>
 </div>
 
+<!-- ===== Nhánh: Training phỏng vấn (VIP) — nội dung do phong-van.js vẽ ===== -->
+<div class="abroad-panel" id="abroad-interview">
+<div id="pv-root"><div class="tt-empty"><span class="tt-spin"></span></div></div>
+</div>
+
 <!-- ===== Nhánh: Đăng ký tư vấn ===== -->
 <div class="abroad-panel" id="abroad-register">
   <div class="bg-peach-light border border-peach-border rounded-2xl px-6 sm:px-10 py-14 text-center">
@@ -1872,11 +1802,6 @@ Trang quản trị
   </div>
 </div>
 
-</section>
-<!-- ===== TRAINING PHỎNG VẤN (VIP) — nội dung do phong-van.js vẽ ===== -->
-<section class="page-section" data-page="" id="phongvan">
-<button class="back-home-btn focus-ring" data-go-home="" type="button"><svg fill="none" height="15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewbox="0 0 24 24" width="15"><polyline points="15 18 9 12 15 6"></polyline></svg>Trang chủ</button>
-<div id="pv-root"><div class="tt-empty"><span class="tt-spin"></span></div></div>
 </section>
 <!-- ===== TRANG QUẢN TRỊ (chỉ tài khoản có role = "admin" mới xem được dữ liệu) ===== -->
 <section class="page-section" data-page="" id="lophoc">
@@ -1929,7 +1854,7 @@ Trang quản trị
 <p>Toàn bộ nội dung, bài đọc, dữ liệu từ vựng và thiết kế trên trang thuộc quyền sở hữu của tác giả. Nghiêm cấm sao chép, phát tán hoặc tạo trang web khác từ nội dung này khi chưa được cho phép.</p>
 </div>
 </footer>
-<!-- ===== Trợ lý AI: ĐẶT Ở CẤP BODY (không nằm trong bất kỳ .page-section nào) =====
+<!-- ===== Nút nổi: ĐẶT Ở CẤP BODY (không nằm trong bất kỳ .page-section nào) =====
      Lý do: .page-section.is-active có "animation: fadeUp" tác động lên transform.
      Một phần tử cha có transform (kể cả translateY(0) sau khi animation kết thúc, vì
      animation-fill-mode: both vẫn giữ giá trị transform đó chứ không phải "none") sẽ
@@ -1938,49 +1863,6 @@ Trang quản trị
      bám theo cửa sổ trình duyệt thật sự nữa. Đặt hẳn ra ngoài mọi section như thế này
      thì position: fixed mới hoạt động đúng nghĩa, nổi cố định trên màn hình khi cuộn. -->
 <button aria-label="Về trang chủ" class="home-fab focus-ring" data-go-home="" id="home-fab" title="Về trang chủ" type="button"><svg fill="none" height="22" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="22"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"></path></svg></button>
-<button aria-label="Mở trợ lý AI" class="ai-bubble-btn hidden" id="ai-bubble-btn" type="button">
-<svg fill="none" height="26" id="ai-bubble-icon-chat" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" viewbox="0 0 24 24" width="26">
-<rect height="11" rx="3.2" width="14" x="5" y="8"></rect>
-<path d="M12 8V5"></path>
-<circle cx="12" cy="3.4" fill="currentColor" r="1.2" stroke="none"></circle>
-<circle cx="9" cy="13" fill="currentColor" r="1.3" stroke="none"></circle>
-<circle cx="15" cy="13" fill="currentColor" r="1.3" stroke="none"></circle>
-<path d="M9.3 16.3h5.4"></path>
-<path d="M2.6 12.5h2.4"></path>
-<path d="M19 12.5h2.4"></path>
-</svg>
-<svg class="hidden" fill="none" height="22" id="ai-bubble-icon-close" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="22"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
-</button>
-<div class="ai-panel hidden" id="ai-panel" style="display:none">
-<!-- Header -->
-<div class="ai-panel-header">
-<div class="flex items-center gap-2.5">
-<span class="seal-stamp" style="width:32px;height:32px;font-size:13px;">助</span>
-<div>
-<p class="font-sans font-semibold text-sm text-ink leading-tight">Trợ lý ai</p>
-<p class="text-[11px] text-slate leading-tight">Giải thích ngữ pháp · dịch từ vựng</p>
-</div>
-</div>
-<div class="flex items-center gap-1">
-<button aria-label="Đóng trợ lý AI" class="ai-icon-btn" id="ai-panel-close" type="button">
-<svg fill="none" height="17" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="17"><line x1="18" x2="6" y1="6" y2="18"></line><line x1="6" x2="18" y1="6" y2="18"></line></svg>
-</button>
-</div>
-</div>
-<!-- Messages -->
-<div class="ai-messages" id="ai-messages"></div>
-<!-- Typing indicator -->
-<div class="ai-typing hidden" id="ai-typing">
-<span class="ai-typing-dot"></span><span class="ai-typing-dot"></span><span class="ai-typing-dot"></span>
-</div>
-<!-- Input -->
-<div class="ai-input-row">
-<textarea class="ai-textarea" id="ai-input" placeholder="hỏi về ngữ pháp, từ vựng, bài học..." rows="1"></textarea>
-<button aria-label="Gửi" class="ai-send-btn" id="ai-send-btn" type="button">
-<svg fill="none" height="17" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="17"><line x1="22" x2="11" y1="2" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-</button>
-</div>
-</div>
 <script>
   const pages = document.querySelectorAll('[data-page]');
   const navBtns = document.querySelectorAll('[data-nav-btn]');
@@ -2081,6 +1963,7 @@ Trang quản trị
     casestudy: document.getElementById('abroad-casestudy'),
     community: document.getElementById('abroad-community'),
     register: document.getElementById('abroad-register'),
+    interview: document.getElementById('abroad-interview'),
   };
   abroadTabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -3660,182 +3543,8 @@ Trang quản trị
   renderVocabMasteryWidget();
 })();
 </script>
-<!-- ===== Trợ lý AI (Google Gemini) ===== -->
-<script>
-(function () {
-  // ===== ĐỊA CHỈ MÁY CHỦ TRỢ LÝ AI (Cloudflare Worker) =====
-  // Dán link Worker của cô vào giữa 2 dấu nháy, ví dụ:
-  // const BACKEND_URL = 'https://tndihoc-ai.ten-cua-co.workers.dev';
-  const BACKEND_URL = 'DAN_LINK_WORKER_VAO_DAY';
-  const BACKEND_READY = /^https:\/\//.test(BACKEND_URL);
-  const HISTORY_STORAGE = 'tn_ai_chat_history_v1';
-  const MAX_HISTORY_TURNS = 12; // số lượt hội thoại gửi kèm mỗi request (giới hạn context)
-
-  const bubbleBtn = document.getElementById('ai-bubble-btn');
-  const bubbleIconChat = document.getElementById('ai-bubble-icon-chat');
-  const bubbleIconClose = document.getElementById('ai-bubble-icon-close');
-  const panel = document.getElementById('ai-panel');
-  const panelClose = document.getElementById('ai-panel-close');
-  const messagesEl = document.getElementById('ai-messages');
-  const typingEl = document.getElementById('ai-typing');
-  const inputEl = document.getElementById('ai-input');
-  const sendBtn = document.getElementById('ai-send-btn');
-
-  if (!bubbleBtn || !panel) return; // an toàn nếu HTML thiếu phần tử
-
-  let chatHistory = loadHistory(); // [{ role: 'user'|'model', text }]
-  let isSending = false;
-
-  function loadHistory() {
-    try {
-      const raw = localStorage.getItem(HISTORY_STORAGE);
-      const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (e) { return []; }
-  }
-
-  function saveHistory() {
-    try { localStorage.setItem(HISTORY_STORAGE, JSON.stringify(chatHistory.slice(-MAX_HISTORY_TURNS * 2))); } catch (e) {}
-  }
-
-  // ----- Định dạng text đơn giản: **đậm**, `code`/chữ Hán nổi bật, giữ xuống dòng -----
-  function escapeHtml(str) {
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
-
-  function formatMessageText(raw) {
-    let text = escapeHtml(raw);
-    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    text = text.replace(/`([^`]+)`/g, '<span class="ai-hanzi">$1</span>');
-    return text;
-  }
-
-  function appendMessage(role, text) {
-    const div = document.createElement('div');
-    div.className = 'ai-msg ' + (role === 'user' ? 'is-user' : role === 'error' ? 'is-error' : role === 'system' ? 'is-system' : 'is-ai');
-    div.innerHTML = formatMessageText(text);
-    messagesEl.appendChild(div);
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-    return div;
-  }
-
-  function renderHistoryToUI() {
-    messagesEl.innerHTML = '';
-    if (chatHistory.length === 0) {
-      appendMessage('system', '你好！ mình là trợ lý AI. hỏi mình về ngữ pháp, từ vựng hoặc bài học tiếng trung nhé.');
-      return;
-    }
-    chatHistory.forEach((m) => appendMessage(m.role === 'user' ? 'user' : 'ai', m.text));
-  }
-
-  function setTyping(show) {
-    typingEl.classList.toggle('hidden', !show);
-    if (show) messagesEl.scrollTop = messagesEl.scrollHeight;
-  }
-
-  function autoResizeTextarea() {
-    inputEl.style.height = 'auto';
-    inputEl.style.height = Math.min(inputEl.scrollHeight, 96) + 'px';
-  }
-
-  // ----- Mở / đóng panel -----
-  function openPanel() {
-    panel.classList.remove('hidden');
-    panel.style.display = 'flex'; // ép hiển thị bằng inline style (thắng mọi CSS class có cùng độ ưu tiên)
-    bubbleBtn.classList.add('is-open');
-    bubbleIconChat.classList.add('hidden');
-    bubbleIconClose.classList.remove('hidden');
-    setTimeout(() => inputEl.focus(), 50);
-  }
-
-  function closePanel() {
-    panel.classList.add('hidden');
-    panel.style.display = 'none'; // ép ẩn bằng inline style — đây là fix cho lỗi không tắt được khung chat
-    bubbleBtn.classList.remove('is-open');
-    bubbleIconChat.classList.remove('hidden');
-    bubbleIconClose.classList.add('hidden');
-  }
-
-  bubbleBtn.addEventListener('click', () => {
-    panel.classList.contains('hidden') ? openPanel() : closePanel();
-  });
-  panelClose.addEventListener('click', closePanel);
-
-  inputEl.addEventListener('input', autoResizeTextarea);
-  inputEl.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  });
-  sendBtn.addEventListener('click', sendMessage);
-
-  async function sendMessage() {
-    if (isSending) return;
-    const text = inputEl.value.trim();
-    if (!text) return;
-
-    inputEl.value = '';
-    autoResizeTextarea();
-    appendMessage('user', text);
-    chatHistory.push({ role: 'user', text });
-    saveHistory();
-
-    isSending = true;
-    sendBtn.disabled = true;
-    setTyping(true);
-
-    try {
-      const reply = await callBackend(chatHistory);
-      setTyping(false);
-      appendMessage('ai', reply);
-      chatHistory.push({ role: 'model', text: reply });
-      saveHistory();
-    } catch (err) {
-      setTyping(false);
-      appendMessage('error', err.message || 'có lỗi xảy ra khi kết nối tới server. kiểm tra lại backend hoặc kết nối mạng.');
-    } finally {
-      isSending = false;
-      sendBtn.disabled = false;
-    }
-  }
-
-  // Gọi backend trung gian (server.js) thay vì gọi thẳng Gemini bằng key.
-  // Backend sẽ tự thêm system instruction và API key, frontend chỉ gửi lịch sử hội thoại.
-  async function callBackend(history) {
-    const recent = history.slice(-MAX_HISTORY_TURNS * 2);
-    if (!BACKEND_READY) {
-      throw new Error('trợ lý AI chưa được kích hoạt (chưa có link máy chủ). vui lòng quay lại sau nhé.');
-    }
-    let res;
-    try {
-      res = await fetch(BACKEND_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ history: recent }),
-      });
-    } catch (networkErr) {
-      throw new Error('không kết nối được tới trợ lý AI. kiểm tra kết nối mạng rồi thử lại nhé.');
-    }
-
-    let data = {};
-    try { data = await res.json(); } catch (e) {}
-
-    if (!res.ok || data.error) {
-      throw new Error(data.error || ('lỗi từ backend (mã ' + res.status + ').'));
-    }
-
-    if (!data.reply) {
-      throw new Error('backend không trả về nội dung. vui lòng thử lại.');
-    }
-
-    return data.reply;
-  }
-
-  renderHistoryToUI();
-})();
-</script>
-<script src="bai-doc.js?v=tt2" defer></script>
+<script>try { localStorage.removeItem("tn_ai_chat_history_v1"); } catch (e) {}</script>
+<script src="bai-doc.js?v=3" defer></script>
 <script src="bo-thu.js?v=1" defer></script>
 <script src="tu-vung-gt1.js?v=1" defer></script>
 <script src="hoc-tieng-trung.js?v=2" defer></script>
@@ -3909,7 +3618,7 @@ Tiếp tục với Google
 </div>
 </div>
 <script src="auth.js?v=tt2" type="module"></script>
-<script src="tinh-nang-moi.js?v=5" type="module"></script>
-<script src="phong-van.js?v=1" type="module"></script>
+<script src="tinh-nang-moi.js?v=6" type="module"></script>
+<script src="phong-van.js?v=2" type="module"></script>
 </body>
 </html>

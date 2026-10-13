@@ -108,21 +108,29 @@ function start(api) {
   const hl = (s) => esc(s).replace(/【([^】]*)】/g, '<mark class="pv-fill">【$1】</mark>').replace(/\n/g, "<br>");
   const plain = (s) => String(s || "").replace(/[【】]/g, "").replace(/（如果听不懂：.*?）/g, "");
   const isEnglish = (s) => !/[一-鿿]/.test(s.replace(/（.*?）/g, ""));
+  /* Tốc độ đọc: lưu theo máy. 1.0 = tốc độ nói tự nhiên (trước đây 0.85 hơi chậm) */
+  const RATES = [{ v: 0.9, t: "Chậm" }, { v: 1.0, t: "Vừa (tự nhiên)" }, { v: 1.12, t: "Nhanh" }];
+  let rate = 1.0;
+  try { const r = Number(localStorage.getItem("tn_pv_rate")); if (r >= 0.5 && r <= 1.5) rate = r; } catch (e) {}
+  function voiceName() { const v = window.tnVoice && window.tnVoice.voice; return v ? v.name.replace(/^(Microsoft|Google)\s*/i, "").replace(/\s*-\s*Chinese.*$/i, "") : ""; }
   function say(text) {
     text = plain(text);
     if (isEnglish(text) && "speechSynthesis" in window) {
-      TTS.stop(); const u = new SpeechSynthesisUtterance(text); u.lang = "en-US"; u.rate = 0.9;
-      const v = speechSynthesis.getVoices().find(x => /^en[-_]US/i.test(x.lang)); if (v) u.voice = v;
+      TTS.stop(); const u = new SpeechSynthesisUtterance(text); u.lang = "en-US"; u.rate = rate;
+      const vs = speechSynthesis.getVoices().filter(x => /^en[-_]US/i.test(x.lang));
+      const v = vs.find(x => /Natural|Neural|Online|Google/i.test(x.name)) || vs[0]; if (v) u.voice = v;
       speechSynthesis.speak(u); return;
     }
-    TTS.speak(text, 0.85);
+    // Câu hỏi đọc liền mạch hơn: nghỉ ngắn giữa các câu (0,12 giây)
+    if (window.tnVoice) window.tnVoice.speak(text, { rate, pitch: 1.0, pause: 120 });
+    else TTS.speak(text, rate);
   }
   function stopAll() { TTS.stop(); if (PV.rec) { PV.rec.cancel(); PV.rec = null; PV.recN = null; } }
 
   /* =================== TRANG CHÍNH =================== */
   async function render() {
     const head = `<div class="pv-hero">
-        <div><p class="pv-kicker">Du học Trung Quốc · <span class="tt-badge vip">VIP</span></p>
+        <div><p class="pv-kicker">Dành cho học viên được cấp quyền · <span class="tt-badge vip">VIP</span></p>
         <h1 class="pv-h1">Training phỏng vấn</h1>
         <p class="pv-lead">Luyện trả lời phỏng vấn học bổng / xét tuyển bằng tiếng Trung: xem <b>ý chính</b>, <b>câu trả lời mẫu</b> và <b>mẫu câu</b>, rồi <b>ghi âm</b> câu trả lời của bạn để nghe lại. Bấm <b>Nộp bài</b> khi muốn cô nhận xét.</p></div>
         <span class="pv-seal tt-hz">面试</span></div>`;
@@ -160,7 +168,7 @@ function start(api) {
     stopAll();
     PV.set = set; PV.tab = "q"; PV.group = "all"; PV.query = ""; PV.openN = null;
     root.innerHTML = `<div class="tt-empty"><span class="tt-spin"></span> Đang tải bộ câu hỏi…</div>`;
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    toTop();
     await Promise.all([loadSet(set), loadTakes(set), loadSubs()]);
     if (PV.set === set) renderSet();
   }
@@ -193,7 +201,8 @@ function start(api) {
     root.querySelectorAll("[data-pvtab]").forEach(b => b.addEventListener("click", () => { stopAll(); PV.tab = b.dataset.pvtab; renderSet(); }));
     if (PV.tab === "guide") renderGuide(S); else renderQuestions(S, unsent);
   }
-  function bindBack() { $("pv-back")?.addEventListener("click", () => { stopAll(); PV.set = null; render(); window.scrollTo({ top: 0, behavior: "smooth" }); }); }
+  function toTop() { const y = root.getBoundingClientRect().top + window.scrollY - 90; if (window.scrollY > y) window.scrollTo({ top: y, behavior: "smooth" }); }
+  function bindBack() { $("pv-back")?.addEventListener("click", () => { stopAll(); PV.set = null; render(); toTop(); }); }
 
   function renderGuide(S) {
     const body = $("pv-body");
@@ -235,6 +244,7 @@ function start(api) {
         <div class="tt-row">
           <input class="tt-input" id="pv-q" placeholder="Tìm câu hỏi (chữ Hán / tiếng Việt / số câu)…" value="${esc(PV.query)}" style="flex:1;min-width:200px">
           <button class="tt-btn soft" id="pv-rand" title="Bốc ngẫu nhiên 1 câu, máy đọc câu hỏi như hội đồng">🎲 Phỏng vấn thử</button>
+          <label class="pv-voice" title="${esc(voiceName() ? "Giọng đang dùng: " + voiceName() : "")}">🔊 Tốc độ đọc <select id="pv-rate">${RATES.map(r => `<option value="${r.v}" ${Math.abs(r.v - rate) < 0.01 ? "selected" : ""}>${r.t}</option>`).join("")}</select></label>
           ${unsent ? `<button class="tt-btn peach" id="pv-sendall">📤 Nộp tất cả câu đã ghi (${unsent})</button>` : ""}
         </div>
       </div>
@@ -251,6 +261,10 @@ function start(api) {
       toast("🎲 Câu " + it.n + " — hãy tự trả lời trước khi mở gợi ý!");
     });
     $("pv-sendall")?.addEventListener("click", () => sendAll(S));
+    $("pv-rate").addEventListener("change", e => {
+      rate = Number(e.target.value); try { localStorage.setItem("tn_pv_rate", String(rate)); } catch (err) {}
+      const open = (S.items || []).find(x => x.n === PV.openN); say(open ? open.q : "请你简单介绍一下自己。");
+    });
     body.querySelectorAll("[data-toggle]").forEach(b => b.addEventListener("click", () => {
       const n = Number(b.dataset.toggle); stopAll(); PV.openN = PV.openN === n ? null : n; renderQuestions(S, unsent);
       if (PV.openN) { const el = body.querySelector(`[data-qn="${n}"]`); el && el.scrollIntoView({ behavior: "smooth", block: "nearest" }); }
@@ -474,9 +488,20 @@ function start(api) {
     if (!can("interview")) { PV.data = {}; PV.set = null; }
     render();
   });
-  // Rời trang phỏng vấn → dừng ghi âm / giọng đọc
-  window.addEventListener("hashchange", () => { if (location.hash !== "#phongvan") stopAll(); });
-  document.addEventListener("click", e => { const b = e.target.closest("[data-nav-btn],[data-go-home]"); if (b && b.dataset.target !== "phongvan") stopAll(); });
+  // Rời mục phỏng vấn (đổi tab Du học / sang trang khác) → dừng ghi âm & giọng đọc
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-nav-btn],[data-go-home],.nav-jump,[data-abroad-tab]");
+    if (b && b.dataset.abroadTab !== "interview") stopAll();
+  });
+  // Link cũ / link chia sẻ: .../#phongvan → mở Du học Trung Quốc → tab Training phỏng vấn
+  function openFromHash() {
+    if (location.hash !== "#phongvan" && location.hash !== "#training-phong-van") return;
+    if (typeof window.showPage === "function") window.showPage("abroad", false);
+    history.replaceState(null, "", "#abroad");
+    document.querySelector('[data-abroad-tab="interview"]')?.click();
+  }
+  window.addEventListener("hashchange", openFromHash);
+  openFromHash();
   render();
 }
 
