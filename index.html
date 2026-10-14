@@ -6,7 +6,7 @@
 <title>tndihoc — góc học tập cá nhân</title>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&amp;family=Noto+Serif+SC:wght@500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&amp;family=Noto+Sans:wght@400;500;600;700;800&amp;family=Noto+Serif+SC:wght@500;700;900&amp;display=swap" rel="stylesheet"/>
 <link href="giao-dien.css?v=ade39f6a" rel="stylesheet"/>
 <link href="tinh-nang-moi.css?v=3" rel="stylesheet"/>
 <link href="phong-van.css?v=2" rel="stylesheet"/>
@@ -664,6 +664,8 @@
   .lb-note.is-guest { color:#B35900; }
   .lb-note.is-err { color:#D6524F; }
 </style>
+<link href="giao-dien-chu.css?v=1" rel="stylesheet"/>
+<link href="gioi-thieu-du-hoc.css?v=1" rel="stylesheet"/>
 </head>
 <body class="antialiased">
 <!-- ============ NAVBAR (ngang, cố định trên cùng — dùng chung mọi kích thước màn hình) ============ -->
@@ -674,12 +676,12 @@
 <span class="font-sans font-bold brand-name text-white">tndihoc</span>
 </div>
 <nav class="hidden lg:flex items-center gap-1" data-nav="">
-<button class="nav-link active" data-nav-btn="" data-target="home"><span class="nav-dot"></span> trang chủ</button>
-<button class="nav-link" data-nav-btn="" data-target="about"><span class="nav-dot"></span> giới thiệu về TN</button>
-<button class="nav-link" data-nav-btn="" data-target="chinese"><span class="nav-dot"></span> học tiếng trung</button>
-<button class="nav-link" data-nav-btn="" data-target="abroad"><span class="nav-dot"></span> du học Trung Quốc</button>
-<button class="nav-link" data-staff-only="" data-nav-btn="" data-target="lophoc" style="display:none"><span class="nav-dot"></span> lớp học</button>
-<button class="nav-link" data-admin-only="" data-nav-btn="" data-target="admin" style="display:none"><span class="nav-dot"></span> quản trị</button>
+<button class="nav-link active" data-nav-btn="" data-target="home"><span class="nav-dot"></span> Trang chủ</button>
+<button class="nav-link" data-nav-btn="" data-target="about"><span class="nav-dot"></span> Giới thiệu về TN</button>
+<button class="nav-link" data-nav-btn="" data-target="chinese"><span class="nav-dot"></span> Học tiếng Trung</button>
+<button class="nav-link" data-nav-btn="" data-target="abroad"><span class="nav-dot"></span> Du học Trung Quốc</button>
+<button class="nav-link" data-staff-only="" data-nav-btn="" data-target="lophoc" style="display:none"><span class="nav-dot"></span> Lớp học</button>
+<button class="nav-link" data-admin-only="" data-nav-btn="" data-target="admin" style="display:none"><span class="nav-dot"></span> Quản trị</button>
 </nav>
 <div class="flex items-center gap-2 shrink-0">
 <button class="auth-btn" data-auth-guest="" data-auth-open="login" type="button">
@@ -735,12 +737,12 @@ Trang quản trị
 </button>
 </div>
 <nav class="flex flex-col gap-1.5" data-nav="">
-<button class="nav-link active" data-nav-btn="" data-target="home"><span class="nav-dot"></span> trang chủ</button>
-<button class="nav-link" data-nav-btn="" data-target="about"><span class="nav-dot"></span> giới thiệu về TN</button>
-<button class="nav-link" data-nav-btn="" data-target="chinese"><span class="nav-dot"></span> học tiếng trung</button>
-<button class="nav-link" data-nav-btn="" data-target="abroad"><span class="nav-dot"></span> du học Trung Quốc</button>
-<button class="nav-link" data-staff-only="" data-nav-btn="" data-target="lophoc" style="display:none"><span class="nav-dot"></span> lớp học</button>
-<button class="nav-link" data-admin-only="" data-nav-btn="" data-target="admin" style="display:none"><span class="nav-dot"></span> quản trị</button>
+<button class="nav-link active" data-nav-btn="" data-target="home"><span class="nav-dot"></span> Trang chủ</button>
+<button class="nav-link" data-nav-btn="" data-target="about"><span class="nav-dot"></span> Giới thiệu về TN</button>
+<button class="nav-link" data-nav-btn="" data-target="chinese"><span class="nav-dot"></span> Học tiếng Trung</button>
+<button class="nav-link" data-nav-btn="" data-target="abroad"><span class="nav-dot"></span> Du học Trung Quốc</button>
+<button class="nav-link" data-staff-only="" data-nav-btn="" data-target="lophoc" style="display:none"><span class="nav-dot"></span> Lớp học</button>
+<button class="nav-link" data-admin-only="" data-nav-btn="" data-target="admin" style="display:none"><span class="nav-dot"></span> Quản trị</button>
 </nav>
 <div class="mt-auto pt-6 border-t border-ink/10">
 <div class="mb-4" data-auth-guest="">
@@ -765,7 +767,7 @@ Trang quản trị
 <div class="relative max-w-xl">
 <p class="text-mint font-semibold text-sm tracking-wide mb-4">Góc học tập cá nhân</p>
 <p class="font-hanzi font-black text-5xl sm:text-6xl leading-none text-ink mb-3">为时不晚</p>
-<p class="text-sm text-slate italic">Không bao giờ là quá muộn để bắt đầu</p>
+<p class="text-sm text-slate">Không bao giờ là quá muộn để bắt đầu</p>
 </div>
 </div>
 <div class="flex justify-end mb-10">
@@ -777,149 +779,82 @@ Trang quản trị
 <div class="grid md:grid-cols-3 gap-5">
 <button class="nav-jump home-block focus-ring" data-target="about" style="background:linear-gradient(135deg,#4F8DF0 0%,#2F62D6 100%);--hb-ink:#2F62D6;--hb-shadow:rgba(47,98,214,.55);" type="button">
 <span class="hb-title">Giới thiệu về TN</span>
-<span class="hb-cta">KHÁM PHÁ <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" viewbox="0 0 24 24" width="14"><line x1="5" x2="19" y1="12" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
+<span class="hb-cta">Khám phá <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" viewbox="0 0 24 24" width="14"><line x1="5" x2="19" y1="12" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
 </button>
 <button class="nav-jump home-block focus-ring" data-target="chinese" style="background:linear-gradient(135deg,#8A6CF2 0%,#5B3FC8 100%);--hb-ink:#5B3FC8;--hb-shadow:rgba(91,63,200,.55);" type="button">
-<span class="hb-title">Học tiếng trung</span>
-<span class="hb-cta">KHÁM PHÁ <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" viewbox="0 0 24 24" width="14"><line x1="5" x2="19" y1="12" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
+<span class="hb-title">Học tiếng Trung</span>
+<span class="hb-cta">Khám phá <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" viewbox="0 0 24 24" width="14"><line x1="5" x2="19" y1="12" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
 </button>
 <button class="nav-jump home-block focus-ring" data-target="abroad" style="background:linear-gradient(135deg,#EC6A88 0%,#C93A60 100%);--hb-ink:#C93A60;--hb-shadow:rgba(240,96,126,.5);" type="button">
 <span class="hb-title">Du học Trung Quốc</span>
-<span class="hb-cta">KHÁM PHÁ <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" viewbox="0 0 24 24" width="14"><line x1="5" x2="19" y1="12" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
+<span class="hb-cta">Khám phá <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" viewbox="0 0 24 24" width="14"><line x1="5" x2="19" y1="12" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
 </button>
 </div>
 </section>
 <!-- ===== GIỚI THIỆU ===== -->
 <section class="page-section" data-page="" id="about">
+<div class="gt-hero gd-bleed">
 <button class="back-home-btn focus-ring" data-go-home="" type="button"><svg fill="none" height="15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewbox="0 0 24 24" width="15"><polyline points="15 18 9 12 15 6"></polyline></svg>Trang chủ</button>
-<h2 class="font-sans font-semibold text-2xl sm:text-3xl text-ink mb-6">Giới thiệu về TN</h2>
-
-<!-- ===== Khối giới thiệu chính: ảnh + tiểu sử ngắn ===== -->
-<div class="bg-white border border-ink/10 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row gap-6 sm:gap-8 sm:items-center mb-6">
-<img loading="lazy" decoding="async" alt="Ngô Thị Phương Thúy" class="w-full sm:w-56 h-56 rounded-2xl object-cover shrink-0" src="anh-eb1634f1f1.jpg"/>
+<div class="gt-hero-grid">
+<figure class="gt-gate">
+<img alt="Cô Thúy Ngô tại khóa bồi dưỡng giáo viên tiếng Trung, Bắc Kinh 2025" src="anh-eb1634f1f1.jpg"/>
+<span aria-hidden="true" class="gt-seal"><span>芳</span><span>翠</span></span>
+</figure>
 <div>
-<h3 class="font-sans font-semibold text-xl text-ink mb-1">Ngô Thị Phương Thúy <span class="text-slate font-normal text-base">(吴氏芳翠)</span></h3>
-<p class="text-sm text-mint font-semibold tracking-wide mb-3">Giáo viên tiếng Trung · Phiên dịch viên tiếng Trung · Mentor apply học bổng du học Trung Quốc</p>
-<p class="text-sm text-slate leading-relaxed max-w-2xl">Chào mọi người, mình là Thuý Ngô, hiện là Nghiên cứu sinh tiến sĩ ngành Ngôn ngữ và Ngôn ngữ học ứng dụng, trường Đại học Tứ Xuyên (top 16 Trung Quốc). Mình bắt đầu học tiếng Trung từ năm 2018, tới nay đã có 8 năm gắn bó với tiếng Trung.</p>
-<p class="text-sm text-ink font-semibold leading-relaxed mt-2">Trình độ hiện tại: <span class="text-mint">HSK6 - HSKK Cao cấp</span></p>
-<p class="text-sm text-slate italic leading-relaxed mt-3">"Học, học nữa, học mãi"</p>
-</div>
-</div>
-
-<!-- ===== Học vấn ===== -->
-<div class="bg-white border border-ink/10 rounded-2xl p-6 sm:p-8 mb-6">
-<h3 class="font-sans font-semibold text-lg text-ink mb-4">Học vấn</h3>
-<ul class="space-y-3">
-<li class="flex gap-3">
-<span class="w-1.5 h-1.5 rounded-full bg-mint mt-2 shrink-0"></span>
-<p class="text-sm text-ink leading-relaxed"><span class="font-semibold">2026 đến nay:</span> Nghiên cứu sinh Tiến sĩ Ngôn ngữ học và Ngôn ngữ học ứng dụng — Đại học Tứ Xuyên</p>
-</li>
-<li class="flex gap-3">
-<span class="w-1.5 h-1.5 rounded-full bg-mint mt-2 shrink-0"></span>
-<p class="text-sm text-ink leading-relaxed"><span class="font-semibold">2023 – 2026:</span> Thạc sĩ Hán ngữ đối ngoại — Đại học Sư phạm Nam Kinh</p>
-</li>
-<li class="flex gap-3">
-<span class="w-1.5 h-1.5 rounded-full bg-mint mt-2 shrink-0"></span>
-<p class="text-sm text-ink leading-relaxed"><span class="font-semibold">2018 – 2022:</span> Cử nhân Ngôn ngữ Trung — Đại học Mở Hà Nội</p>
-</li>
-</ul>
-<div class="mt-5 pt-5 border-t border-ink/10">
-<p class="text-xs text-slate font-semibold uppercase tracking-wide mb-2">Đào tạo ngắn hạn &amp; bồi dưỡng chuyên môn</p>
-<ul class="grid sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm text-slate leading-relaxed">
-<li>2022 – 2023 · Lớp tiếng Hán tiến tu (1 năm) — Đại học Tài chính Kinh tế Trung ương</li>
-<li>2022 · Chương trình bồi dưỡng giáo viên tiếng Trung bản địa tại Việt Nam — Đại học Ngôn ngữ Bắc Kinh</li>
-<li>2023 · Trại trải nghiệm văn hóa trực tuyến "Cầu Hán ngữ" — Đại học Vân Nam</li>
-<li>2025 · Chương trình bồi dưỡng giáo viên tiếng Trung — Đại học Ngoại ngữ Bắc Kinh</li>
-</ul>
-</div>
-</div>
-
-<!-- ===== Kinh nghiệm giảng dạy & phiên dịch ===== -->
-<div class="grid sm:grid-cols-2 gap-5 mb-6">
-<div class="bg-white border border-ink/10 rounded-2xl p-6 sm:p-7">
-<div class="w-11 h-11 rounded-xl bg-mint-light flex items-center justify-center mb-4">
-<svg fill="none" height="20" stroke="#000080" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" width="20"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-</div>
-<h3 class="font-sans font-semibold text-base text-ink mb-2">Giảng dạy tiếng Trung</h3>
-<p class="text-sm text-slate leading-relaxed">Bắt đầu giảng dạy từ giữa năm 2021, khi còn là sinh viên năm 4. Đã tích lũy kinh nghiệm giảng dạy hơn 300 học viên ở các trình độ từ HSK1 đến HSK4, theo hình thức 1-kèm-1 và lớp nhóm nhỏ, trong đó nhiều học viên đã đạt chứng chỉ HSK cấp 3 – 5.</p>
-</div>
-<div class="bg-white border border-ink/10 rounded-2xl p-6 sm:p-7">
-<div class="w-11 h-11 rounded-xl bg-sky-light flex items-center justify-center mb-4">
-<svg fill="none" height="20" stroke="#7C93B0" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" width="20"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-</div>
-<h3 class="font-sans font-semibold text-base text-ink mb-2">Phiên dịch tiếng Trung</h3>
-<p class="text-sm text-slate leading-relaxed">Có kinh nghiệm phiên dịch hiện trường tại các sự kiện, hội chợ và triển lãm doanh nghiệp có yếu tố Trung Quốc.</p>
-</div>
-</div>
-
-<!-- ===== Mentor học bổng ===== -->
-<div class="bg-mint-light border border-mint-border rounded-2xl p-6 sm:p-8 mb-6">
-<h3 class="font-sans font-semibold text-lg text-ink mb-1">Mentor học bổng du học Trung Quốc</h3>
-<p class="text-sm text-slate leading-relaxed mb-5 max-w-2xl">Đồng hành cùng các bạn mentee trong quá trình xin học bổng bậc đại học và thạc sĩ tại Trung Quốc.</p>
-<div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-<div class="bg-white rounded-xl px-4 py-3.5 text-center">
-<p class="font-hanzi font-black text-2xl text-mint">9/9</p>
-<p class="text-xs text-slate mt-1 leading-snug">Mentee thạc sĩ đỗ học bổng toàn phần</p>
-</div>
-<div class="bg-white rounded-xl px-4 py-3.5 text-center">
-<p class="font-hanzi font-black text-2xl text-mint">14</p>
-<p class="text-xs text-slate mt-1 leading-snug">Offer học bổng toàn phần &amp; bán phần</p>
-</div>
-<div class="bg-white rounded-xl px-4 py-3.5 text-center">
-<p class="font-hanzi font-black text-2xl text-mint">3+2</p>
-<p class="text-xs text-slate mt-1 leading-snug">Offer học bổng CSC &amp; CIS</p>
-</div>
-<div class="bg-white rounded-xl px-4 py-3.5 text-center">
-<p class="font-hanzi font-black text-2xl text-mint">9</p>
-<p class="text-xs text-slate mt-1 leading-snug">Offer học bổng tỉnh, trường</p>
+<p class="gt-han" lang="zh">吴氏芳翠</p>
+<h2 class="gt-name">Ngô Thị Phương Thúy</h2>
+<p class="gt-role">Giáo viên tiếng Trung <span>/</span> Phiên dịch viên <span>/</span> Mentor học bổng du học</p>
+<p class="gt-intro">Nghiên cứu sinh Tiến sĩ ngành Ngôn ngữ và Ngôn ngữ học ứng dụng, Đại học Tứ Xuyên (top 16 Trung Quốc). Học tiếng Trung từ năm 2018 — tám năm gắn bó.</p>
+<div class="gt-level"><span class="gd-muted" style="font-size:14px">Trình độ hiện tại</span><b>HSK6 · HSKK Cao cấp</b></div>
 </div>
 </div>
 </div>
 
-<!-- ===== Định hướng ===== -->
-<div class="bg-white border border-ink/10 rounded-2xl p-6 sm:p-8 mb-6">
-<h3 class="font-sans font-semibold text-lg text-ink mb-3">Định hướng</h3>
-<p class="text-sm text-slate leading-relaxed max-w-3xl">Mong muốn trở thành cầu nối văn hóa giữa Việt Nam và Trung Quốc — chia sẻ trải nghiệm học tập, ẩm thực, cảnh sắc và văn hóa Trung Quốc qua các kênh Youtube, Facebook, TikTok. Dù giảng dạy trực tuyến, vẫn cố gắng sắp xếp thời gian về nước để gặp gỡ học viên, giúp các bạn có thêm trải nghiệm thực tế về văn hóa Trung Quốc.</p>
+<div class="gt-stats gd-bleed" aria-label="Kết quả">
+<div class="gt-stats-grid">
+<div><p class="gd-num">9/9</p><p>mentee thạc sĩ đỗ học bổng toàn phần</p></div>
+<div><p class="gd-num">300<span>+</span></p><p>học viên HSK1 – HSK4 đã dạy</p></div>
+<div><p class="gd-num">14</p><p>offer học bổng toàn phần &amp; bán phần</p></div>
+<div><p class="gd-num">3<span>+</span>2</p><p>offer học bổng CSC &amp; CIS</p></div>
+</div>
 </div>
 
-<!-- ===== Thông tin liên hệ ===== -->
-<div class="bg-white border border-ink/10 rounded-2xl p-6 sm:p-8">
-<h3 class="font-sans font-semibold text-lg text-ink mb-4">Thông tin liên hệ</h3>
-<div class="grid sm:grid-cols-2 gap-4">
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-full bg-peach-light text-peach flex items-center justify-center shrink-0">
-<svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect height="14" rx="2" ry="2" width="15" x="1" y="5"></rect></svg>
+<div class="gt-journey">
+<h3 class="gt-h2">Hành trình học tập</h3>
+<div class="gt-line">
+<div><span class="gt-dot"></span><p class="gd-num">2018</p><b>Cử nhân Ngôn ngữ Trung</b><small>Đại học Mở Hà Nội</small></div>
+<div><span class="gt-dot"></span><p class="gd-num">2022</p><b>Lớp tiếng Hán tiến tu</b><small>ĐH Tài chính Kinh tế Trung ương</small></div>
+<div><span class="gt-dot"></span><p class="gd-num">2023</p><b>Thạc sĩ Hán ngữ đối ngoại</b><small>Đại học Sư phạm Nam Kinh</small></div>
+<div class="is-now"><span class="gt-dot"></span><p class="gd-num">2026</p><b>Nghiên cứu sinh Tiến sĩ</b><small>Đại học Tứ Xuyên</small></div>
 </div>
+<p class="gt-extra">Bồi dưỡng chuyên môn: ĐH Ngôn ngữ Bắc Kinh (2022) · Trại trải nghiệm "Cầu Hán ngữ" — ĐH Vân Nam (2023) · ĐH Ngoại ngữ Bắc Kinh (2025)</p>
+</div>
+
+<div class="gt-roles">
+<div class="gt-role-card"><h3>Giảng dạy</h3><p>Dạy từ giữa năm 2021, khi còn là sinh viên năm 4. Hơn 300 học viên từ HSK1 đến HSK4, học 1-kèm-1 và nhóm nhỏ; nhiều bạn đạt HSK 3 – 5.</p></div>
+<div class="gt-role-card"><h3>Phiên dịch</h3><p>Phiên dịch hiện trường tại các sự kiện, hội chợ và triển lãm doanh nghiệp có yếu tố Trung Quốc.</p></div>
+<div class="gt-role-card"><h3>Mentor du học</h3><p>Đồng hành cùng các bạn mentee xin học bổng bậc đại học và thạc sĩ tại Trung Quốc. <button class="nav-jump" data-target="abroad" type="button">Xem dịch vụ →</button></p></div>
+</div>
+
+<div class="gt-close gd-bleed" aria-label="Định hướng và liên hệ">
+<div class="gt-close-grid">
 <div>
-<p class="text-xs text-slate">Youtube / TikTok / Threads</p>
-<p class="text-sm font-semibold text-ink">tndihoc</p>
+<p aria-hidden="true" class="gt-quote-mark gd-num">“</p>
+<p class="gt-quote">Học, học nữa, học mãi.</p>
+<p class="gt-dir">Mong muốn trở thành cầu nối văn hóa Việt Nam – Trung Quốc: chia sẻ trải nghiệm học tập, ẩm thực, cảnh sắc và văn hóa Trung Quốc qua Youtube, Facebook, TikTok. Dù giảng dạy trực tuyến, vẫn cố gắng sắp xếp thời gian về nước để gặp gỡ học viên.</p>
 </div>
-</div>
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-full bg-sky-light text-sky flex items-center justify-center shrink-0">
-<svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-</div>
-<div>
-<p class="text-xs text-slate">Facebook</p>
-<a class="text-sm font-semibold text-ink hover:text-mint transition-colors" href="https://www.facebook.com/thuyngo08072000?locale=vi_VN" rel="noopener" target="_blank">Thúy Ngô</a>
-</div>
-</div>
-<div class="flex items-center gap-3">
-<div class="w-9 h-9 rounded-full bg-mint-light text-mint flex items-center justify-center shrink-0">
-<svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-</div>
-<div>
-<p class="text-xs text-slate">Zalo</p>
-<p class="text-sm font-semibold text-ink">0348356315</p>
-</div>
-</div>
+<dl class="gt-contact">
+<div><dt>Youtube · TikTok · Threads</dt><dd>tndihoc</dd></div>
+<div><dt>Facebook</dt><dd><a href="https://www.facebook.com/thuyngo08072000?locale=vi_VN" rel="noopener" target="_blank">Thúy Ngô</a></dd></div>
+<div><dt>Zalo</dt><dd>0348356315</dd></div>
+</dl>
 </div>
 </div>
 </section>
 <!-- ===== HỌC TIẾNG TRUNG ===== -->
 <section class="page-section" data-page="" id="chinese">
 <button class="back-home-btn focus-ring" data-go-home="" type="button"><svg fill="none" height="15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewbox="0 0 24 24" width="15"><polyline points="15 18 9 12 15 6"></polyline></svg>Trang chủ</button>
-<h2 class="font-sans font-semibold text-2xl sm:text-3xl text-ink mb-5">Học tiếng trung</h2>
+<h2 class="font-sans font-semibold text-2xl sm:text-3xl text-ink mb-5">Học tiếng Trung</h2>
 <!-- ===== Màn hình thẻ lớn của mục "học tiếng trung" (do hoc-tieng-trung.js vẽ) ===== -->
 <div class="hoc-hub" id="hoc-hub"></div>
 <div class="hoc-bar" hidden="" id="hoc-bar"></div>
@@ -1463,345 +1398,116 @@ Trang quản trị
 </section>
 <!-- ===== DU HỌC ===== -->
 <section class="page-section" data-page="" id="abroad">
+<div id="dh-main">
+<div class="dh-hero gd-bleed">
+<span aria-hidden="true" class="dh-wm" lang="zh">留学</span>
 <button class="back-home-btn focus-ring" data-go-home="" type="button"><svg fill="none" height="15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewbox="0 0 24 24" width="15"><polyline points="15 18 9 12 15 6"></polyline></svg>Trang chủ</button>
-<h2 class="font-sans font-semibold text-2xl sm:text-3xl text-ink mb-5">Du học Trung Quốc</h2>
-
-<!-- ===== 3 nhánh: Dịch vụ / Kết quả đạt được / Feedback ===== -->
-<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8 abroad-tabs">
-<button class="abroad-tab active focus-ring" data-abroad-tab="services" style="--t-bg:#FFF4E2;--t-fg:#7A5320;--t-bd:#F6D9AE;--t-on:#C98B3C;" type="button"><span class="at-ico">💼</span><span>Dịch vụ</span></button>
-<button class="abroad-tab focus-ring" data-abroad-tab="results" style="--t-bg:#FFF3B8;--t-fg:#735400;--t-bd:#FFE066;--t-on:#F5B800;--t-onfg:#3D2C00;" type="button"><span class="at-ico">🏆</span><span>Kết quả đạt được</span></button>
-<button class="abroad-tab focus-ring" data-abroad-tab="feedback" style="--t-bg:#FFE2C2;--t-fg:#A14800;--t-bd:#FFC080;--t-on:#EF6C00;" type="button"><span class="at-ico">💬</span><span>Feedback</span></button>
-<button class="abroad-tab focus-ring" data-abroad-tab="casestudy" style="--t-bg:#FFD6CC;--t-fg:#C0392B;--t-bd:#FFAE9C;--t-on:#F4502F;" type="button"><span class="at-ico">📂</span><span>Case study</span></button>
-<button class="abroad-tab focus-ring" data-abroad-tab="community" style="--t-bg:#FFD9E6;--t-fg:#B8255F;--t-bd:#FFADC8;--t-on:#E83E7E;" type="button"><span class="at-ico">🤝</span><span>Tham gia cộng đồng của tôi</span></button>
-<button class="abroad-tab focus-ring" data-abroad-tab="register" style="--t-bg:#FFCFBF;--t-fg:#9E2F10;--t-bd:#F79C7D;--t-on:#D9481F;" type="button"><span class="at-ico">📝</span><span>Đăng ký tư vấn</span></button>
-<button class="abroad-tab focus-ring" data-abroad-tab="interview" style="--t-bg:#EEEAFE;--t-fg:#4B3C8C;--t-bd:#D3CCF7;--t-on:#6B57C9;" type="button"><span class="at-ico">🎤</span><span>Training phỏng vấn <span class="at-vip">VIP</span></span></button>
-</div>
-
-<!-- ===== Nhánh: Dịch vụ ===== -->
-<div class="abroad-panel active" id="abroad-services">
-
-  <!-- Profile Mentor -->
-  <div class="bg-white border border-ink/10 rounded-2xl p-6 sm:p-8 mb-6">
-    <h3 class="font-sans font-semibold text-lg text-ink mb-4">Profile Mentor — Thúy Ngô</h3>
-    <ul class="space-y-2.5 mb-5">
-      <li class="flex gap-3"><span class="w-1.5 h-1.5 rounded-full bg-peach mt-2 shrink-0"></span><p class="text-sm text-slate leading-relaxed">Nghiên cứu sinh Tiến sĩ tại Đại học Tứ Xuyên (985 – 211)</p></li>
-      <li class="flex gap-3"><span class="w-1.5 h-1.5 rounded-full bg-peach mt-2 shrink-0"></span><p class="text-sm text-slate leading-relaxed">Thạc sĩ tại Đại học Sư phạm Nam Kinh (211)</p></li>
-      <li class="flex gap-3"><span class="w-1.5 h-1.5 rounded-full bg-peach mt-2 shrink-0"></span><p class="text-sm text-slate leading-relaxed">Học bổng Chính phủ Trung Quốc toàn phần hệ Tiến sĩ, học bổng toàn phần hệ Thạc sĩ</p></li>
-      <li class="flex gap-3"><span class="w-1.5 h-1.5 rounded-full bg-peach mt-2 shrink-0"></span><p class="text-sm text-slate leading-relaxed">Có kinh nghiệm trực tiếp apply và xử lý hồ sơ nhiều hệ học bổng Trung Quốc</p></li>
-    </ul>
-    <div class="pt-5 border-t border-ink/10">
-      <p class="text-xs text-slate font-semibold uppercase tracking-wide mb-2.5">Đã hỗ trợ học sinh đỗ học bổng &amp; hệ tự phí tại nhiều trường 985–211, như:</p>
-      <div class="flex flex-wrap gap-2">
-        <span class="text-xs font-medium text-ink bg-peach-light rounded-full px-3 py-1.5">Đại học Thanh Hoa (hệ ngôn ngữ)</span>
-        <span class="text-xs font-medium text-ink bg-peach-light rounded-full px-3 py-1.5">Đại học Chiết Giang (hệ ngôn ngữ)</span>
-        <span class="text-xs font-medium text-ink bg-peach-light rounded-full px-3 py-1.5">Đại học Phúc Đán (hệ ngôn ngữ)</span>
-        <span class="text-xs font-medium text-ink bg-peach-light rounded-full px-3 py-1.5">Đại học Nam Kinh (hệ ngôn ngữ)</span>
-        <span class="text-xs font-medium text-ink bg-peach-light rounded-full px-3 py-1.5">Đại học Nam Khai (hệ thạc sĩ)</span>
-        <span class="text-xs font-medium text-ink bg-peach-light rounded-full px-3 py-1.5">Đại học Tài chính Kinh tế Thượng Hải (hệ thạc sĩ)</span>
-        <span class="text-xs font-medium text-ink bg-peach-light rounded-full px-3 py-1.5">Đại học Tài chính Kinh tế Tây Nam (hệ thạc sĩ)</span>
-        <span class="text-xs font-medium text-ink bg-peach-light rounded-full px-3 py-1.5">Đại học Giao thông Tây Nam (hệ thạc sĩ)</span>
-        <span class="text-xs font-medium text-slate bg-ink/5 rounded-full px-3 py-1.5">và nhiều trường khác</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Đối tượng hỗ trợ -->
-  <div class="bg-white border border-ink/10 rounded-2xl p-6 sm:p-8 mb-6">
-    <h3 class="font-sans font-semibold text-lg text-ink mb-3">Đối tượng hỗ trợ</h3>
-    <p class="text-sm text-slate leading-relaxed mb-3">Gói hỗ trợ phù hợp với:</p>
-    <ul class="space-y-2">
-      <li class="flex gap-3"><span class="w-1.5 h-1.5 rounded-full bg-mint mt-2 shrink-0"></span><p class="text-sm text-slate leading-relaxed">Học sinh có nhu cầu apply hệ Ngôn ngữ, Đại học hoặc Thạc sĩ tại Trung Quốc</p></li>
-      <li class="flex gap-3"><span class="w-1.5 h-1.5 rounded-full bg-mint mt-2 shrink-0"></span><p class="text-sm text-slate leading-relaxed">Học sinh apply học bổng hoặc tự phí</p></li>
-      <li class="flex gap-3"><span class="w-1.5 h-1.5 rounded-full bg-mint mt-2 shrink-0"></span><p class="text-sm text-slate leading-relaxed">Học sinh đủ 18 tuổi trở lên (đối với hệ đại học và hệ ngôn ngữ)</p></li>
-    </ul>
-  </div>
-
-  <!-- Nội dung hỗ trợ -->
-  <div class="bg-white border border-ink/10 rounded-2xl p-6 sm:p-8 mb-6">
-    <h3 class="font-sans font-semibold text-lg text-ink mb-4">Nội dung hỗ trợ</h3>
-    <div class="grid sm:grid-cols-2 gap-5">
-      <div>
-        <p class="text-sm font-semibold text-ink mb-2">1. Tư vấn &amp; định hướng</p>
-        <ul class="space-y-1.5 text-sm text-slate leading-relaxed">
-          <li>· Tư vấn lựa chọn trường và loại học bổng phù hợp</li>
-          <li>· Định hướng chuyên ngành và lộ trình apply theo profile cá nhân</li>
-        </ul>
-      </div>
-      <div>
-        <p class="text-sm font-semibold text-ink mb-2">2. Hỗ trợ chuẩn bị hồ sơ</p>
-        <ul class="space-y-1.5 text-sm text-slate leading-relaxed">
-          <li>· Hướng dẫn chuẩn bị và hoàn thiện hồ sơ apply</li>
-          <li>· Viết hoặc chỉnh sửa kế hoạch học tập (cho 01 chuyên ngành)</li>
-          <li>· Góp ý kế hoạch nghiên cứu (nếu có)</li>
-          <li>· Hướng dẫn và góp ý nội dung video giới thiệu bản thân (nếu có)</li>
-        </ul>
-      </div>
-      <div>
-        <p class="text-sm font-semibold text-ink mb-2">3. Hỗ trợ xử lý hồ sơ</p>
-        <ul class="space-y-1.5 text-sm text-slate leading-relaxed">
-          <li>· Dịch thuật công chứng hồ sơ (01 bộ)</li>
-          <li>· Upload hồ sơ lên hệ thống (tối đa 02 trường)</li>
-          <li>· Hỗ trợ thao tác thanh toán phí báo danh</li>
-        </ul>
-      </div>
-      <div>
-        <p class="text-sm font-semibold text-ink mb-2">4. Hỗ trợ phỏng vấn &amp; theo dõi hồ sơ</p>
-        <ul class="space-y-1.5 text-sm text-slate leading-relaxed">
-          <li>· Hướng dẫn và luyện tập phỏng vấn</li>
-          <li>· Hỗ trợ xuyên suốt trong quá trình nộp hồ sơ đến khi nhận kết quả</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- Chi phí -->
-  <div class="bg-white border border-ink/10 rounded-2xl p-6 sm:p-8 mb-6">
-    <h3 class="font-sans font-semibold text-lg text-ink mb-4">Chi phí các gói hỗ trợ</h3>
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm text-left border-collapse">
-        <thead>
-          <tr class="bg-mint-light">
-            <th class="font-semibold text-ink px-4 py-3 rounded-l-xl">Chương trình</th>
-            <th class="font-semibold text-ink px-4 py-3 rounded-r-xl">Chi phí</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="border-b border-ink/8"><td class="px-4 py-3 text-slate">Hệ Đại học</td><td class="px-4 py-3 text-ink font-semibold">15.000.000 VNĐ</td></tr>
-          <tr class="border-b border-ink/8"><td class="px-4 py-3 text-slate">Hệ Thạc sĩ</td><td class="px-4 py-3 text-ink font-semibold">15.000.000 VNĐ</td></tr>
-          <tr><td class="px-4 py-3 text-slate">Hệ ngôn ngữ</td><td class="px-4 py-3 text-ink font-semibold">8.000.000 VNĐ</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="text-xs text-slate leading-relaxed mt-4">Nếu apply nhiều hơn 02 trường: thêm 1.200.000 VNĐ/trường (cùng chuyên ngành) hoặc 2.000.000 VNĐ/trường (khác chuyên ngành).</p>
-  </div>
-
-  <!-- Lưu ý -->
-  <div class="bg-peach-light border border-peach-border rounded-2xl p-6 sm:p-8 mb-6">
-    <h3 class="font-sans font-semibold text-lg text-ink mb-3">Lưu ý</h3>
-    <ul class="space-y-2">
-      <li class="flex gap-3"><span class="w-1.5 h-1.5 rounded-full bg-peach mt-2 shrink-0"></span><p class="text-sm text-ink/80 leading-relaxed">Phí báo danh do học sinh tự chi trả — Mentor chỉ hỗ trợ thao tác thanh toán.</p></li>
-      <li class="flex gap-3"><span class="w-1.5 h-1.5 rounded-full bg-peach mt-2 shrink-0"></span><p class="text-sm text-ink/80 leading-relaxed">Mentor chỉ chịu trách nhiệm thực hiện các nội dung hỗ trợ đã nêu, không chịu trách nhiệm về kết quả cuối cùng và không hoàn phí apply nếu trượt.</p></li>
-      <li class="flex gap-3"><span class="w-1.5 h-1.5 rounded-full bg-peach mt-2 shrink-0"></span><p class="text-sm text-ink/80 leading-relaxed">Các chi phí ngoài phạm vi hỗ trợ (phí xin thư giới thiệu, phí báo danh, phí gửi tài liệu...) do Mentee tự chi trả.</p></li>
-      <li class="flex gap-3"><span class="w-1.5 h-1.5 rounded-full bg-peach mt-2 shrink-0"></span><p class="text-sm text-ink/80 leading-relaxed">Đặt cọc 50% giá trị gói hỗ trợ để giữ slot; 50% còn lại thanh toán sau khi hoàn thành apply trường đầu tiên. Phí đặt cọc không được hoàn lại dưới bất kỳ hình thức nào.</p></li>
-    </ul>
-  </div>
-
-  <!-- CTA tải file chi tiết -->
-  <div class="bg-white border border-ink/10 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-    <div>
-      <p class="text-sm font-semibold text-ink mb-1">Xem đầy đủ nội dung hỗ trợ, chi phí và quy trình đăng ký</p>
-      <p class="text-xs text-slate">Tài liệu PDF chi tiết — Gói hỗ trợ apply học bổng &amp; tự phí năm 2027</p>
-    </div>
-    <a class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring shrink-0" download="Goi-ho-tro-apply-hoc-bong-2027-Thuy-Ngo.pdf" href="Goi-ho-tro-apply-hoc-bong-2027-Thuy-Ngo.pdf">
-      Xem chi tiết tại đây
-      <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
-    </a>
-  </div>
-
-</div>
-
-<!-- ===== Nhánh: Kết quả đạt được ===== -->
-<div class="abroad-panel" id="abroad-results">
-
-  <!-- Số liệu nổi bật -->
-  <div class="bg-mint-light border border-mint-border rounded-2xl p-6 sm:p-8 mb-6">
-    <h3 class="font-sans font-semibold text-lg text-ink mb-1">Kết quả hỗ trợ apply học bổng du học Trung Quốc</h3>
-    <p class="text-sm text-slate leading-relaxed mb-5 max-w-2xl">Đồng hành cùng các bạn mentee trong quá trình xin học bổng bậc đại học và thạc sĩ tại Trung Quốc.</p>
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-      <div class="bg-white rounded-xl px-4 py-3.5 text-center">
-        <p class="font-hanzi font-black text-2xl text-mint">9/9</p>
-        <p class="text-xs text-slate mt-1 leading-snug">Mentee thạc sĩ đỗ học bổng toàn phần</p>
-      </div>
-      <div class="bg-white rounded-xl px-4 py-3.5 text-center">
-        <p class="font-hanzi font-black text-2xl text-mint">14</p>
-        <p class="text-xs text-slate mt-1 leading-snug">Offer học bổng toàn phần &amp; bán phần</p>
-      </div>
-      <div class="bg-white rounded-xl px-4 py-3.5 text-center">
-        <p class="font-hanzi font-black text-2xl text-mint">3+2</p>
-        <p class="text-xs text-slate mt-1 leading-snug">Offer học bổng CSC &amp; CIS</p>
-      </div>
-      <div class="bg-white rounded-xl px-4 py-3.5 text-center">
-        <p class="font-hanzi font-black text-2xl text-mint">9</p>
-        <p class="text-xs text-slate mt-1 leading-snug">Offer học bổng tỉnh, trường</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Trường mentee đã đỗ -->
-  <div class="bg-white border border-ink/10 rounded-2xl p-6 sm:p-8">
-    <h3 class="font-sans font-semibold text-lg text-ink mb-1">Mentee đã đỗ học bổng &amp; hệ tự phí tại</h3>
-    <p class="text-sm text-slate leading-relaxed mb-4">Tại nhiều trường 985–211, như:</p>
-    <div class="flex flex-wrap gap-2">
-      <span class="text-xs font-medium text-ink bg-mint-light rounded-full px-3 py-1.5">Đại học Thanh Hoa (hệ ngôn ngữ)</span>
-      <span class="text-xs font-medium text-ink bg-mint-light rounded-full px-3 py-1.5">Đại học Chiết Giang (hệ ngôn ngữ)</span>
-      <span class="text-xs font-medium text-ink bg-mint-light rounded-full px-3 py-1.5">Đại học Phúc Đán (hệ ngôn ngữ)</span>
-      <span class="text-xs font-medium text-ink bg-mint-light rounded-full px-3 py-1.5">Đại học Nam Kinh (hệ ngôn ngữ)</span>
-      <span class="text-xs font-medium text-ink bg-mint-light rounded-full px-3 py-1.5">Đại học Nam Khai (hệ thạc sĩ)</span>
-      <span class="text-xs font-medium text-ink bg-mint-light rounded-full px-3 py-1.5">Đại học Tài chính Kinh tế Thượng Hải (hệ thạc sĩ)</span>
-      <span class="text-xs font-medium text-ink bg-mint-light rounded-full px-3 py-1.5">Đại học Tài chính Kinh tế Tây Nam (hệ thạc sĩ)</span>
-      <span class="text-xs font-medium text-ink bg-mint-light rounded-full px-3 py-1.5">Đại học Giao thông Tây Nam (hệ thạc sĩ)</span>
-      <span class="text-xs font-medium text-slate bg-ink/5 rounded-full px-3 py-1.5">và nhiều trường khác</span>
-    </div>
-  </div>
-
-</div>
-
-<!-- ===== Nhánh: Feedback (đang để trống) ===== -->
-<div class="abroad-panel" id="abroad-feedback">
-<div class="relative overflow-hidden rounded-2xl border border-ink/10 bg-gradient-to-br from-mint-light via-white to-peach-light px-6 sm:px-10 py-10 sm:py-12">
-<span class="watermark-hanzi absolute -right-6 -top-10 text-[170px] select-none" style="color:#000080;">谢</span>
-<div class="relative">
-
-<p class="text-mint font-semibold text-sm tracking-wide mb-2">Học viên chia sẻ</p>
-<h3 class="font-sans font-semibold text-2xl text-ink mb-8 max-w-xl">Một vài dòng cảm ơn từ các bạn mình đã đồng hành trong hành trình apply</h3>
-
-<div class="grid sm:grid-cols-2 gap-5 mb-10">
-<div class="relative bg-white rounded-2xl border border-ink/10 p-6 overflow-hidden">
-<span class="fb-quote-mark">&rdquo;</span>
-<p class="relative text-sm text-ink leading-relaxed mb-5 max-w-[92%]">Chị đồng hành và tin tưởng em suốt hơn 6 tháng apply thạc sĩ, giúp em vững tin hơn cả chính mình.</p>
-<div class="relative flex items-center gap-3">
-<div class="w-9 h-9 rounded-full bg-mint-light text-mint flex items-center justify-center text-xs font-bold shrink-0">BN</div>
+<div class="dh-hero-grid">
 <div>
-<p class="text-sm font-semibold text-ink">Bích Ngọc</p>
-<p class="text-xs text-slate leading-snug">Học bổng Chính phủ Trung Quốc toàn phần — Thạc sĩ Kinh doanh quốc tế, ĐH Tài chính Kinh tế Thượng Hải</p>
+<p class="dh-kicker">Du học Trung Quốc cùng cô Thúy</p>
+<p class="dh-big gd-num">9<span>/</span>9</p>
+<svg aria-hidden="true" class="dh-swash" fill="none" viewbox="0 0 300 20"><path d="M3 13 C 70 4, 160 2, 297 9" stroke="#FF7D00" stroke-linecap="round" stroke-width="4"></path></svg>
+<h2 class="dh-title">mentee thạc sĩ đỗ học bổng toàn phần</h2>
 </div>
-</div>
-</div>
-<div class="relative bg-white rounded-2xl border border-ink/10 p-6 overflow-hidden">
-<span class="fb-quote-mark">&rdquo;</span>
-<p class="relative text-sm text-ink leading-relaxed mb-5 max-w-[92%]">Chị tư vấn lộ trình rất chi tiết, viết kế hoạch học tập sát và rõ ràng — nhờ vậy em pass phỏng vấn cả 3/3 trường đăng ký.</p>
-<div class="relative flex items-center gap-3">
-<div class="w-9 h-9 rounded-full bg-peach-light text-peach flex items-center justify-center text-xs font-bold shrink-0">HN</div>
 <div>
-<p class="text-sm font-semibold text-ink">Hà Yến Nhi</p>
-<p class="text-xs text-slate leading-snug">Trúng tuyển hệ Thạc sĩ Ngôn ngữ học, Đại học Dân tộc Tây Nam</p>
+<p class="dh-lede">Chọn trường, viết kế hoạch học tập, hoàn thiện hồ sơ và luyện phỏng vấn — cho hệ ngôn ngữ, đại học và thạc sĩ.</p>
+<div class="dh-actions">
+<a class="dh-btn dh-btn-navy focus-ring" href="https://forms.gle/v8xTtNmNZ45ihdtp8" rel="noopener" target="_blank">Đăng ký tư vấn</a>
+<button class="dh-link focus-ring" data-dh-jump="dh-dichvu" type="button">Xem gói hỗ trợ ↓</button>
 </div>
 </div>
 </div>
-<div class="relative bg-white rounded-2xl border border-ink/10 p-6 overflow-hidden">
-<span class="fb-quote-mark">&rdquo;</span>
-<p class="relative text-sm text-ink leading-relaxed mb-5 max-w-[92%]">Vào nhóm Zalo của TN từ những ngày nhóm chỉ mới 100–200 người, rồi đỗ SJTU chỉ trong thời gian ngắn — đúng là cái duyên!</p>
-<div class="relative flex items-center gap-3">
-<div class="w-9 h-9 rounded-full bg-sky-light text-sky flex items-center justify-center text-xs font-bold shrink-0">HV</div>
-<div>
-<p class="text-sm font-semibold text-ink">Học viên giấu tên</p>
-<p class="text-xs text-slate leading-snug">Trúng tuyển Đại học Giao thông Thượng Hải (SJTU)</p>
-</div>
-</div>
-</div>
-<div class="relative bg-white rounded-2xl border border-ink/10 p-6 overflow-hidden">
-<span class="fb-quote-mark">&rdquo;</span>
-<p class="relative text-sm text-ink leading-relaxed mb-5 max-w-[92%]">Buổi luyện phỏng vấn chị vạch rõ từng ý giúp em dễ nhớ hơn hẳn — nhờ vậy vào phỏng vấn thật em tự tin hơn nhiều.</p>
-<div class="relative flex items-center gap-3">
-<div class="w-9 h-9 rounded-full bg-mint-light text-mint flex items-center justify-center text-xs font-bold shrink-0">HV</div>
-<div>
-<p class="text-sm font-semibold text-ink">Học viên giấu tên</p>
-<p class="text-xs text-slate leading-snug">Luyện phỏng vấn xin học bổng cùng mentor</p>
-</div>
-</div>
+<div class="dh-sub">
+<div><p class="gd-num">14</p><p>offer học bổng toàn phần &amp; bán phần</p></div>
+<div><p class="gd-num">3<span>+</span>2</p><p>offer học bổng CSC &amp; CIS</p></div>
+<div><p class="gd-num">9</p><p>offer học bổng tỉnh, trường</p></div>
 </div>
 </div>
 
-<div>
-<p class="text-xs text-slate font-semibold uppercase tracking-wide mb-3">Một vài hình ảnh minh chứng</p>
-<div class="flex gap-3 overflow-x-auto pb-2">
-<a class="fb-proof-thumb" href="anh-a49f6b3468.jpg" target="_blank">
-<img loading="lazy" decoding="async" alt="Thư mời nhập học của học viên" src="anh-a49f6b3468.jpg"/>
-</a>
-<a class="fb-proof-thumb" href="anh-c4fec44185.jpg" target="_blank">
-<img loading="lazy" decoding="async" alt="Đoạn chat học viên chia sẻ đỗ SJTU" src="anh-c4fec44185.jpg"/>
-</a>
-<a class="fb-proof-thumb" href="anh-43c610b1e2.jpg" target="_blank">
-<img loading="lazy" decoding="async" alt="Đoạn chat học viên cảm ơn buổi luyện phỏng vấn" src="anh-43c610b1e2.jpg"/>
-</a>
-<a class="fb-proof-thumb" href="anh-1db80e9d02.jpg" target="_blank">
-<img loading="lazy" decoding="async" alt="Đoạn chat học viên phản hồi về kế hoạch học tập" src="anh-1db80e9d02.jpg"/>
-</a>
+<nav aria-label="Các mục du học" class="dh-menu">
+<button class="dh-tile dh-c1 focus-ring" data-dh-jump="dh-feedback" type="button"><span class="t">Feedback</span><span class="d">Lời cảm ơn từ các bạn đã đỗ</span><span class="go">Xem →</span></button>
+<button class="dh-tile dh-c2 focus-ring" data-dh-jump="dh-dichvu" type="button"><span class="t">Dịch vụ &amp; chi phí</span><span class="d">4 chặng hỗ trợ, giá từng hệ</span><span class="go">Xem →</span></button>
+<button class="dh-tile dh-c3 focus-ring" data-dh-jump="dh-casestudy" type="button"><span class="t">Case study</span><span class="d">Hồ sơ thật, kể chi tiết</span><span class="go">Xem →</span></button>
+<button class="dh-tile dh-c4 focus-ring" data-dh-jump="dh-congdong" type="button"><span class="t">Cộng đồng</span><span class="d">Nhóm Facebook cập nhật học bổng</span><span class="go">Xem →</span></button>
+<button class="dh-tile dh-c5 focus-ring" data-abroad-tab="interview" type="button"><span class="t">Training phỏng vấn <span class="dh-vip">VIP</span></span><span class="d">70 câu hỏi kèm câu trả lời mẫu</span><span class="go">Vào luyện →</span></button>
+</nav>
+
+<div class="dh-feedback gd-bleed">
+<div class="dh-sec dh-c1" id="dh-feedback"><h2>Feedback</h2><p>Một vài dòng cảm ơn từ các bạn mình đã đồng hành trong hành trình apply</p></div>
+<blockquote class="dh-bigquote"><span aria-hidden="true" class="mark gd-num">“</span>
+<p>Chị đồng hành và tin tưởng em suốt hơn 6 tháng apply thạc sĩ, giúp em vững tin hơn cả chính mình.</p>
+<footer><strong>Bích Ngọc</strong><span class="gd-muted"> — Học bổng Chính phủ Trung Quốc toàn phần, Thạc sĩ Kinh doanh quốc tế, ĐH Tài chính Kinh tế Thượng Hải</span></footer></blockquote>
+<div class="dh-quotes">
+<blockquote class="dh-q"><p>“Chị tư vấn lộ trình rất chi tiết, viết kế hoạch học tập sát và rõ ràng — nhờ vậy em pass phỏng vấn cả 3/3 trường đăng ký.”</p><footer><strong>Hà Yến Nhi</strong><br/><span class="gd-muted">Thạc sĩ Ngôn ngữ học, ĐH Dân tộc Tây Nam</span></footer></blockquote>
+<blockquote class="dh-q"><p>“Vào nhóm Zalo của TN từ những ngày nhóm chỉ mới 100–200 người, rồi đỗ SJTU chỉ trong thời gian ngắn — đúng là cái duyên!”</p><footer><strong>Học viên giấu tên</strong><br/><span class="gd-muted">ĐH Giao thông Thượng Hải (SJTU)</span></footer></blockquote>
+<blockquote class="dh-q"><p>“Buổi luyện phỏng vấn chị vạch rõ từng ý giúp em dễ nhớ hơn hẳn — vào phỏng vấn thật em tự tin hơn nhiều.”</p><footer><strong>Học viên giấu tên</strong><br/><span class="gd-muted">Luyện phỏng vấn học bổng</span></footer></blockquote>
+</div>
+<p class="dh-proof-label">Một vài hình ảnh minh chứng</p>
+<div class="dh-proof">
+<a href="anh-a49f6b3468.jpg" rel="noopener" target="_blank"><img alt="Thư mời nhập học của học viên" decoding="async" loading="lazy" src="anh-a49f6b3468.jpg"/></a>
+<a href="anh-c4fec44185.jpg" rel="noopener" target="_blank"><img alt="Đoạn chat học viên chia sẻ đỗ SJTU" decoding="async" loading="lazy" src="anh-c4fec44185.jpg"/></a>
+<a href="anh-43c610b1e2.jpg" rel="noopener" target="_blank"><img alt="Đoạn chat học viên cảm ơn buổi luyện phỏng vấn" decoding="async" loading="lazy" src="anh-43c610b1e2.jpg"/></a>
+<a href="anh-1db80e9d02.jpg" rel="noopener" target="_blank"><img alt="Đoạn chat học viên phản hồi về kế hoạch học tập" decoding="async" loading="lazy" src="anh-1db80e9d02.jpg"/></a>
 </div>
 </div>
 
+<div class="dh-services">
+<div class="dh-sec dh-c2" id="dh-dichvu"><h2>Dịch vụ &amp; chi phí</h2><p>Gói hỗ trợ apply hệ ngôn ngữ, đại học và thạc sĩ — học bổng hoặc tự phí</p></div>
+<div class="dh-svc">
+<div><span class="gd-num">01</span><div><h3>Tư vấn &amp; định hướng</h3><p>Chọn trường và loại học bổng phù hợp; định hướng chuyên ngành và lộ trình apply theo profile cá nhân.</p></div></div>
+<div><span class="gd-num">02</span><div><h3>Chuẩn bị hồ sơ</h3><p>Hoàn thiện hồ sơ apply; viết hoặc chỉnh sửa kế hoạch học tập (01 chuyên ngành); góp ý kế hoạch nghiên cứu và video giới thiệu (nếu có).</p></div></div>
+<div><span class="gd-num">03</span><div><h3>Xử lý hồ sơ</h3><p>Dịch thuật công chứng hồ sơ (01 bộ); upload hồ sơ (tối đa 02 trường); hỗ trợ thao tác thanh toán phí báo danh.</p></div></div>
+<div><span class="gd-num">04</span><div><h3>Phỏng vấn &amp; theo dõi</h3><p>Hướng dẫn và luyện tập phỏng vấn; hỗ trợ xuyên suốt đến khi nhận kết quả.</p></div></div>
 </div>
+<p class="dh-for">Dành cho học sinh apply hệ Ngôn ngữ, Đại học hoặc Thạc sĩ; học bổng hoặc tự phí; đủ 18 tuổi trở lên (với hệ đại học và hệ ngôn ngữ).</p>
+</div>
+
+<div class="dh-price gd-bleed" aria-label="Chi phí">
+<div class="dh-price-grid">
+<div><p>Hệ Đại học</p><p class="gd-num">15.000.000<small>VNĐ</small></p></div>
+<div><p>Hệ Thạc sĩ</p><p class="gd-num">15.000.000<small>VNĐ</small></p></div>
+<div><p>Hệ ngôn ngữ</p><p class="gd-num">8.000.000<small>VNĐ</small></p></div>
+</div>
+<p class="dh-price-note">Apply hơn 02 trường: thêm 1.200.000 VNĐ/trường (cùng chuyên ngành) hoặc 2.000.000 VNĐ/trường (khác chuyên ngành). Đặt cọc 50% để giữ slot, 50% còn lại sau khi hoàn thành apply trường đầu tiên; phí cọc không hoàn lại. Phí báo danh và các chi phí ngoài phạm vi hỗ trợ do mentee tự chi trả; mentor không chịu trách nhiệm kết quả cuối cùng và không hoàn phí nếu trượt. <a href="Goi-ho-tro-apply-hoc-bong-2027-Thuy-Ngo.pdf" rel="noopener" target="_blank">Xem tài liệu đầy đủ (PDF)</a></p>
+</div>
+
+<div class="dh-cases-wrap">
+<div class="dh-sec dh-c3" id="dh-casestudy"><h2>Case study</h2><p>Hồ sơ thật mình đã chia sẻ chi tiết trên Facebook — bấm vào banner để đọc bài đầy đủ</p></div>
+<div class="dh-cases">
+<a class="dh-case" href="https://www.facebook.com/share/p/1Bt2urY2wo/" rel="noopener" target="_blank"><img alt="Từ "lỡ không đỗ thì sao" đến CSC — trường top 1 kinh tế" decoding="async" loading="lazy" src="anh-5dedb4b802.jpg"/><span>Từ "lỡ không đỗ thì sao" đến CSC — trường top 1 kinh tế</span></a>
+<a class="dh-case" href="https://www.facebook.com/share/p/1GMJrfXjnc/" rel="noopener" target="_blank"><img alt="GPA 7.x chinh phục học bổng toàn phần trường 211" decoding="async" loading="lazy" src="anh-568a76d36e.jpg"/><span>GPA 7.x chinh phục học bổng toàn phần trường 211</span></a>
+<a class="dh-case" href="https://www.facebook.com/share/p/1DT6teu5X5/" rel="noopener" target="_blank"><img alt="Đỗ CSC có cần profile "khủng"?" decoding="async" loading="lazy" src="anh-1012a68b0b.jpg"/><span>Đỗ CSC có cần profile "khủng"?</span></a>
+<a class="dh-case" href="https://www.facebook.com/share/p/19LKnQatuy/" rel="noopener" target="_blank"><img alt="ĐH Khoa học Kỹ thuật Bắc Kinh (211) — học bổng thành phố" decoding="async" loading="lazy" src="anh-2ec30ec07e.jpg"/><span>ĐH Khoa học Kỹ thuật Bắc Kinh (211) — học bổng thành phố</span></a>
 </div>
 </div>
 
-<!-- ===== Nhánh: Case study ===== -->
-<div class="abroad-panel" id="abroad-casestudy">
-<p class="text-sm text-slate leading-relaxed mb-6 max-w-2xl">Một vài case study thực tế mình đã chia sẻ chi tiết trên Facebook — bấm vào banner để đọc bài viết đầy đủ.</p>
-<div class="grid sm:grid-cols-2 gap-5">
-
-<a class="cs-card group" href="https://www.facebook.com/share/p/1Bt2urY2wo/" rel="noopener" target="_blank">
-<div class="cs-banner cs-banner--1"><img loading="lazy" decoding="async" alt="Case study 01" class="cs-banner-img" src="anh-5dedb4b802.jpg"/></div>
-<div class="cs-caption">
-<p class="text-sm font-semibold text-ink group-hover:text-mint transition-colors">Xem bài viết đầy đủ</p>
-<svg fill="none" height="15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="15"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" x2="21" y1="14" y2="3"></line></svg>
+<div class="dh-duo">
+<div class="dh-block dh-block-community" id="dh-congdong">
+<h2>Cộng đồng</h2>
+<p>Cập nhật hoạt động ngoại khóa, các cuộc thi giúp làm đẹp hồ sơ và thông tin mới nhất về học bổng du học Trung Quốc.</p>
+<a class="dh-btn dh-btn-white focus-ring" href="https://www.facebook.com/share/g/1EGGwJ2w1j/" rel="noopener" target="_blank">Tham gia nhóm Facebook <svg fill="none" height="14" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="14"><line x1="7" x2="17" y1="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg></a>
 </div>
-</a>
-
-<a class="cs-card group" href="https://www.facebook.com/share/p/1GMJrfXjnc/" rel="noopener" target="_blank">
-<div class="cs-banner cs-banner--2"><img loading="lazy" decoding="async" alt="Case study 02" class="cs-banner-img" src="anh-568a76d36e.jpg"/></div>
-<div class="cs-caption">
-<p class="text-sm font-semibold text-ink group-hover:text-mint transition-colors">Xem bài viết đầy đủ</p>
-<svg fill="none" height="15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="15"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" x2="21" y1="14" y2="3"></line></svg>
-</div>
-</a>
-
-<a class="cs-card group" href="https://www.facebook.com/share/p/1DT6teu5X5/" rel="noopener" target="_blank">
-<div class="cs-banner cs-banner--3"><img loading="lazy" decoding="async" alt="Case study 03" class="cs-banner-img" src="anh-1012a68b0b.jpg"/></div>
-<div class="cs-caption">
-<p class="text-sm font-semibold text-ink group-hover:text-mint transition-colors">Xem bài viết đầy đủ</p>
-<svg fill="none" height="15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="15"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" x2="21" y1="14" y2="3"></line></svg>
-</div>
-</a>
-
-<a class="cs-card group" href="https://www.facebook.com/share/p/19LKnQatuy/" rel="noopener" target="_blank">
-<div class="cs-banner cs-banner--4"><img loading="lazy" decoding="async" alt="Case study 04" class="cs-banner-img" src="anh-2ec30ec07e.jpg"/></div>
-<div class="cs-caption">
-<p class="text-sm font-semibold text-ink group-hover:text-mint transition-colors">Xem bài viết đầy đủ</p>
-<svg fill="none" height="15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="15"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" x2="21" y1="14" y2="3"></line></svg>
-</div>
-</a>
-
+<div class="dh-block dh-block-vip">
+<h2>Training phỏng vấn <span class="dh-vip" style="font-size:13px;vertical-align:5px">VIP</span></h2>
+<p><span class="gd-num">70</span> câu hỏi phỏng vấn học bổng (25 ngành xã hội, 45 ngành kinh tế) — có ý chính, câu trả lời mẫu, mẫu câu và ghi âm để giáo viên nhận xét.</p>
+<button class="dh-btn dh-btn-orange focus-ring" data-abroad-tab="interview" type="button">Vào luyện phỏng vấn</button>
 </div>
 </div>
 
-<!-- ===== Nhánh: Tham gia cộng đồng của tôi ===== -->
-<div class="abroad-panel" id="abroad-community">
-  <div class="bg-sky-light border border-sky-border rounded-2xl overflow-hidden">
-    <img loading="lazy" decoding="async" alt="Tham gia cộng đồng của TN" class="w-full h-48 sm:h-64 object-cover" src="anh-76550e6ebd.jpg"/>
-    <div class="px-6 sm:px-10 py-10 sm:py-14 text-center">
-      <div class="w-14 h-14 mx-auto rounded-full bg-white flex items-center justify-center mb-4">
-        <svg fill="none" height="26" stroke="#6B8FE0" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" width="26"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-      </div>
-      <h3 class="font-sans font-semibold text-xl text-ink mb-2">Tham gia cộng đồng của tôi</h3>
-      <p class="text-sm text-slate max-w-md mx-auto mb-6">Để cập nhật những thông tin về hoạt động ngoại khóa, các cuộc thi giúp làm đẹp hồ sơ và các thông tin mới nhất về học bổng du học Trung Quốc, hãy tham gia cộng đồng của TN trên Facebook nhé.</p>
-      <a class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring" href="https://www.facebook.com/share/g/1EGGwJ2w1j/" rel="noopener" target="_blank">
-        Tham gia nhóm Facebook
-        <svg fill="none" height="15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="15"><line x1="7" x2="17" y1="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-      </a>
-    </div>
-  </div>
+<div class="dh-register">
+<p>Muốn mình xem hồ sơ của bạn? <span>Điền vài thông tin cơ bản, mình sẽ đánh giá và gợi ý trường phù hợp.</span></p>
+<a class="dh-btn dh-btn-navy focus-ring" href="https://forms.gle/v8xTtNmNZ45ihdtp8" rel="noopener" target="_blank">Điền form đăng ký tư vấn</a>
+</div>
 </div>
 
+<div class="abroad-panel" id="abroad-interview-wrap">
+<button class="dh-back focus-ring" data-abroad-tab="main" type="button"><svg fill="none" height="15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewbox="0 0 24 24" width="15"><polyline points="15 18 9 12 15 6"></polyline></svg>Du học Trung Quốc</button>
 <!-- ===== Nhánh: Training phỏng vấn (VIP) — nội dung do phong-van.js vẽ ===== -->
 <div class="abroad-panel" id="abroad-interview">
 <div id="pv-root"><div class="tt-empty"><span class="tt-spin"></span></div></div>
 </div>
 
-<!-- ===== Nhánh: Đăng ký tư vấn ===== -->
-<div class="abroad-panel" id="abroad-register">
-  <div class="bg-peach-light border border-peach-border rounded-2xl px-6 sm:px-10 py-14 text-center">
-    <div class="w-14 h-14 mx-auto rounded-full bg-white flex items-center justify-center mb-4">
-      <svg fill="none" height="26" stroke="#FF7D00" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24" width="26"><path d="M4 4h16v16H4z" fill="none" stroke="none"></path><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
-    </div>
-    <h3 class="font-sans font-semibold text-xl text-ink mb-2">Đăng ký tư vấn apply học bổng</h3>
-    <p class="text-sm text-slate max-w-md mx-auto mb-6">Điền một số thông tin cơ bản để mình đánh giá hồ sơ và định hướng trường phù hợp cho bạn.</p>
-    <a class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring" href="https://forms.gle/v8xTtNmNZ45ihdtp8" rel="noopener" target="_blank">
-      Điền form đăng ký
-      <svg fill="none" height="15" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="15"><line x1="7" x2="17" y1="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-    </a>
-  </div>
 </div>
-
 </section>
 <!-- ===== TRANG QUẢN TRỊ (chỉ tài khoản có role = "admin" mới xem được dữ liệu) ===== -->
 <section class="page-section" data-page="" id="lophoc">
@@ -1954,23 +1660,30 @@ Trang quản trị
   window.addEventListener('scroll', updateHomeFab, { passive: true });
   updateHomeFab();
 
-  // ---- Chuyển tab giữa 3 nhánh của mục "Du học Trung Quốc" ----
-  const abroadTabs = document.querySelectorAll('.abroad-tab');
-  const abroadPanels = {
-    services: document.getElementById('abroad-services'),
-    results: document.getElementById('abroad-results'),
-    feedback: document.getElementById('abroad-feedback'),
-    casestudy: document.getElementById('abroad-casestudy'),
-    community: document.getElementById('abroad-community'),
-    register: document.getElementById('abroad-register'),
-    interview: document.getElementById('abroad-interview'),
-  };
-  abroadTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      abroadTabs.forEach(t => t.classList.toggle('active', t === tab));
-      Object.entries(abroadPanels).forEach(([key, panel]) => panel && panel.classList.toggle('active', key === tab.dataset.abroadTab));
+  // ---- Mục "Du học Trung Quốc": cuộn tới từng mục + mở màn hình Training phỏng vấn ----
+  const abroadSec = document.getElementById('abroad');
+  const interviewWrap = document.getElementById('abroad-interview-wrap');
+  const interviewPanel = document.getElementById('abroad-interview');
+  function setAbroadView(view) {
+    const isInterview = view === 'interview';
+    abroadSec.classList.toggle('dh-show-interview', isInterview);
+    interviewWrap.classList.toggle('active', isInterview);
+    if (interviewPanel) interviewPanel.classList.toggle('active', isInterview);
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }
+  document.querySelectorAll('[data-abroad-tab]').forEach(btn => {
+    btn.addEventListener('click', () => setAbroadView(btn.dataset.abroadTab));
+  });
+  document.querySelectorAll('[data-dh-jump]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const el = document.getElementById(btn.dataset.dhJump);
+      if (el) el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
     });
   });
+  // Rời mục Du học → lần sau mở lại về màn hình chính
+  document.querySelectorAll('[data-nav-btn],[data-go-home],.nav-jump').forEach(b => b.addEventListener('click', () => {
+    if (abroadSec.classList.contains('dh-show-interview')) { abroadSec.classList.remove('dh-show-interview'); interviewWrap.classList.remove('active'); }
+  }));
   jumpBtns.forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.target)));
 
   function openDrawer() {
