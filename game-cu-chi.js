@@ -1,334 +1,383 @@
-/**
- * game-cu-chi.js — Chinese-learning gesture game (Vanilla JS + MediaPipe Tasks Vision).
- *
- * Modules (all in one file to stay CDN/no-build friendly):
- *   CONFIG          tunable thresholds
- *   Camera          getUserMedia wrapper
- *   Vision          lazy MediaPipe loader (only the landmarker the current mode needs)
- *   HeadGestures    landmarks -> pitch/yaw/roll -> NOD | SHAKE | TILT_LEFT | TILT_RIGHT
- *   FingerCounter   hand landmarks -> stable finger count (0–10, two hands)
- *   Game            question banks, scoring, rendering
- *   Loop            one detection per *new* video frame, paused when tab hidden
- */
-import { FilesetResolver, FaceLandmarker, HandLandmarker }
-  from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs';
+/* =====================================================================
+   TƯƠNG TÁC BẰNG CAMERA — tab "📷 Tương tác camera" trong khu Trò chơi
+   ---------------------------------------------------------------------
+   2 trò, mỗi lượt 1 phút, mỗi câu 5 giây (hết giờ → tự chuyển câu khác):
+     • tilt  : hiện 1 từ (theo cấp độ HSK đang chọn) + 1 nghĩa → nghiêng TRÁI = Đúng, nghiêng PHẢI = Sai
+     • count : hiện số 一 → 十 → giơ đúng số ngón tay (2 tay cho số > 5)
+   Kỷ lục = số câu đúng trong 1 phút: lưu trên máy (localStorage) + bảng top 10
+   trên Firestore: camRecords/{tilt|count}/scores/{uid} = { name, best, games, updatedAt }.
 
-/* ------------------------------------------------------------------ CONFIG */
-const CONFIG = {
-  wasm: 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm',
+   Dùng lại hàm chung của trang (khai báo ở index.html): gameWords, sndCorrect, sndWrong,
+   addToNotebook, trackWordMemorized, trackStudyActivity, gameStopHandlers, tnVoice, tnAuth, tnEnsureFb.
+   MediaPipe (~8 MB) chỉ được tải khi bấm "Bật camera" lần đầu.
+   ===================================================================== */
+
+const MP = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+const CFG = {
+  sessionSec: 60,
+  questionSec: 5,
+  feedbackMs: 700,        // hiện đúng/sai bao lâu trước khi sang câu mới
   faceModel: 'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',
   handModel: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
-  cam: { width: 640, height: 480, frameRate: { ideal: 30 } },
-  head: {
-    windowMs: 900,      // motion history inspected for nod/shake
-    nodAmp: 0.06,       // min pitch swing (normalised, see headPose) to count a reversal
-    shakeAmp: 0.10,     // min yaw swing
-    nodSwings: 1,       // down+up = 1 reversal
-    shakeSwings: 2,     // left-right-left = 2 reversals (ignores "glance aside")
-    tiltRad: 0.26,      // ~15° roll away from neutral
-    tiltHoldMs: 250,    // tilt must be held this long
-    cooldownMs: 1100,   // ignore input right after a gesture fires
-  },
-  hand: { holdMs: 600, extendRatio: 1.15, thumbRatio: 1.2 },
+  tiltRad: 0.26,          // ~15° lệch so với tư thế thẳng thì tính là nghiêng
+  tiltHoldMs: 250,        // phải giữ nghiêng chừng này mới nhận
+  holdMs: 600,            // giữ nguyên số ngón tay chừng này mới nhận
+  maxRecord: 100,         // chặn số liệu vô lý khi ghi bảng kỷ lục
 };
-
-/* ------------------------------------------------------------------ Camera */
-const Camera = {
-  async start(video) {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', ...CONFIG.cam }, audio: false });
-    video.srcObject = stream;
-    await new Promise(r => (video.onloadedmetadata = r));
-    await video.play();
-  },
-};
-
-/* ------------------------------------------------------------------ Vision */
-// Each landmarker is created on first use and cached. GPU delegate with CPU fallback.
-const Vision = {
-  fileset: null, face: null, hand: null,
-  async init() { this.fileset ??= await FilesetResolver.forVisionTasks(CONFIG.wasm); },
-  async create(Klass, modelAssetPath, extra) {
-    await this.init();
-    for (const delegate of ['GPU', 'CPU']) {
-      try {
-        return await Klass.createFromOptions(this.fileset, { baseOptions: { modelAssetPath, delegate }, runningMode: 'VIDEO', ...extra });
-      } catch (e) { if (delegate === 'CPU') throw e; }
-    }
-  },
-  async get(mode) {
-    if (mode === 'head') return (this.face ??= await this.create(FaceLandmarker, CONFIG.faceModel,
-      { numFaces: 1, outputFaceBlendshapes: false, outputFacialTransformationMatrixes: false }));
-    return (this.hand ??= await this.create(HandLandmarker, CONFIG.handModel, { numHands: 2 }));
-  },
-};
-
-/* ------------------------------------------------------------ HeadGestures */
-// Cheap pose proxies from 5 face-mesh points (no matrix math needed).
-// Coordinates are from the RAW (un-mirrored) frame, so "left/right" below is the user's own.
-function headPose(lm) {
-  const nose = lm[1], chin = lm[152], cheekR = lm[234], cheekL = lm[454], eyeR = lm[33], eyeL = lm[263];
-  const eyeMidY = (eyeR.y + eyeL.y) / 2;
-  return {
-    yaw: (nose.x - (cheekR.x + cheekL.x) / 2) / (cheekL.x - cheekR.x),  // ~-0.5..0.5
-    pitch: (nose.y - eyeMidY) / (chin.y - eyeMidY),                      // grows when looking down
-    roll: Math.atan2(eyeL.y - eyeR.y, eyeL.x - eyeR.x),                  // <0 = head toward user's right shoulder
-  };
-}
-
-// Counts direction reversals whose amplitude exceeds `amp` (hysteresis filters jitter).
-function countSwings(vals, amp) {
-  let dir = 0, ext = vals[0], swings = 0;
-  for (const v of vals) {
-    const d = v - ext;
-    if (dir <= 0 && d > amp) { if (dir) swings++; dir = 1; ext = v; }
-    else if (dir >= 0 && d < -amp) { if (dir) swings++; dir = -1; ext = v; }
-    else if (dir * d > 0) ext = v;                   // keep tracking the current extreme
-  }
-  return swings;
-}
-
-class HeadGestures {
-  buf = [];            // [{t, pitch, yaw, roll}]
-  rollBase = 0;        // neutral roll, slowly adapted while the head is level
-  tiltSince = 0;
-  lockedUntil = 0;
-
-  /** @returns {'NOD'|'SHAKE'|'TILT_LEFT'|'TILT_RIGHT'|null} */
-  update(lm, t) {
-    const c = CONFIG.head, p = headPose(lm);
-    if (t < this.lockedUntil) return null;
-
-    // Tilt: sustained roll offset.
-    const dr = p.roll - this.rollBase;
-    if (Math.abs(dr) > c.tiltRad) {
-      this.tiltSince ||= t;
-      if (t - this.tiltSince > c.tiltHoldMs) return this.fire(t, dr < 0 ? 'TILT_RIGHT' : 'TILT_LEFT');
-      return null;                                    // while tilting, skip nod/shake analysis
-    }
-    this.tiltSince = 0;
-    this.rollBase += (p.roll - this.rollBase) * 0.02; // EMA: absorbs a habitual slight head lean
-
-    // Nod / shake: oscillation inside a sliding window.
-    this.buf.push({ t, ...p });
-    while (this.buf[0].t < t - c.windowMs) this.buf.shift();
-    if (this.buf.length < 6) return null;
-    const nod = countSwings(this.buf.map(s => s.pitch), c.nodAmp) >= c.nodSwings;
-    const shake = countSwings(this.buf.map(s => s.yaw), c.shakeAmp) >= c.shakeSwings;
-    if (shake) return this.fire(t, 'SHAKE');          // shake checked first: it also wobbles pitch slightly
-    if (nod) return this.fire(t, 'NOD');
-    return null;
-  }
-  fire(t, g) { this.buf = []; this.tiltSince = 0; this.lockedUntil = t + CONFIG.head.cooldownMs; return g; }
-  reset() { this.buf = []; this.tiltSince = 0; this.lockedUntil = 0; }
-}
-
-/* ----------------------------------------------------------- FingerCounter */
-const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-
-// Rotation-invariant: a finger is "up" when its tip is clearly farther from the wrist than its PIP joint.
-function fingersUp(lm) {
-  const r = CONFIG.hand, w = lm[0];
-  let n = 0;
-  for (const [tip, pip] of [[8, 6], [12, 10], [16, 14], [20, 18]]) if (dist(lm[tip], w) > dist(lm[pip], w) * r.extendRatio) n++;
-  if (dist(lm[4], lm[17]) > dist(lm[2], lm[17]) * r.thumbRatio) n++;  // thumb: tip away from pinky base
-  return n;
-}
-
-class FingerCounter {
-  value = -1; since = 0; confirmed = false;
-  /** Returns a count once it has been held steady for holdMs (fires once per hold). */
-  update(hands, t) {
-    const n = hands.reduce((s, lm) => s + fingersUp(lm), 0);
-    if (n !== this.value) { this.value = n; this.since = t; this.confirmed = false; return null; }
-    if (!this.confirmed && n > 0 && t - this.since >= CONFIG.hand.holdMs) { this.confirmed = true; return n; }
-    return null;
-  }
-  reset() { this.value = -1; this.confirmed = false; }
-}
-
-/* -------------------------------------------------------------------- Game */
-const GESTURE_VI = { NOD: 'Gật đầu', SHAKE: 'Lắc đầu', TILT_LEFT: 'Nghiêng trái', TILT_RIGHT: 'Nghiêng phải' };
-
-// Feature A bank. type: tf (true/false), dir (direction), pick (tilt toward the correct side).
-const HEAD_BANK = [
-  { type: 'tf', zh: '猫', py: 'māo', claim: 'con mèo', answer: 'NOD' },
-  { type: 'tf', zh: '狗', py: 'gǒu', claim: 'con cá', answer: 'SHAKE' },
-  { type: 'tf', zh: '老师', py: 'lǎoshī', claim: 'giáo viên', answer: 'NOD' },
-  { type: 'tf', zh: '水', py: 'shuǐ', claim: 'lửa', answer: 'SHAKE' },
-  { type: 'tf', zh: '谢谢', py: 'xièxie', claim: 'cảm ơn', answer: 'NOD' },
-  { type: 'dir', zh: '左', py: 'zuǒ', answer: 'TILT_LEFT' },
-  { type: 'dir', zh: '右', py: 'yòu', answer: 'TILT_RIGHT' },
-  { type: 'dir', zh: '上', py: 'shàng', answer: 'NOD' },
-  { type: 'pick', vi: 'quả táo', left: ['苹果', 'píngguǒ'], right: ['香蕉', 'xiāngjiāo'], answer: 'TILT_LEFT' },
-  { type: 'pick', vi: 'trường học', left: ['医院', 'yīyuàn'], right: ['学校', 'xuéxiào'], answer: 'TILT_RIGHT' },
-];
-// Feature B bank: numerals 1–10 (6–10 need two hands).
-const NUM_BANK = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
-  .map((zh, i) => ({ zh, n: i + 1, py: ['yī', 'èr', 'sān', 'sì', 'wǔ', 'liù', 'qī', 'bā', 'jiǔ', 'shí'][i] }));
+const NUMS = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+const NUM_PY = ['yī', 'èr', 'sān', 'sì', 'wǔ', 'liù', 'qī', 'bā', 'jiǔ', 'shí'];
+const MODE_NAME = { tilt: 'Nghiêng đầu Đúng / Sai', count: 'Đếm số bằng ngón tay' };
 
 const $ = id => document.getElementById(id);
-const pickRandom = (arr, not) => { let q; do q = arr[(Math.random() * arr.length) | 0]; while (arr.length > 1 && q === not); return q; };
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const call = (name, ...a) => { try { return typeof window[name] === 'function' ? window[name](...a) : undefined; } catch (e) { console.warn(name, e); } };
+const pick = arr => arr[(Math.random() * arr.length) | 0];
 
-// Embedded in tndihoc (index.html iframe, same origin): reuse the site's voice picker & streak tracker.
-const host = (() => { try { return window.parent !== window && window.parent.document ? window.parent : null; } catch { return null; } })();
-if (window.frameElement) {   // auto-fit iframe height to content (stacked layout on phones is taller)
-  new ResizeObserver(() => { window.frameElement.style.height = document.documentElement.scrollHeight + 'px'; })
-    .observe(document.body);
-}
+if ($('game-camera')) init();
 
-// Text-to-speech for pronunciation (free, offline on most OSes).
-function speak(text) {
-  if (host?.tnVoice?.ok) return host.tnVoice.speak(text, { rate: 0.85 });
-  if (!('speechSynthesis' in window)) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text); u.lang = 'zh-CN'; u.rate = 0.85;
-  speechSynthesis.speak(u);
-}
+function init() {
+  const el = {
+    setup: $('cam-setup'), play: $('cam-play'), result: $('cam-result'),
+    start: $('cam-start'), warn: $('cam-setup-warning'), msg: $('cam-setup-msg'), myBest: $('cam-my-best'),
+    video: $('cam-video'), canvas: $('cam-overlay'), hud: $('cam-hud'), card: $('cam-card'),
+    time: $('cam-session-time'), correct: $('cam-correct'), bar: $('cam-timebar'),
+  };
+  const ctx = el.canvas.getContext('2d');
+  let mode = 'tilt';
 
-const Game = {
-  mode: 'head', q: null, score: 0, streak: 0, busy: false,
+  /* ---------------- Chọn trò + kiểm tra dữ liệu ---------------- */
+  const words = () => call('gameWords') || [];
+  function refreshSetup() {
+    const ok = mode === 'count' || words().length >= 4;
+    el.start.disabled = !ok;
+    el.start.classList.toggle('opacity-50', !ok);
+    el.warn.classList.toggle('hidden', ok);
+    el.myBest.textContent = localBest(mode) || '—';
+    $('cam-board-title').textContent = MODE_NAME[mode];
+  }
+  document.querySelectorAll('[data-cam-mode]').forEach(b => b.addEventListener('click', () => {
+    mode = b.dataset.camMode;
+    document.querySelectorAll('[data-cam-mode]').forEach(x => x.classList.toggle('active', x === b));
+    refreshSetup(); Board.load(mode);
+  }));
+  // Đổi cấp độ HSK → kiểm tra lại số từ (bộ chọn cấp độ dùng chung của khu Trò chơi)
+  document.querySelectorAll('.game-hsk-pill').forEach(p => p.addEventListener('click', () => setTimeout(refreshSetup)));
+  document.querySelectorAll('[data-game-tab="camera"]').forEach(t => t.addEventListener('click', () => { refreshSetup(); Board.load(mode); }));
+  document.querySelectorAll('[data-cam-board-refresh]').forEach(b => b.addEventListener('click', () => Board.load(mode, true)));
 
-  next() {
-    this.q = pickRandom(this.mode === 'head' ? HEAD_BANK : NUM_BANK, this.q);
-    this.render();
-    this.busy = false;
-  },
+  /* ---------------- Camera + MediaPipe (tải lười) ---------------- */
+  let stream = null, vision = null, files = null, face = null, hand = null;
+  async function openCamera() {
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 }, audio: false });
+    el.video.srcObject = stream;
+    await new Promise(r => (el.video.readyState >= 1 ? r() : (el.video.onloadedmetadata = r)));
+    await el.video.play();
+    el.canvas.width = el.video.videoWidth; el.canvas.height = el.video.videoHeight;
+  }
+  function closeCamera() {
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    stream = null; el.video.srcObject = null;
+  }
+  async function landmarker(kind) {
+    vision ??= await import(`${MP}/vision_bundle.mjs`);
+    files ??= await vision.FilesetResolver.forVisionTasks(`${MP}/wasm`);
+    const make = async (Klass, path, extra) => {
+      for (const delegate of ['GPU', 'CPU']) {
+        try { return await Klass.createFromOptions(files, { baseOptions: { modelAssetPath: path, delegate }, runningMode: 'VIDEO', ...extra }); }
+        catch (e) { if (delegate === 'CPU') throw e; }
+      }
+    };
+    if (kind === 'tilt') return (face ??= await make(vision.FaceLandmarker, CFG.faceModel, { numFaces: 1 }));
+    return (hand ??= await make(vision.HandLandmarker, CFG.handModel, { numHands: 2 }));
+  }
 
-  render() {
-    const q = this.q, card = $('card');
-    let html;
-    if (this.mode === 'hand') {
-      html = `<p class="prompt">Giơ đúng số ngón tay (dùng 2 tay cho số > 5):</p>
-              <div class="zh">${q.zh}</div><div class="py">${q.py}</div>`;
-      speak(q.zh);
-    } else if (q.type === 'tf') {
-      html = `<p class="prompt">Nghĩa có đúng không?</p>
-              <div class="zh">${q.zh}</div><div class="py">${q.py}</div><div class="claim">= ${q.claim} ?</div>
-              <p class="hint">Gật = 对 (đúng) · Lắc = 不对 (sai)</p>`;
-      speak(q.zh);
-    } else if (q.type === 'dir') {
-      html = `<p class="prompt">Làm theo phương hướng:</p>
-              <div class="zh">${q.zh}</div><div class="py">${q.py}</div>
-              <p class="hint">左 = nghiêng trái · 右 = nghiêng phải · 上 = gật đầu</p>`;
-      speak(q.zh);
+  /* ---------------- Nhận diện: nghiêng đầu ----------------
+     Góc nghiêng = góc đường nối 2 khoé mắt ngoài (điểm 33 & 263) trên khung hình gốc (chưa lật gương).
+     < 0: nghiêng về vai PHẢI của người chơi; > 0: vai TRÁI. Tư thế "thẳng" được học dần (EMA)
+     để ai quen hơi lệch đầu cũng không bị nhận nhầm. Sau mỗi lần nhận phải về thẳng mới nhận tiếp. */
+  const Tilt = {
+    base: 0, since: 0, armed: true,
+    reset() { this.since = 0; this.armed = false; },
+    update(lm, t) {
+      const r = Math.atan2(lm[263].y - lm[33].y, lm[263].x - lm[33].x), d = r - this.base;
+      if (Math.abs(d) < CFG.tiltRad * 0.5) { this.armed = true; this.base += (r - this.base) * 0.03; }
+      if (!this.armed || Math.abs(d) < CFG.tiltRad) { this.since = 0; return null; }
+      this.since ||= t;
+      if (t - this.since < CFG.tiltHoldMs) return null;
+      this.reset();
+      return d > 0 ? 'left' : 'right';
+    },
+  };
+
+  /* ---------------- Nhận diện: đếm ngón tay ----------------
+     Ngón duỗi = đầu ngón xa cổ tay hơn hẳn khớp giữa (không phụ thuộc góc xoay bàn tay).
+     Ngón cái duỗi = đầu ngón cái xa gốc ngón út hơn hẳn gốc ngón cái. */
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  function fingersUp(lm) {
+    let n = 0;
+    for (const [tip, pip] of [[8, 6], [12, 10], [16, 14], [20, 18]]) if (dist(lm[tip], lm[0]) > dist(lm[pip], lm[0]) * 1.15) n++;
+    if (dist(lm[4], lm[17]) > dist(lm[2], lm[17]) * 1.2) n++;
+    return n;
+  }
+  const Count = {
+    value: -1, since: 0, done: false,
+    reset() { this.value = -1; this.done = false; },
+    update(n, t) {   // trả về số ngón khi đã giữ đủ lâu (1 lần cho mỗi lần giữ)
+      if (n !== this.value) { this.value = n; this.since = t; this.done = false; return null; }
+      if (!this.done && n > 0 && t - this.since >= CFG.holdMs) { this.done = true; return n; }
+      return null;
+    },
+  };
+  function drawTips(hands) {
+    ctx.clearRect(0, 0, el.canvas.width, el.canvas.height);
+    ctx.fillStyle = '#FFC72C'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
+    for (const lm of hands) for (const i of [4, 8, 12, 16, 20]) {
+      ctx.beginPath(); ctx.arc(lm[i].x * el.canvas.width, lm[i].y * el.canvas.height, 9, 0, 7); ctx.fill(); ctx.stroke();
+    }
+  }
+
+  /* ---------------- Vòng chơi ---------------- */
+  const S = { running: false, det: null, endAt: 0, qEnd: 0, q: null, ok: 0, total: 0, locked: false, lastVT: -1, raf: 0, timer: 0 };
+
+  async function start() {
+    el.start.disabled = true;
+    try {
+      el.msg.textContent = 'Đang bật camera…';
+      await openCamera();
+      el.msg.textContent = 'Đang tải mô hình nhận diện (lần đầu hơi lâu)…';
+      S.det = await landmarker(mode);
+    } catch (err) {
+      console.error(err); closeCamera();
+      el.msg.textContent = err && err.name === 'NotAllowedError'
+        ? 'Bạn chưa cho phép dùng camera. Hãy bấm biểu tượng camera trên thanh địa chỉ để cho phép rồi thử lại.'
+        : 'Không bật được camera hoặc không tải được mô hình. Kiểm tra camera, mạng (ở Trung Quốc cần VPN) rồi thử lại.';
+      el.start.disabled = false; return;
+    }
+    el.msg.textContent = 'Hình ảnh camera chỉ xử lý ngay trên máy bạn, không gửi đi đâu.';
+    el.start.disabled = false;
+    el.setup.classList.add('hidden'); el.result.classList.add('hidden'); el.play.classList.remove('hidden');
+    Object.assign(S, { running: true, ok: 0, total: 0, locked: false, lastVT: -1, endAt: performance.now() + CFG.sessionSec * 1000 });
+    el.correct.textContent = '0';
+    Tilt.reset(); Count.reset();
+    ctx.clearRect(0, 0, el.canvas.width, el.canvas.height);
+    nextQuestion();
+    S.timer = setInterval(tickClock, 100);
+    loop();
+  }
+
+  function nextQuestion() {
+    if (!S.running) return;
+    if (mode === 'tilt') {
+      const list = words(), word = pick(list), isTrue = Math.random() < 0.5;
+      let mean = word.mean;
+      if (!isTrue) { const others = list.filter(w => w.mean !== word.mean); if (others.length) mean = pick(others).mean; }
+      S.q = { word, isTrue: mean === word.mean, mean };
+      el.card.innerHTML = `
+        <p class="jn-question">Nghĩa này có đúng không?</p>
+        <p class="jn-hanzi cam-hanzi">${esc(word.hanzi)}</p>
+        <p class="jn-pinyin">${esc(word.pinyin)}</p>
+        <p class="cam-mean">${esc(mean)}</p>
+        <div class="cam-sides">
+          <button type="button" class="cam-side is-true" data-cam-ans="left">⬅ Nghiêng trái<b>✅ Đúng</b></button>
+          <button type="button" class="cam-side is-false" data-cam-ans="right">Nghiêng phải ➡<b>❌ Sai</b></button>
+        </div>
+        <p class="cam-feedback" id="cam-fb"></p>`;
+      window.tnVoice && window.tnVoice.speak(word.hanzi, { rate: 0.85 });
     } else {
-      html = `<p class="prompt">Từ nào nghĩa là “${q.vi}”? Nghiêng đầu về phía đáp án.</p>
-              <div class="choices">
-                <div class="choice">${q.left[0]}<small>${q.left[1]} · ← trái</small></div>
-                <div class="choice">${q.right[0]}<small>${q.right[1]} · phải →</small></div>
-              </div>`;
+      let n; do n = 1 + ((Math.random() * 10) | 0); while (S.q && S.q.n === n);
+      S.q = { n };
+      el.card.innerHTML = `
+        <p class="jn-question">Giơ đúng số ngón tay (số &gt; 5 dùng 2 tay):</p>
+        <p class="jn-hanzi cam-hanzi cam-num">${NUMS[n - 1]}</p>
+        <p class="jn-pinyin">${NUM_PY[n - 1]}</p>
+        <p class="cam-live">Camera đếm được: <b id="cam-live">0</b> ngón</p>
+        <p class="cam-feedback" id="cam-fb"></p>`;
+      window.tnVoice && window.tnVoice.speak(NUMS[n - 1], { rate: 0.85 });
     }
-    card.innerHTML = `<div class="fade-in">${html}</div>`;
-    $('feedback').className = 'feedback'; $('feedback').textContent = '';
-  },
+    Count.reset();
+    S.locked = false;
+    S.qEnd = performance.now() + CFG.questionSec * 1000;
+  }
 
-  /** Called with a gesture name (head mode) or finger count (hand mode). */
-  answer(input) {
-    if (this.busy || !this.q) return;
-    const correct = this.mode === 'hand' ? input === this.q.n : input === this.q.answer;
-    // Head mode: ignore gestures that are not valid for this question type (avoids accidental fails).
-    if (this.mode === 'head' && !correct) {
-      const valid = { tf: ['NOD', 'SHAKE'], dir: ['NOD', 'TILT_LEFT', 'TILT_RIGHT'], pick: ['TILT_LEFT', 'TILT_RIGHT'] }[this.q.type];
-      if (!valid.includes(input)) return;
+  function answer(input) {
+    if (!S.running || S.locked) return;
+    S.locked = true; S.total++;
+    call('trackStudyActivity');
+    const correct = mode === 'tilt' ? (input === 'left') === S.q.isTrue : input === S.q.n;
+    const fb = $('cam-fb');
+    if (correct) {
+      S.ok++; el.correct.textContent = String(S.ok);
+      call('sndCorrect');
+      if (mode === 'tilt') call('trackWordMemorized', S.q.word);
+    } else {
+      call('sndWrong');
+      if (mode === 'tilt') call('addToNotebook', S.q.word);
     }
-    this.busy = true;
-    host?.trackStudyActivity?.();   // counts toward the site's "10 phút học liên tục" streak
-    this.score += correct ? 10 : 0;
-    this.streak = correct ? this.streak + 1 : 0;
-    $('score').textContent = this.score; $('streak').textContent = this.streak;
-    const label = this.mode === 'hand' ? `${input} ngón` : GESTURE_VI[input];
-    const fb = $('feedback');
-    fb.className = `feedback ${correct ? 'ok' : 'bad'}`;
-    fb.textContent = correct ? `✓ 对了！(${label})` : `✗ ${label} — thử câu tiếp nhé`;
-    if (correct && this.q.zh) speak('对');
-    setTimeout(() => this.next(), 1300);
-  },
+    if (mode === 'tilt') {
+      const btn = el.card.querySelector(`[data-cam-ans="${input}"]`); if (btn) btn.classList.add(correct ? 'is-hit' : 'is-miss');
+      fb.textContent = correct ? '🎉 Chính xác!' : `Chưa đúng — ${S.q.word.hanzi} nghĩa là “${S.q.word.mean}”`;
+    } else {
+      fb.textContent = correct ? '🎉 Chính xác!' : `Bạn giơ ${input} ngón — ${NUMS[S.q.n - 1]} là ${S.q.n}`;
+    }
+    fb.className = 'cam-feedback ' + (correct ? 'ok' : 'bad');
+    setTimeout(nextQuestion, CFG.feedbackMs);
+  }
 
-  setMode(mode) {
-    this.mode = mode;
-    head.reset(); fingers.reset();
-    document.querySelectorAll('.modes button').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
-    this.next();
+  function timeout() {   // hết 5 giây chưa trả lời → không tính sai, chuyển câu khác
+    if (S.locked) return;
+    S.locked = true; S.total++;
+    const fb = $('cam-fb');
+    fb.textContent = mode === 'tilt' ? `⏰ Hết giờ — ${S.q.word.hanzi} nghĩa là “${S.q.word.mean}”` : `⏰ Hết giờ — ${NUMS[S.q.n - 1]} là ${S.q.n}`;
+    fb.className = 'cam-feedback bad';
+    setTimeout(nextQuestion, CFG.feedbackMs);
+  }
+
+  function tickClock() {
+    const now = performance.now(), left = Math.max(0, S.endAt - now);
+    const sec = Math.ceil(left / 1000);
+    el.time.textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+    const q = S.locked ? 0 : Math.max(0, S.qEnd - now) / (CFG.questionSec * 1000);
+    el.bar.style.width = (S.locked ? 0 : q * 100) + '%';
+    el.bar.classList.toggle('is-low', !S.locked && q < 0.3);
+    if (left <= 0) return finish();
+    if (!S.locked && now >= S.qEnd) timeout();
+  }
+
+  // Chỉ chạy nhận diện khi camera có khung hình MỚI (tiết kiệm CPU/GPU)
+  function loop() {
+    if (!S.running) return;
+    S.raf = 'requestVideoFrameCallback' in el.video ? el.video.requestVideoFrameCallback(frame) : requestAnimationFrame(frame);
+  }
+  function frame() {
+    if (!S.running) return;
+    loop();
+    if (el.video.currentTime === S.lastVT) return;
+    S.lastVT = el.video.currentTime;
+    const t = performance.now();
+    try {
+      if (mode === 'tilt') {
+        const lm = S.det.detectForVideo(el.video, t).faceLandmarks?.[0];
+        el.hud.textContent = lm ? 'Đã thấy khuôn mặt 🙂' : 'Chưa thấy khuôn mặt — nhìn thẳng vào camera';
+        if (!lm) return;
+        const g = Tilt.update(lm, t);
+        if (g && !S.locked) answer(g);
+      } else {
+        const hands = S.det.detectForVideo(el.video, t).landmarks || [];
+        drawTips(hands);
+        const n = hands.reduce((s, lm) => s + fingersUp(lm), 0);
+        el.hud.textContent = hands.length ? `Đếm được ${n} ngón ✋` : 'Chưa thấy bàn tay — đưa tay vào khung hình';
+        const live = $('cam-live'); if (live) live.textContent = String(n);
+        const got = Count.update(n, t);
+        if (got && !S.locked) answer(got);
+      }
+    } catch (e) { console.warn('camera game frame', e); }
+  }
+
+  function halt() {
+    S.running = false;
+    clearInterval(S.timer);
+    closeCamera();
+    window.tnVoice && window.tnVoice.stop && window.tnVoice.stop();
+  }
+  function stopToSetup() {
+    if (S.running) halt();
+    el.play.classList.add('hidden'); el.result.classList.add('hidden'); el.setup.classList.remove('hidden');
+    refreshSetup();
+  }
+  function finish() {
+    halt();
+    call('sndWin');
+    const score = S.ok, prev = localBest(mode), isNew = score > prev;
+    if (isNew) setLocalBest(mode, score);
+    $('cam-final-correct').textContent = score;
+    $('cam-final-total').textContent = S.total;
+    $('cam-final-score').textContent = score;
+    $('cam-final-best').textContent = isNew ? `${score} 🏅 mới!` : String(Math.max(prev, score));
+    $('cam-result-emoji').textContent = score >= 15 ? '👑' : score >= 8 ? '🔥' : '💪';
+    el.play.classList.add('hidden'); el.result.classList.remove('hidden');
+    Board.submit(mode, score, $('cam-lb-note'));
+  }
+
+  el.start.addEventListener('click', start);
+  $('cam-quit').addEventListener('click', stopToSetup);
+  $('cam-back').addEventListener('click', stopToSetup);
+  $('cam-play-again').addEventListener('click', start);
+  // Bấm chuột vào ô Đúng / Sai (dự phòng khi camera nhận chưa tốt)
+  el.card.addEventListener('click', e => { const b = e.target.closest('[data-cam-ans]'); if (b) answer(b.dataset.camAns); });
+
+  // Tự dừng (tắt camera) khi chuyển trò khác, rời mục Trò chơi / trang, hoặc ẩn tab trình duyệt
+  (window.gameStopHandlers || []).push(stopToSetup);
+  const visible = () => {
+    const panel = $('game-camera'), games = $('vocab-games'), page = $('chinese');
+    return panel.classList.contains('active') && (!page || page.classList.contains('is-active'))
+      && (!games || !games.classList.contains('hub-part') || games.classList.contains('hub-show'));
+  };
+  const mo = new MutationObserver(() => { if (S.running && !visible()) stopToSetup(); });
+  ['game-camera', 'vocab-games', 'chinese'].forEach(id => $(id) && mo.observe($(id), { attributes: true, attributeFilter: ['class'] }));
+  document.addEventListener('visibilitychange', () => { if (document.hidden && S.running) stopToSetup(); });
+
+  refreshSetup();
+}
+
+/* ---------------- Kỷ lục ---------------- */
+const LS_KEY = m => 'tndihoc_cam_best_' + m;
+function localBest(m) { try { return Number(localStorage.getItem(LS_KEY(m)) || 0); } catch { return 0; } }
+function setLocalBest(m, v) { try { localStorage.setItem(LS_KEY(m), String(v)); } catch {} }
+
+const Board = {
+  rows: {}, loading: false,
+  async fb() {
+    const fb = window.tnEnsureFb ? await Promise.race([window.tnEnsureFb(), new Promise(r => setTimeout(() => r(null), 15000))]) : null;
+    return fb && fb.db ? fb : null;
+  },
+  user() { return window.tnAuth && window.tnAuth.user; },
+  name() {
+    const a = window.tnAuth || {}, p = a.profile, u = a.user;
+    return String((p && p.name) || (u && (u.displayName || (u.email || '').split('@')[0])) || 'Học viên').trim().slice(0, 60) || 'Học viên';
+  },
+  draw(m, html) { document.querySelectorAll('[data-cam-board]').forEach(b => (b.innerHTML = html)); },
+  render(m) {
+    const rows = this.rows[m] || [], uid = this.user() && this.user().uid, medals = ['🥇', '🥈', '🥉'];
+    this.draw(m, rows.length ? rows.map((r, i) => `
+      <div class="cam-row${r.id === uid ? ' is-me' : ''}">
+        <span class="cam-rank">${i < 3 ? medals[i] : i + 1}</span>
+        <span class="cam-name">${esc(r.name || 'Học viên')}${r.id === uid ? ' <small>(bạn)</small>' : ''}</span>
+        <span class="cam-best"><b>${Number(r.best) || 0}</b> câu/phút</span>
+      </div>`).join('')
+      : `<p class="cam-empty">Chưa có kỷ lục nào cho trò này — hãy là người đầu tiên! 🚀</p>`);
+  },
+  async load(m, force) {
+    if (this.rows[m] && !force) return this.render(m);
+    this.draw(m, '<p class="cam-empty">Đang tải bảng kỷ lục…</p>');
+    const fb = await this.fb();
+    if (!fb) return this.draw(m, '<p class="cam-empty">Không kết nối được máy chủ để tải bảng kỷ lục (ở Trung Quốc cần VPN).</p>');
+    try {
+      const { db, D } = fb;
+      const snap = await D.getDocs(D.query(D.collection(db, 'camRecords', m, 'scores'), D.orderBy('best', 'desc'), D.limit(10)));
+      this.rows[m] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      this.render(m);
+    } catch (err) {
+      console.error('Tải bảng kỷ lục camera lỗi:', err);
+      this.draw(m, `<p class="cam-empty">${err.code === 'permission-denied' ? 'Bảng kỷ lục chưa được bật (cần cập nhật Rules của Firestore).' : 'Chưa tải được bảng kỷ lục. Kiểm tra mạng rồi bấm "Làm mới".'}</p>`);
+    }
+  },
+  async submit(m, score, noteEl) {
+    const note = (t, cls) => { if (noteEl) { noteEl.textContent = t; noteEl.className = 'lb-note ' + (cls || ''); } };
+    score = Math.min(CFG.maxRecord, Math.max(0, score | 0));
+    if (!this.user()) { note('Đăng nhập để kỷ lục của bạn hiện trên bảng kỷ lục chung.', 'is-guest'); return this.load(m); }
+    const fb = await this.fb();
+    if (!fb) { note('Chưa kết nối được máy chủ nên kỷ lục lần này chỉ lưu trên máy bạn.', 'is-err'); return; }
+    const { db, D } = fb, ref = D.doc(db, 'camRecords', m, 'scores', this.user().uid);
+    try {
+      const snap = await D.getDoc(ref), old = snap.exists() ? Number(snap.data().best) || 0 : 0;
+      const data = { name: this.name(), games: D.increment(1), updatedAt: D.serverTimestamp() };
+      if (score > old || !snap.exists()) data.best = Math.max(score, old);
+      await D.setDoc(ref, data, { merge: true });
+      note(score > old ? `🏅 Kỷ lục mới ${score} câu/phút đã được ghi lên bảng!` : `Kỷ lục trên bảng của bạn vẫn là ${old} câu/phút.`, 'is-ok');
+    } catch (err) {
+      console.error('Ghi kỷ lục camera lỗi:', err);
+      note(err.code === 'permission-denied' ? 'Chưa ghi được lên bảng kỷ lục (cần cập nhật Rules của Firestore).' : 'Không ghi được kỷ lục. Kiểm tra mạng rồi thử lại.', 'is-err');
+    }
+    this.load(m, true);
   },
 };
-
-/* -------------------------------------------------------------------- Loop */
-const video = $('video'), canvas = $('overlay'), ctx = canvas.getContext('2d'), hud = $('hud');
-const head = new HeadGestures(), fingers = new FingerCounter();
-let landmarker = null, lastVideoTime = -1, switching = false;
-
-async function useMode(mode) {
-  switching = true; hud.textContent = 'Đang tải mô hình…';
-  landmarker = await Vision.get(mode);
-  switching = false; hud.textContent = mode === 'head' ? 'Nhìn thẳng vào camera' : 'Đưa bàn tay vào khung hình';
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-
-function drawTips(hands) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#f08a3c';
-  for (const lm of hands) for (const i of [4, 8, 12, 16, 20]) {
-    ctx.beginPath(); ctx.arc(lm[i].x * canvas.width, lm[i].y * canvas.height, 6, 0, 7); ctx.fill();
-  }
-}
-
-function tick() {
-  schedule();
-  if (switching || !landmarker || video.currentTime === lastVideoTime) return; // only process NEW frames
-  lastVideoTime = video.currentTime;
-  const t = performance.now();
-
-  if (Game.mode === 'head') {
-    const res = landmarker.detectForVideo(video, t);
-    const lm = res.faceLandmarks?.[0];
-    if (!lm) { hud.textContent = 'Không thấy khuôn mặt'; return; }
-    const g = head.update(lm, t);
-    hud.textContent = g ? GESTURE_VI[g] : 'Sẵn sàng';
-    if (g) Game.answer(g);
-  } else {
-    const hands = landmarker.detectForVideo(video, t).landmarks ?? [];
-    drawTips(hands);
-    const live = hands.reduce((s, lm) => s + fingersUp(lm), 0);
-    hud.textContent = hands.length ? `Đếm: ${live} ngón` : 'Không thấy bàn tay';
-    const n = fingers.update(hands, t);
-    if (n) Game.answer(n);
-  }
-}
-
-// requestVideoFrameCallback fires once per decoded frame (ideal); rAF is the fallback.
-const schedule = () => {
-  if (document.hidden) return;                     // stop work in background tabs; resumed by visibilitychange
-  'requestVideoFrameCallback' in video ? video.requestVideoFrameCallback(tick) : requestAnimationFrame(tick);
-};
-document.addEventListener('visibilitychange', () => { if (!document.hidden) schedule(); });
-
-/* ------------------------------------------------------------------- Boot */
-document.querySelectorAll('.modes button').forEach(b => b.addEventListener('click', async () => {
-  if (b.dataset.mode === Game.mode) return;
-  await useMode(b.dataset.mode);
-  Game.setMode(b.dataset.mode);
-}));
-
-// Keyboard fallback (testing without a camera / accessibility).
-document.addEventListener('keydown', e => {
-  const k = { y: 'NOD', n: 'SHAKE', ArrowLeft: 'TILT_LEFT', ArrowRight: 'TILT_RIGHT' }[e.key];
-  if (Game.mode === 'head' && k) Game.answer(k);
-  if (Game.mode === 'hand' && /^[0-9]$/.test(e.key)) Game.answer(+e.key || 10); // "0" = 10
-});
-
-$('btnStart').addEventListener('click', async () => {
-  const msg = $('loadMsg');
-  try {
-    msg.textContent = 'Đang bật camera…';
-    await Camera.start(video);
-    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-    msg.textContent = 'Đang tải mô hình MediaPipe…';
-    await useMode('head');
-    $('start').remove();
-    Game.next();
-    schedule();
-  } catch (err) {
-    console.error(err);
-    msg.textContent = `Lỗi: ${err.message}. Cần HTTPS hoặc localhost và quyền camera.`;
-  }
-});

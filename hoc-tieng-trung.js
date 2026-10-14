@@ -78,7 +78,7 @@ window.tnVoice = (function () {
     { id: "tongquan", icon: "📊", title: "Tổng quan", desc: "Chuỗi ngày học, lịch học và số từ đã ghi nhớ.", bg: "#E8F6EE", ink: "#1E7A46", line: "#BFE5CD",
       parts: [{ el: "streak-widget", label: "📊 Tổng quan" }] },
     { id: "trochoi", icon: "🎮", title: "Trò chơi", desc: "Flashcard, nối cặp, trắc nghiệm, đấu trường, bảng xếp hạng, tương tác bằng camera.", bg: "#F0EAFE", ink: "#52329E", line: "#D9CCFA",
-      parts: [{ el: "vocab-games", label: "🎮 Trò chơi" }, { el: "notebook-section", label: "📓 Sổ tay từ vựng" }, { el: "tt-gesture", label: "📷 Tương tác bằng camera" }] },
+      parts: [{ el: "vocab-games", label: "🎮 Trò chơi" }, { el: "notebook-section", label: "📓 Sổ tay từ vựng" }] },
     { id: "chinhta", icon: "✍️", title: "Chép chính tả", desc: "Nghe – gõ lại, đo tốc độ chữ/phút; hoặc chép tay rồi đăng ảnh.", bg: "#E6F4F1", ink: "#1F6F62", line: "#BCE3DA",
       parts: [{ el: "tt-dictation", label: "✍️ Chép chính tả" }] },
     { id: "baidoc", icon: "📖", title: "Bài đọc", desc: "Kho bài đọc HSK 2–6, tra từng chữ, nghe đọc, thảo luận.", bg: "#FDE8F1", ink: "#B0306A", line: "#F7C6DB",
@@ -371,21 +371,6 @@ window.tnVoice = (function () {
       say(q.r.r);
     });
   }
-  /* ================== 5) TƯƠNG TÁC BẰNG CAMERA (Trò chơi → tab "📷 Tương tác bằng camera") ==================
-     Chỉ nạp game (MediaPipe ~8 MB + camera) khi thẻ đang hiện; rời thẻ/rời trang → gỡ iframe để tắt camera. */
-  (function () {
-    const box = document.getElementById("tt-gesture"), frame = document.getElementById("gesture-frame");
-    if (!box || !frame) return;
-    const sync = () => {
-      const on = box.classList.contains("hub-show") && page.classList.contains("is-active");
-      const src = on ? frame.dataset.src : "about:blank";
-      if (frame.getAttribute("src") !== src && (on || frame.getAttribute("src"))) frame.setAttribute("src", src);
-    };
-    const mo = new MutationObserver(sync);
-    mo.observe(box, { attributes: true, attributeFilter: ["class"] });
-    mo.observe(page, { attributes: true, attributeFilter: ["class"] });
-  })();
-
   document.addEventListener("tt-state", () => {
     const v = page.dataset.view;
     if (v === "lophoc" && document.getElementById("tt-review").classList.contains("hub-show")) renderReview();

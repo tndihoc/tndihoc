@@ -230,6 +230,41 @@
   .jn-option.is-correct .jn-option-badge { background: #16A34A; color: #fff; }
   .jn-option.is-wrong { background: #FBE3E2; animation: shakeTile .35s ease; }
   .jn-option.is-wrong .jn-option-badge { background: #D6524F; color: #fff; }
+  /* ---- Tương tác bằng camera (game-cu-chi.js) ---- */
+  .cam-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 560px) { .cam-modes { grid-template-columns: 1fr; } }
+  .cam-mode { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; background: #fff; border: 3px solid transparent; border-radius: 16px; padding: 12px 14px; color: #2E3440; transition: transform .1s ease, border-color .15s ease; }
+  .cam-mode:hover { transform: translateY(-2px); }
+  .cam-mode.active { border-color: #000080; box-shadow: 0 6px 16px rgba(0,0,128,.15); }
+  .cam-mode-ico { font-size: 26px; line-height: 1; }
+  .cam-mode b { font-size: 14px; } .cam-mode small { font-size: 12px; color: #5B6472; }
+  .cam-board { background: rgba(255,255,255,.72); border-radius: 18px; padding: 14px 16px; }
+  .cam-row { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 10px; font-size: 13.5px; color: #2E3440; }
+  .cam-row:nth-child(odd) { background: rgba(255,255,255,.7); }
+  .cam-row.is-me { background: #FFF3C4; font-weight: 700; }
+  .cam-rank { width: 26px; text-align: center; font-weight: 800; }
+  .cam-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cam-best b { font-size: 16px; color: #000080; }
+  .cam-empty { font-size: 13px; color: #5B6472; padding: 6px 2px; }
+  .cam-stage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: stretch; }
+  @media (max-width: 760px) { .cam-stage { grid-template-columns: 1fr; } }
+  .cam-video { position: relative; aspect-ratio: 4 / 3; border-radius: 22px; overflow: hidden; background: rgba(255,255,255,.6); border: 4px solid #fff; box-shadow: 0 10px 24px rgba(0,60,120,.18); }
+  .cam-video video, .cam-video canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+  .cam-hud { position: absolute; left: 10px; bottom: 10px; background: rgba(255,255,255,.9); border-radius: 9999px; padding: 5px 12px; font-size: 12.5px; font-weight: 700; color: #2E3440; }
+  .cam-card { display: flex; flex-direction: column; justify-content: center; }
+  .cam-hanzi { font-size: 64px; line-height: 1.1; }
+  .cam-num { font-size: 96px; }
+  .cam-mean { text-align: center; font-size: 22px; font-weight: 800; color: #5C3D00; background: rgba(255,255,255,.65); border-radius: 14px; padding: 8px 12px; margin: 0 auto 14px; }
+  .cam-sides { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cam-side { display: flex; flex-direction: column; align-items: center; gap: 2px; background: #fff; border-radius: 14px; padding: 10px; font-size: 12px; font-weight: 600; color: #5B6472; transition: transform .1s ease; }
+  .cam-side b { font-size: 17px; }
+  .cam-side.is-true b { color: #16A34A; } .cam-side.is-false b { color: #D6524F; }
+  .cam-side.is-hit { background: #DCFCE7; transform: scale(1.04); }
+  .cam-side.is-miss { background: #FBE3E2; animation: shakeTile .35s ease; }
+  .cam-live { text-align: center; font-size: 15px; font-weight: 700; color: #5C3D00; }
+  .cam-live b { font-size: 22px; color: #000080; }
+  .cam-feedback { min-height: 28px; margin-top: 12px; text-align: center; font-weight: 800; font-size: 14.5px; border-radius: 12px; padding: 4px 8px; }
+  .cam-feedback.ok { background: #DCFCE7; color: #166534; } .cam-feedback.bad { background: #FBE3E2; color: #9F2A27; }
   .jn-option:disabled { cursor: default; }
 
   .jn-celebrate { position: relative; z-index: 2; text-align: center; padding: 26px 10px; }
@@ -928,7 +963,7 @@ Trang quản trị
 <span class="seal-stamp" style="width:30px;height:30px;font-size:12px;">戏</span>
 <h3 class="font-sans font-semibold text-xl text-ink">Trò chơi ôn từ vựng</h3>
 </div>
-<p class="text-sm text-slate mb-5 max-w-2xl">4 Trò chơi + flashcard ôn tập từ vựng, kèm bảng xếp hạng tuần/tháng. chọn cấp độ hsk mong muốn bên dưới — cả 5 mục (nối cặp từ, trắc nghiệm, đấu trường sinh tồn, ghép cặp phản xạ nhanh, flashcard) đều dùng chung 1 cấp độ này, không cần chọn lại ở từng mục.</p>
+<p class="text-sm text-slate mb-5 max-w-2xl">5 Trò chơi + flashcard ôn tập từ vựng, kèm bảng xếp hạng tuần/tháng. chọn cấp độ hsk mong muốn bên dưới — cả 6 mục (nối cặp từ, trắc nghiệm, đấu trường sinh tồn, ghép cặp phản xạ nhanh, flashcard, tương tác camera) đều dùng chung 1 cấp độ này, không cần chọn lại ở từng mục.</p>
 <div class="mb-7">
 <label class="text-sm font-semibold text-ink mb-2.5 block">Cấp độ chơi</label>
 <div class="bg-ink/[0.04] rounded-3xl p-3 sm:p-4">
@@ -976,6 +1011,7 @@ Trang quản trị
 <button class="game-tab" data-game-tab="arena">⚡ Đấu trường sinh tồn</button>
 <button class="game-tab" data-game-tab="reflex">🃏 Ghép cặp phản xạ nhanh</button>
 <button class="game-tab" data-game-tab="flashcard">🎴 Flashcard</button>
+<button class="game-tab" data-game-tab="camera">📷 Tương tác camera</button>
 <button class="game-tab game-tab--lb" data-game-tab="leaderboard">🏆 Bảng xếp hạng</button>
 </div>
 <!-- ---------- GAME 1: MATCH UP (NỐI CẶP) ---------- -->
@@ -1190,6 +1226,78 @@ Trang quản trị
 </div>
 </div>
 </div>
+<!-- ---------- GAME 6: TƯƠNG TÁC BẰNG CAMERA (logic ở game-cu-chi.js) ---------- -->
+<div class="game-panel" id="game-camera">
+<div class="jn-sky">
+<svg class="jn-cloud" fill="#fff" style="top:10px; left:6%; width:64px;" viewbox="0 0 100 60"><ellipse cx="30" cy="35" rx="28" ry="20"></ellipse><ellipse cx="55" cy="25" rx="22" ry="18"></ellipse><ellipse cx="72" cy="38" rx="20" ry="15"></ellipse></svg>
+<svg class="jn-cloud" fill="#fff" style="top:4px; right:8%; width:50px;" viewbox="0 0 100 60"><ellipse cx="30" cy="35" rx="28" ry="20"></ellipse><ellipse cx="55" cy="25" rx="22" ry="18"></ellipse><ellipse cx="72" cy="38" rx="20" ry="15"></ellipse></svg>
+<svg class="jn-cloud" fill="#fff" style="bottom:14px; left:42%; width:58px;" viewbox="0 0 100 60"><ellipse cx="30" cy="35" rx="28" ry="20"></ellipse><ellipse cx="55" cy="25" rx="22" ry="18"></ellipse><ellipse cx="72" cy="38" rx="20" ry="15"></ellipse></svg>
+<div id="cam-setup">
+<div class="flex items-center gap-3 mb-4">
+<span class="jn-sun">☀️</span>
+<div>
+<h3 class="font-sans font-semibold text-lg text-ink">Tương tác bằng camera</h3>
+<p class="text-xs text-ink/70">Mỗi lượt chơi <strong>1 phút</strong>, mỗi câu có <strong>5 giây</strong> — hết giờ chưa trả lời thì tự chuyển sang câu khác. Đúng càng nhiều câu trong 1 phút càng cao trên bảng kỷ lục!</p>
+</div>
+</div>
+<div class="jn-setup-card">
+<p class="text-sm font-semibold text-ink mb-2.5">Chọn trò chơi:</p>
+<div class="cam-modes">
+<button class="cam-mode active focus-ring" data-cam-mode="tilt" type="button"><span class="cam-mode-ico">🙆</span><b>Nghiêng đầu Đúng / Sai</b><small>Từ theo cấp độ HSK đang chọn. Nghiêng <b>trái = Đúng</b>, nghiêng <b>phải = Sai</b>.</small></button>
+<button class="cam-mode focus-ring" data-cam-mode="count" type="button"><span class="cam-mode-ico">✋</span><b>Đếm số bằng ngón tay</b><small>Giơ đúng số ngón tay với số 一 → 十 (số &gt; 5 dùng 2 tay).</small></button>
+</div>
+<div class="flex flex-wrap items-center gap-3 mt-4">
+<button class="px-5 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring" id="cam-start" type="button">📷 Bật camera &amp; bắt đầu</button>
+<span class="jn-progress-pill">Kỷ lục của bạn: <span class="text-mint" id="cam-my-best">—</span> câu/phút</span>
+</div>
+<p class="text-xs text-seal mt-3 hidden" id="cam-setup-warning">Bộ từ hiện tại chưa đủ dữ liệu (cần tối thiểu 4 từ có nghĩa). Hãy chọn cấp độ khác hoặc chơi "Đếm số bằng ngón tay".</p>
+<p class="text-xs text-ink/60 mt-3" id="cam-setup-msg">Hình ảnh camera chỉ xử lý ngay trên máy bạn, không gửi đi đâu. Lần đầu cần tải khoảng 8 MB.</p>
+</div>
+<div class="cam-board mt-4">
+<div class="flex items-center justify-between gap-2 mb-2">
+<p class="text-sm font-semibold text-ink">🏆 Kỷ lục 1 phút — <span id="cam-board-title">Nghiêng đầu Đúng / Sai</span></p>
+<button class="text-xs font-semibold text-ink/70 hover:text-ink underline" data-cam-board-refresh="" type="button">Làm mới</button>
+</div>
+<div class="cam-board-list" data-cam-board=""></div>
+</div>
+</div>
+<div class="hidden" id="cam-play">
+<div class="jn-topbar">
+<span class="jn-sun">☀️</span>
+<span class="jn-progress-pill">⏱ Còn lại <span id="cam-session-time">1:00</span></span>
+<span class="jn-progress-pill">Đúng: <span class="text-mint" id="cam-correct">0</span></span>
+<button class="text-xs font-semibold text-ink/70 hover:text-ink underline bg-white/70 rounded-full px-3 py-1.5" id="cam-quit" type="button">Dừng lại</button>
+</div>
+<div class="jn-timebar-track"><div class="jn-timebar-fill" id="cam-timebar" style="width:100%"></div></div>
+<div class="cam-stage">
+<div class="cam-video">
+<video autoplay="" id="cam-video" muted="" playsinline=""></video>
+<canvas id="cam-overlay"></canvas>
+<span class="cam-hud" id="cam-hud">Đang chuẩn bị…</span>
+</div>
+<div class="jn-card cam-card" id="cam-card"></div>
+</div>
+</div>
+<div class="hidden jn-celebrate" id="cam-result">
+<p class="text-5xl mb-2" id="cam-result-emoji">🏆</p>
+<h3 class="font-sans font-semibold text-xl text-ink mb-1">Hết 1 phút!</h3>
+<p class="text-sm text-ink/80 mb-4">Bạn trả lời đúng <span class="font-semibold text-mint" id="cam-final-correct">0</span> / <span id="cam-final-total">0</span> câu</p>
+<div class="flex flex-wrap items-center justify-center gap-3 mb-4">
+<div class="jn-stat-card"><p class="text-xs text-slate mb-0.5">Câu đúng / phút</p><p class="font-hanzi font-black text-2xl text-ink" id="cam-final-score">0</p></div>
+<div class="jn-stat-card"><p class="text-xs text-slate mb-0.5">Kỷ lục của bạn</p><p class="font-hanzi font-black text-2xl text-ink" id="cam-final-best">—</p></div>
+</div>
+<p class="lb-note" id="cam-lb-note"></p>
+<div class="cam-board text-left mb-5">
+<p class="text-sm font-semibold text-ink mb-2">🏆 Kỷ lục 1 phút của mọi người</p>
+<div class="cam-board-list" data-cam-board=""></div>
+</div>
+<div class="flex flex-wrap justify-center gap-3">
+<button class="px-5 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring" id="cam-play-again" type="button">Chơi lại</button>
+<button class="px-5 py-2.5 rounded-xl bg-white text-ink text-sm font-semibold hover:opacity-90 focus-ring" id="cam-back" type="button">Đổi trò chơi</button>
+</div>
+</div>
+</div>
+</div>
 <!-- ---------- BẢNG XẾP HẠNG (top 10 tuần / tháng) ---------- -->
 <div class="game-panel" id="game-leaderboard">
 <div class="lb-card">
@@ -1384,11 +1492,6 @@ Trang quản trị
 <div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-myclass"></div>
 <div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-review"></div>
 <div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-radicals"></div>
-<!-- ===== TƯƠNG TÁC BẰNG CAMERA — tab trong "Trò chơi" (game-cu-chi.html, nạp vào iframe khi mở thẻ, đóng camera khi rời) ===== -->
-<div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-gesture">
-<p class="text-sm text-slate mb-4 max-w-2xl">Dùng camera: <strong>gật / lắc / nghiêng đầu</strong> để trả lời câu hỏi, <strong>giơ ngón tay</strong> để đếm số tiếng Trung. Hình ảnh chỉ xử lý trên máy bạn, không gửi đi đâu.</p>
-<iframe allow="camera; autoplay" class="gesture-frame" data-src="game-cu-chi.html" id="gesture-frame" style="width:100%;min-height:560px;border:0;border-radius:16px;background:#fffdf9;display:block" title="Tương tác bằng camera"></iframe>
-</div>
 <!-- ===== SỔ TAY TỪ VỰNG ===== -->
 <div class="mt-10 pt-8 border-t border-ink/10" id="notebook-section">
 <div class="flex items-center gap-2 mb-1">
@@ -1862,6 +1965,7 @@ Trang quản trị
     arena: document.getElementById('game-arena'),
     reflex: document.getElementById('game-reflex'),
     flashcard: document.getElementById('game-flashcard'),
+    camera: document.getElementById('game-camera'),
     leaderboard: document.getElementById('game-leaderboard'),
   };
   gameTabs.forEach(tab => {
@@ -3267,7 +3371,7 @@ Trang quản trị
 <script src="bai-doc.js?v=3" defer></script>
 <script src="bo-thu.js?v=1" defer></script>
 <script src="tu-vung-gt1.js?v=1" defer></script>
-<script src="hoc-tieng-trung.js?v=5" defer></script>
+<script src="hoc-tieng-trung.js?v=6" defer></script>
 <!-- ===== Bộ đếm lượt truy cập hôm nay (dùng dịch vụ CountAPI miễn phí, không cần backend riêng) ===== -->
 <script>
 (function () {
@@ -3341,5 +3445,6 @@ Tiếp tục với Google
 <script src="tinh-nang-moi.js?v=7" type="module"></script>
 <script src="phong-van.js?v=2" type="module"></script>
 <script src="hskk.js?v=1" type="module"></script>
+<script src="game-cu-chi.js?v=2" type="module"></script>
 </body>
 </html>
