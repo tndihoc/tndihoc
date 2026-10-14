@@ -789,7 +789,7 @@ const BUILTIN_TOPICS = [
     prompts: [["你为什么选择来中国留学？", "Nǐ wèishénme xuǎnzé lái Zhōngguó liúxué?", "Vì sao bạn chọn du học Trung Quốc?"], ["你为什么申请我们学校的这个专业？", "Nǐ wèishénme shēnqǐng wǒmen xuéxiào de zhège zhuānyè?", "Vì sao bạn đăng ký ngành này của trường chúng tôi?"], ["你的学习计划是什么？", "Nǐ de xuéxí jìhuà shì shénme?", "Kế hoạch học tập của bạn là gì?"], ["毕业以后你打算做什么？", "Bìyè yǐhòu nǐ dǎsuàn zuò shénme?", "Sau khi tốt nghiệp bạn dự định làm gì?"]],
     words: [["专业", "zhuānyè", "chuyên ngành"], ["奖学金", "jiǎngxuéjīn", "học bổng"], ["研究方向", "yánjiū fāngxiàng", "hướng nghiên cứu"], ["导师", "dǎoshī", "giáo sư hướng dẫn"], ["发展", "fāzhǎn", "phát triển"]], sec: 90 },
 ];
-const SPK = { topics: null, current: null, rec: null, take: null, mySubs: null };
+const SPK = { topics: null, current: null, rec: null, take: null, mySubs: null, playId: 0 };
 
 async function loadTopics() {
   SPK.topics = [...BUILTIN_TOPICS];
@@ -797,7 +797,8 @@ async function loadTopics() {
   try {
     const snap = await D().getDocs(D().collection(db(), "speakingTopics"));
     snap.forEach(d => { const x = d.data(); SPK.topics.push({ id: d.id, custom: true, ...x,
-      prompts: (x.promptRows || []).map(r => [r.cn, r.py, r.vi]), words: (x.wordRows || []).map(r => [r.cn, r.py, r.vi]) }); });
+      prompts: (x.promptRows || []).map(r => [r.cn, r.py, r.vi]), words: (x.wordRows || []).map(r => [r.cn, r.py, r.vi]),
+      dialogue: (x.dialogueRows || []).map(r => ({ role: r.role || "", cn: r.cn || "", py: r.py || "", vi: r.vi || "" })) }); });
   } catch (e) { /* chưa có quyền đọc → chỉ dùng chủ đề có sẵn */ }
 }
 async function renderSpeaking() {
@@ -810,7 +811,7 @@ async function renderSpeaking() {
   box.innerHTML = head + `<div class="tt-grid">${SPK.topics.map(t => `
       <button class="tt-pick" data-topic="${esc(t.id)}"><span style="font-size:22px">${esc(t.icon || "🗣️")}</span>
         <span class="cn tt-hz">${esc(t.title)}</span><span class="t">${esc(t.vi)}</span>
-        <span class="tt-row"><span class="tt-badge">${esc(t.level || "")}</span>${t.custom ? '<span class="tt-badge peach">giáo viên giao</span>' : ""}</span></button>`).join("")}</div>
+        <span class="tt-row"><span class="tt-badge">${esc(t.level || "")}</span>${(t.dialogue || []).length ? '<span class="tt-badge green">💬 hội thoại</span>' : (t.custom ? '<span class="tt-badge peach">giáo viên giao</span>' : "")}</span></button>`).join("")}</div>
     <div id="spk-mine" style="margin-top:1.2rem"></div>`;
   box.querySelectorAll("[data-topic]").forEach(b => b.addEventListener("click", () => { SPK.current = SPK.topics.find(t => t.id === b.dataset.topic); SPK.take = null; renderSpeaking(); $("tt-speaking").scrollIntoView({ behavior: "smooth" }); }));
   renderMySubs($("spk-mine"));
@@ -821,8 +822,10 @@ function renderTask(box, head) {
   box.innerHTML = head + `<div class="tt-card tt-fade">
     <button class="tt-link" id="spk-back">‹ Tất cả chủ đề</button>
     <div class="tt-row" style="margin:.5rem 0 .2rem"><span style="font-size:26px">${esc(t.icon || "🗣️")}</span><div><div class="tt-hz" style="font-size:24px;color:#000080">${esc(t.title)}</div><b>${esc(t.vi)}</b> <span class="tt-badge">${esc(t.level || "")}</span></div></div>
-    <div class="tt-note warn" style="margin:.6rem 0">🎬 ${esc(t.scene || "")}</div>
-    <h5 style="font-weight:700;margin:.8rem 0 .4rem">Câu hỏi gợi ý</h5>
+    ${t.titlePy ? `<div class="tt-small" style="color:#000080">${esc(t.titlePy)}</div>` : ""}
+    ${t.scene ? `<div class="tt-note warn" style="margin:.6rem 0">🎬 ${esc(t.scene)}</div>` : ""}
+    ${dialogueHtml(t)}
+    ${(t.prompts || []).length ? `<h5 style="font-weight:700;margin:.8rem 0 .4rem">Câu hỏi gợi ý</h5>` : ""}
     <div class="tt-lines">${(t.prompts || []).map((p, i) => `<div class="tt-line"><span class="tt-role r1">${i + 1}</span><div><div class="cn tt-hz">${esc(p[0])}</div><div class="py">${esc(p[1] || "")}</div><div class="vi">${esc(p[2] || "")}</div><div class="acts"><button class="tt-btn ghost sm" data-say="${esc(p[0])}">🔊 Nghe</button></div></div></div>`).join("")}</div>
     ${(t.words || []).length ? `<h5 style="font-weight:700;margin:1rem 0 .4rem">Từ vựng hữu ích</h5><div class="tt-row">${t.words.map(w => `<span class="tt-badge" style="font-size:12.5px;padding:5px 10px"><span class="tt-hz" style="font-size:15px">${esc(w[0])}</span> ${esc(w[1])} · ${esc(w[2])}</span>`).join("")}</div>` : ""}
     <div class="tt-card" style="margin-top:1.1rem;background:#FAFAFD">
@@ -833,19 +836,60 @@ function renderTask(box, head) {
       </div>
       <div id="spk-take" style="margin-top:.7rem"></div>
     </div></div>`;
-  $("spk-back").addEventListener("click", () => { SPK.rec && SPK.rec.cancel(); SPK.rec = null; SPK.current = null; renderSpeaking(); });
-  box.querySelectorAll("[data-say]").forEach(b => b.addEventListener("click", () => TTS.speak(b.dataset.say, 0.85)));
+  $("spk-back").addEventListener("click", () => { SPK.playId++; TTS.stop(); SPK.rec && SPK.rec.cancel(); SPK.rec = null; SPK.current = null; renderSpeaking(); });
+  box.querySelectorAll("[data-say]").forEach(b => b.addEventListener("click", () => { SPK.playId++; TTS.speak(b.dataset.say, 0.85); }));
+  bindDialogue(box);
   const recBtn = $("spk-rec");
   const finish = (r) => { if (!SPK.rec) return; SPK.rec = null; SPK.take = r; recBtn.classList.remove("live"); recBtn.textContent = "● Ghi lại"; drawTake(); };
   recBtn.addEventListener("click", async () => {
     if (SPK.rec) { finish(await SPK.rec.stop()); return; }
     try {
-      TTS.stop();
+      SPK.playId++; TTS.stop();
       SPK.rec = await REC.start({ maxSec, onAutoStop: finish, onTick: s => { $("spk-timer") && ($("spk-timer").textContent = "● " + fmtClock(s) + " / " + fmtClock(maxSec)); } });
       recBtn.classList.add("live"); recBtn.textContent = "■ Dừng ghi"; $("spk-take").innerHTML = "";
     } catch (e) { toast(e.message); }
   });
   drawTake();
+}
+/* ---------- Hội thoại mẫu trong chủ đề khẩu ngữ ---------- */
+function dialogueHtml(t) {
+  const rows = t.dialogue || [];
+  if (!rows.length) return "";
+  const sp = (t.speakers && t.speakers.length) ? t.speakers : [...new Set(rows.map(r => r.role))];
+  const cls = (role) => sp.indexOf(role) === 1 ? "r2" : "r1";
+  const short = (role) => esc(role.length > 1 && role[0] === "小" ? role.slice(1) : role.slice(0, 2));
+  return `<div class="tt-row between" style="margin:1rem 0 .5rem">
+      <h5 style="font-weight:700">💬 Hội thoại mẫu <span class="tt-small">· ${rows.length} câu${sp.length ? " · " + sp.map(esc).join(" & ") : ""}</span></h5>
+      <div class="tt-row">
+        <button class="tt-btn ghost sm" id="dlg-py">Ẩn pinyin</button>
+        <button class="tt-btn ghost sm" id="dlg-vi">Ẩn nghĩa</button>
+        <button class="tt-btn peach sm" id="dlg-all">▶ Nghe cả bài</button>
+      </div></div>
+    <div class="tt-lines" id="dlg-lines">${rows.map((r, i) => `<div class="tt-line" data-dlg="${i}">
+      <span class="tt-role ${cls(r.role)}" title="${esc(r.role)}">${short(r.role)}</span>
+      <div><div class="cn tt-hz"><span class="tt-small" style="font-size:12px;color:#5A6172">${esc(r.role)}：</span>${esc(r.cn)}</div>
+        <div class="py">${esc(r.py)}</div><div class="vi">${esc(r.vi)}</div>
+        <div class="acts"><button class="tt-btn ghost sm" data-say="${esc(r.cn)}">🔊 Nghe</button></div></div></div>`).join("")}</div>`;
+}
+function bindDialogue(box) {
+  const lines = $("dlg-lines"); if (!lines) return;
+  const rows = SPK.current.dialogue || [];
+  $("dlg-py").addEventListener("click", (e) => { const on = lines.classList.toggle("tt-hide-py"); e.target.textContent = on ? "Hiện pinyin" : "Ẩn pinyin"; });
+  $("dlg-vi").addEventListener("click", (e) => { const on = lines.classList.toggle("tt-hide-vi"); e.target.textContent = on ? "Hiện nghĩa" : "Ẩn nghĩa"; });
+  const btn = $("dlg-all");
+  const clear = () => lines.querySelectorAll(".tt-line.playing").forEach(x => x.classList.remove("playing"));
+  btn.addEventListener("click", async () => {
+    if (btn.dataset.on) { SPK.playId++; TTS.stop(); return; }   // đang đọc → bấm lần nữa để dừng
+    const my = ++SPK.playId; btn.dataset.on = "1"; btn.textContent = "■ Dừng";
+    for (let i = 0; i < rows.length && my === SPK.playId; i++) {
+      clear(); const el = lines.querySelector(`[data-dlg="${i}"]`);
+      if (el) { el.classList.add("playing"); el.scrollIntoView({ block: "nearest", behavior: "smooth" }); }
+      const ok = await TTS.speak(rows[i].cn, 0.85);
+      if (ok === false && !TTS.ok) { toast("Trình duyệt không có giọng đọc tiếng Trung."); break; }
+      if (my === SPK.playId) await new Promise(r => setTimeout(r, 450));
+    }
+    clear(); if (document.body.contains(btn)) { delete btn.dataset.on; btn.textContent = "▶ Nghe cả bài"; }
+  });
 }
 function drawTake() {
   const el = $("spk-take"); if (!el) return;
@@ -1488,15 +1532,64 @@ async function lmsTopics() {
     <label class="tt-label">Tình huống / yêu cầu</label><textarea class="tt-textarea" id="tp-scene" placeholder="Mô tả nhiệm vụ cho học viên…"></textarea>
     <label class="tt-label">Câu hỏi gợi ý — mỗi dòng: chữ Hán | pinyin | nghĩa</label><textarea class="tt-textarea" id="tp-prompts" placeholder="你住在哪个城市？ | Nǐ zhù zài nǎge chéngshì? | Bạn sống ở thành phố nào?"></textarea>
     <label class="tt-label">Từ vựng hữu ích — mỗi dòng: chữ Hán | pinyin | nghĩa</label><textarea class="tt-textarea" id="tp-words" placeholder="城市 | chéngshì | thành phố"></textarea>
+    <label class="tt-label">💬 Hội thoại mẫu (không bắt buộc) — mỗi dòng: Tên nhân vật：chữ Hán | pinyin | nghĩa</label><textarea class="tt-textarea" id="tp-dialogue" style="min-height:120px" placeholder="小明：你好！ | Nǐ hǎo! | Xin chào!&#10;小丽：你好！你去哪儿？ | Nǐ hǎo! Nǐ qù nǎr? | Chào bạn! Bạn đi đâu thế?"></textarea>
+    <p class="tt-small">Pinyin và nghĩa có thể để trống (chỉ ghi chữ Hán). Câu nào chưa có tên nhân vật thì máy tự xếp vai A / B xen kẽ.</p>
     <div class="tt-row" style="justify-content:flex-end;margin-top:.6rem"><button class="tt-btn peach" id="tp-add">＋ Thêm chủ đề</button></div></div>
-    <div class="tt-card"><b>Chủ đề giáo viên đã giao (${custom.length})</b>${custom.length ? custom.map(t => `<div class="tt-sub" style="margin-top:.6rem"><div class="tt-row between"><div>${esc(t.icon || "")} <span class="tt-hz" style="font-size:17px">${esc(t.title)}</span> · ${esc(t.vi)} <span class="tt-badge">${esc(t.level || "")}</span></div><button class="tt-btn danger sm" data-tdel="${t.id}">Xoá</button></div></div>`).join("") : `<div class="tt-empty">Chưa có. (Ngoài ra web có sẵn ${BUILTIN_TOPICS.length} chủ đề mẫu.)</div>`}</div>`;
+    <div class="tt-card"><b>📥 Nạp nhiều chủ đề cùng lúc từ file .json</b>
+      <p class="tt-small" style="margin:.3rem 0 .6rem">Dùng file do Claude soạn sẵn (ví dụ <code>hoi-thoai-khau-ngu.json</code>). Nạp lại cùng một file sẽ <b>cập nhật</b> chủ đề cũ, không tạo bản trùng.</p>
+      <div class="tt-row"><input type="file" id="tp-file" accept=".json,application/json"><button class="tt-btn" id="tp-import" disabled>Nạp lên máy chủ</button></div>
+      <div id="tp-log" style="margin-top:.5rem"></div></div>
+    <div class="tt-card"><b>Chủ đề giáo viên đã giao (${custom.length})</b>${custom.length ? custom.map(t => `<div class="tt-sub" style="margin-top:.6rem"><div class="tt-row between"><div>${esc(t.icon || "")} <span class="tt-hz" style="font-size:17px">${esc(t.title)}</span> · ${esc(t.vi)} <span class="tt-badge">${esc(t.level || "")}</span>${(t.dialogueRows || []).length ? ` <span class="tt-badge green">💬 ${t.dialogueRows.length} câu</span>` : ""}</div><button class="tt-btn danger sm" data-tdel="${t.id}">Xoá</button></div></div>`).join("") : `<div class="tt-empty">Chưa có. (Ngoài ra web có sẵn ${BUILTIN_TOPICS.length} chủ đề mẫu.)</div>`}</div>`;
   const rows = (v) => v.split("\n").map(l => l.split("|").map(x => x.trim())).filter(r => r[0]);
+  // "小明：你好！ | Nǐ hǎo! | Xin chào!" → { role, cn, py, vi }
+  const dlgRows = (v) => {
+    const out = rows(v).map(r => { const m = r[0].match(/^([^：:]{1,12})[：:]\s*(.+)$/); return { role: m ? m[1].trim() : "", cn: m ? m[2].trim() : r[0], py: r[1] || "", vi: r[2] || "" }; });
+    const named = [...new Set(out.map(r => r.role).filter(Boolean))];
+    out.forEach((r, i) => { if (!r.role) r.role = named[i % 2] || (i % 2 ? "B" : "A"); });
+    return out;
+  };
+  const cleanTopic = (x) => ({
+    icon: String(x.icon || "🗣️").slice(0, 8), title: String(x.title || "").trim(), titlePy: String(x.titlePy || ""), vi: String(x.vi || "").trim(),
+    level: String(x.level || ""), sec: Math.min(Math.max(Number(x.sec) || 60, 20), 120), scene: String(x.scene || ""),
+    speakers: Array.isArray(x.speakers) ? x.speakers.map(String).slice(0, 6) : [],
+    promptRows: (x.promptRows || []).map(r => ({ cn: String(r.cn || ""), py: String(r.py || ""), vi: String(r.vi || "") })),
+    wordRows: (x.wordRows || []).map(r => ({ cn: String(r.cn || ""), py: String(r.py || ""), vi: String(r.vi || "") })),
+    dialogueRows: (x.dialogueRows || []).map(r => ({ role: String(r.role || ""), cn: String(r.cn || ""), py: String(r.py || ""), vi: String(r.vi || "") })),
+  });
+  let importList = null;
+  $("tp-file").addEventListener("change", async (e) => {
+    const f = e.target.files[0]; importList = null; $("tp-import").disabled = true; if (!f) return;
+    try {
+      const data = JSON.parse(await f.text());
+      const arr = (Array.isArray(data) ? data : (data.topics || [])).map(x => ({ id: String(x.id || ""), ...cleanTopic(x) })).filter(x => x.title && x.vi);
+      if (!arr.length) throw new Error("File không có chủ đề nào hợp lệ.");
+      importList = arr; $("tp-import").disabled = false;
+      $("tp-log").innerHTML = `<div class="tt-note">Tìm thấy <b>${arr.length}</b> chủ đề: ${arr.map(x => esc(x.title)).join(" · ")}</div>`;
+    } catch (err) { $("tp-log").innerHTML = `<div class="tt-note err">Không đọc được file: ${esc(err.message)}</div>`; }
+  });
+  $("tp-import").addEventListener("click", async () => {
+    if (!importList) return;
+    const b = $("tp-import"); b.disabled = true; b.innerHTML = '<span class="tt-spin"></span> Đang nạp…';
+    let n = 0;
+    try {
+      for (const x of importList) {
+        const { id, ...t } = x;
+        const safeId = /^[A-Za-z0-9_-]{3,60}$/.test(id) ? id : null;
+        const ref = safeId ? D().doc(db(), "speakingTopics", safeId) : D().doc(D().collection(db(), "speakingTopics"));
+        await D().setDoc(ref, { ...t, createdBy: T.user.uid, createdAt: D().serverTimestamp() });
+        n++; b.innerHTML = `<span class="tt-spin"></span> ${n}/${importList.length}`;
+      }
+      toast(`✅ Đã nạp ${n} chủ đề`); SPK.topics = null; renderSpeaking(); lmsTopics();
+    } catch (e) { $("tp-log").innerHTML = `<div class="tt-note err">Đã nạp ${n}/${importList.length}. Lỗi: ${esc(errText(e))}</div>`; b.disabled = false; b.textContent = "Nạp lên máy chủ"; }
+  });
   $("tp-add").addEventListener("click", async () => {
     const t = { icon: $("tp-icon").value.trim() || "🗣️", title: $("tp-title").value.trim(), vi: $("tp-vi").value.trim(), level: $("tp-level").value.trim(), sec: Number($("tp-sec").value) || 60, scene: $("tp-scene").value.trim() };
     if (!t.title || !t.vi) { toast("Cần nhập tiêu đề tiếng Trung và tiếng Việt."); return; }
     // Firestore không lưu được mảng lồng mảng → lưu dạng mảng đối tượng rồi chuyển lại khi đọc
     t.promptRows = rows($("tp-prompts").value).map(r => ({ cn: r[0], py: r[1] || "", vi: r[2] || "" }));
     t.wordRows = rows($("tp-words").value).map(r => ({ cn: r[0], py: r[1] || "", vi: r[2] || "" }));
+    t.dialogueRows = dlgRows($("tp-dialogue").value);
+    t.speakers = [...new Set(t.dialogueRows.map(r => r.role))];
     t.createdBy = T.user.uid; t.createdAt = D().serverTimestamp();
     try { await D().addDoc(D().collection(db(), "speakingTopics"), t); toast("✅ Đã thêm chủ đề"); SPK.topics = null; renderSpeaking(); lmsTopics(); } catch (e) { toast(errText(e)); }
   });

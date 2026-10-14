@@ -1,0 +1,1092 @@
+[
+ {
+  "id": "hk-wenlu-chaoshi",
+  "icon": "🗺️",
+  "title": "问路去超市",
+  "titlePy": "Wèn lù qù chāoshì",
+  "vi": "Hỏi đường đi siêu thị",
+  "level": "HSK 2",
+  "sec": 90,
+  "scene": "Hội thoại giữa Tiểu Minh và Tiểu Lệ. Nghe mẫu từng câu, luyện đọc theo cho trôi chảy, rồi ghi âm đọc cả bài (đóng cả 2 vai) hoặc chọn một vai và nói tự nhiên.",
+  "speakers": [
+   "小明",
+   "小丽"
+  ],
+  "dialogueRows": [
+   {
+    "role": "小明",
+    "cn": "小丽，请问，附近有超市吗？",
+    "py": "Xiǎo Lì, qǐngwèn, fùjìn yǒu chāoshì ma?",
+    "vi": "Tiểu Lệ, cho mình hỏi, gần đây có siêu thị không?"
+   },
+   {
+    "role": "小丽",
+    "cn": "有，前面就有一个超市。",
+    "py": "Yǒu, qiánmiàn jiù yǒu yí ge chāoshì.",
+    "vi": "Có, ngay phía trước có một siêu thị."
+   },
+   {
+    "role": "小明",
+    "cn": "从这里怎么走？",
+    "py": "Cóng zhèlǐ zěnme zǒu?",
+    "vi": "Từ đây đi thế nào?"
+   },
+   {
+    "role": "小丽",
+    "cn": "你一直往前走，然后向右拐。",
+    "py": "Nǐ yìzhí wǎng qián zǒu, ránhòu xiàng yòu guǎi.",
+    "vi": "Bạn cứ đi thẳng, sau đó rẽ phải."
+   },
+   {
+    "role": "小明",
+    "cn": "要走多长时间？",
+    "py": "Yào zǒu duō cháng shíjiān?",
+    "vi": "Phải đi bao lâu?"
+   },
+   {
+    "role": "小丽",
+    "cn": "大概走十分钟就到了。",
+    "py": "Dàgài zǒu shí fēnzhōng jiù dào le.",
+    "vi": "Đi khoảng mười phút là tới."
+   },
+   {
+    "role": "小明",
+    "cn": "超市在路的左边还是右边？",
+    "py": "Chāoshì zài lù de zuǒbian háishi yòubian?",
+    "vi": "Siêu thị ở bên trái hay bên phải đường?"
+   },
+   {
+    "role": "小丽",
+    "cn": "在路的左边，旁边有一家银行。",
+    "py": "Zài lù de zuǒbian, pángbiān yǒu yì jiā yínháng.",
+    "vi": "Ở bên trái đường, bên cạnh có một ngân hàng."
+   },
+   {
+    "role": "小明",
+    "cn": "好的，谢谢你！",
+    "py": "Hǎo de, xièxie nǐ!",
+    "vi": "Được rồi, cảm ơn bạn!"
+   },
+   {
+    "role": "小丽",
+    "cn": "不客气，祝你购物愉快！",
+    "py": "Bú kèqi, zhù nǐ gòuwù yúkuài!",
+    "vi": "Không có gì, chúc bạn mua sắm vui vẻ!"
+   }
+  ],
+  "promptRows": [],
+  "wordRows": [
+   {
+    "cn": "附近",
+    "py": "fùjìn",
+    "vi": "gần đây"
+   },
+   {
+    "cn": "超市",
+    "py": "chāoshì",
+    "vi": "siêu thị"
+   },
+   {
+    "cn": "一直往前走",
+    "py": "yìzhí wǎng qián zǒu",
+    "vi": "đi thẳng"
+   },
+   {
+    "cn": "向右拐",
+    "py": "xiàng yòu guǎi",
+    "vi": "rẽ phải"
+   },
+   {
+    "cn": "左边 / 右边",
+    "py": "zuǒbian / yòubian",
+    "vi": "bên trái / bên phải"
+   },
+   {
+    "cn": "银行",
+    "py": "yínháng",
+    "vi": "ngân hàng"
+   }
+  ]
+ },
+ {
+  "id": "hk-kan-dianying",
+  "icon": "🎬",
+  "title": "邀请朋友看电影",
+  "titlePy": "Yāoqǐng péngyou kàn diànyǐng",
+  "vi": "Rủ bạn đi xem phim",
+  "level": "HSK 2",
+  "sec": 90,
+  "scene": "Hội thoại giữa Tiểu Vương và Tiểu Trương. Nghe mẫu từng câu, luyện đọc theo cho trôi chảy, rồi ghi âm đọc cả bài (đóng cả 2 vai) hoặc chọn một vai và nói tự nhiên.",
+  "speakers": [
+   "小王",
+   "小张"
+  ],
+  "dialogueRows": [
+   {
+    "role": "小王",
+    "cn": "小张，今天晚上你有时间吗？",
+    "py": "Xiǎo Zhāng, jīntiān wǎnshang nǐ yǒu shíjiān ma?",
+    "vi": "Tiểu Trương, tối nay bạn có rảnh không?"
+   },
+   {
+    "role": "小张",
+    "cn": "有啊，怎么了？",
+    "py": "Yǒu a, zěnme le?",
+    "vi": "Có chứ, sao thế?"
+   },
+   {
+    "role": "小王",
+    "cn": "我们一起去看电影吧！",
+    "py": "Wǒmen yìqǐ qù kàn diànyǐng ba!",
+    "vi": "Chúng mình cùng đi xem phim đi!"
+   },
+   {
+    "role": "小张",
+    "cn": "好啊！你想看什么电影？",
+    "py": "Hǎo a! Nǐ xiǎng kàn shénme diànyǐng?",
+    "vi": "Được đó! Bạn muốn xem phim gì?"
+   },
+   {
+    "role": "小王",
+    "cn": "我想看一部喜剧片，听说很好看。",
+    "py": "Wǒ xiǎng kàn yí bù xǐjùpiàn, tīngshuō hěn hǎokàn.",
+    "vi": "Mình muốn xem một bộ phim hài, nghe nói hay lắm."
+   },
+   {
+    "role": "小张",
+    "cn": "真的吗？几点开始？",
+    "py": "Zhēn de ma? Jǐ diǎn kāishǐ?",
+    "vi": "Thật à? Mấy giờ bắt đầu?"
+   },
+   {
+    "role": "小王",
+    "cn": "晚上七点半开始，我们六点半见面吧。",
+    "py": "Wǎnshang qī diǎn bàn kāishǐ, wǒmen liù diǎn bàn jiànmiàn ba.",
+    "vi": "7 giờ rưỡi tối bắt đầu, chúng mình gặp nhau lúc 6 giờ rưỡi nhé."
+   },
+   {
+    "role": "小张",
+    "cn": "在哪里见面？",
+    "py": "Zài nǎlǐ jiànmiàn?",
+    "vi": "Gặp nhau ở đâu?"
+   },
+   {
+    "role": "小王",
+    "cn": "就在电影院门口见吧。",
+    "py": "Jiù zài diànyǐngyuàn ménkǒu jiàn ba.",
+    "vi": "Gặp ngay ở cổng rạp chiếu phim nhé."
+   },
+   {
+    "role": "小张",
+    "cn": "没问题，晚上见！",
+    "py": "Méi wèntí, wǎnshang jiàn!",
+    "vi": "Không vấn đề gì, tối gặp nhé!"
+   }
+  ],
+  "promptRows": [],
+  "wordRows": [
+   {
+    "cn": "有时间",
+    "py": "yǒu shíjiān",
+    "vi": "rảnh, có thời gian"
+   },
+   {
+    "cn": "一起",
+    "py": "yìqǐ",
+    "vi": "cùng nhau"
+   },
+   {
+    "cn": "喜剧片",
+    "py": "xǐjùpiàn",
+    "vi": "phim hài"
+   },
+   {
+    "cn": "听说",
+    "py": "tīngshuō",
+    "vi": "nghe nói"
+   },
+   {
+    "cn": "见面",
+    "py": "jiànmiàn",
+    "vi": "gặp mặt"
+   },
+   {
+    "cn": "电影院",
+    "py": "diànyǐngyuàn",
+    "vi": "rạp chiếu phim"
+   }
+  ]
+ },
+ {
+  "id": "hk-taolun-shu",
+  "icon": "📖",
+  "title": "讨论一本书",
+  "titlePy": "Tǎolùn yì běn shū",
+  "vi": "Thảo luận về một cuốn sách",
+  "level": "HSK 3",
+  "sec": 90,
+  "scene": "Hội thoại giữa Tiểu Mỹ và Tiểu Lệ. Nghe mẫu từng câu, luyện đọc theo cho trôi chảy, rồi ghi âm đọc cả bài (đóng cả 2 vai) hoặc chọn một vai và nói tự nhiên.",
+  "speakers": [
+   "小美",
+   "小丽"
+  ],
+  "dialogueRows": [
+   {
+    "role": "小美",
+    "cn": "小丽，你最近在看什么书？",
+    "py": "Xiǎo Lì, nǐ zuìjìn zài kàn shénme shū?",
+    "vi": "Tiểu Lệ, dạo này bạn đang đọc sách gì?"
+   },
+   {
+    "role": "小丽",
+    "cn": "我在看一本中国小说，名字叫《活着》。",
+    "py": "Wǒ zài kàn yì běn Zhōngguó xiǎoshuō, míngzi jiào «Huózhe».",
+    "vi": "Mình đang đọc một cuốn tiểu thuyết Trung Quốc, tên là «Phải sống»."
+   },
+   {
+    "role": "小美",
+    "cn": "这本书讲什么故事？",
+    "py": "Zhè běn shū jiǎng shénme gùshi?",
+    "vi": "Cuốn sách này kể câu chuyện gì?"
+   },
+   {
+    "role": "小丽",
+    "cn": "它讲了一个普通人的生活，很感人。",
+    "py": "Tā jiǎng le yí ge pǔtōng rén de shēnghuó, hěn gǎnrén.",
+    "vi": "Nó kể về cuộc đời của một người bình thường, rất cảm động."
+   },
+   {
+    "role": "小美",
+    "cn": "听起来很有意思。你觉得这本书怎么样？",
+    "py": "Tīng qǐlai hěn yǒu yìsi. Nǐ juéde zhè běn shū zěnmeyàng?",
+    "vi": "Nghe có vẻ thú vị đấy. Bạn thấy cuốn sách này thế nào?"
+   },
+   {
+    "role": "小丽",
+    "cn": "我觉得写得很好，让我想了很多。",
+    "py": "Wǒ juéde xiě de hěn hǎo, ràng wǒ xiǎng le hěn duō.",
+    "vi": "Mình thấy viết rất hay, khiến mình suy nghĩ rất nhiều."
+   },
+   {
+    "role": "小美",
+    "cn": "这本书难不难？我想买一本。",
+    "py": "Zhè běn shū nán bu nán? Wǒ xiǎng mǎi yì běn.",
+    "vi": "Cuốn sách này có khó không? Mình muốn mua một cuốn."
+   },
+   {
+    "role": "小丽",
+    "cn": "不太难，不过有些词不容易懂。",
+    "py": "Bú tài nán, búguò yǒuxiē cí bù róngyì dǒng.",
+    "vi": "Không khó lắm, nhưng có một số từ không dễ hiểu."
+   },
+   {
+    "role": "小美",
+    "cn": "那你看完以后，可以借给我吗？",
+    "py": "Nà nǐ kàn wán yǐhòu, kěyǐ jiè gěi wǒ ma?",
+    "vi": "Vậy đọc xong bạn có thể cho mình mượn không?"
+   },
+   {
+    "role": "小丽",
+    "cn": "当然可以！我看完就给你。",
+    "py": "Dāngrán kěyǐ! Wǒ kàn wán jiù gěi nǐ.",
+    "vi": "Tất nhiên rồi! Mình đọc xong sẽ đưa bạn ngay."
+   }
+  ],
+  "promptRows": [],
+  "wordRows": [
+   {
+    "cn": "最近",
+    "py": "zuìjìn",
+    "vi": "dạo này"
+   },
+   {
+    "cn": "小说",
+    "py": "xiǎoshuō",
+    "vi": "tiểu thuyết"
+   },
+   {
+    "cn": "故事",
+    "py": "gùshi",
+    "vi": "câu chuyện"
+   },
+   {
+    "cn": "普通",
+    "py": "pǔtōng",
+    "vi": "bình thường"
+   },
+   {
+    "cn": "感人",
+    "py": "gǎnrén",
+    "vi": "cảm động"
+   },
+   {
+    "cn": "借给",
+    "py": "jiè gěi",
+    "vi": "cho mượn"
+   }
+  ]
+ },
+ {
+  "id": "hk-xingqu-aihao",
+  "icon": "🎵",
+  "title": "谈谈兴趣爱好",
+  "titlePy": "Tántan xìngqù àihào",
+  "vi": "Nói về sở thích",
+  "level": "HSK 2–3",
+  "sec": 90,
+  "scene": "Hội thoại giữa Tiểu Lâm và Tiểu Triệu. Nghe mẫu từng câu, luyện đọc theo cho trôi chảy, rồi ghi âm đọc cả bài (đóng cả 2 vai) hoặc chọn một vai và nói tự nhiên.",
+  "speakers": [
+   "小林",
+   "小赵"
+  ],
+  "dialogueRows": [
+   {
+    "role": "小林",
+    "cn": "小赵，你平时喜欢做什么？",
+    "py": "Xiǎo Zhào, nǐ píngshí xǐhuan zuò shénme?",
+    "vi": "Tiểu Triệu, bình thường bạn thích làm gì?"
+   },
+   {
+    "role": "小赵",
+    "cn": "我喜欢听音乐，也喜欢看电影。你呢？",
+    "py": "Wǒ xǐhuan tīng yīnyuè, yě xǐhuan kàn diànyǐng. Nǐ ne?",
+    "vi": "Mình thích nghe nhạc, cũng thích xem phim. Còn bạn?"
+   },
+   {
+    "role": "小林",
+    "cn": "我喜欢运动，特别喜欢打篮球。",
+    "py": "Wǒ xǐhuan yùndòng, tèbié xǐhuan dǎ lánqiú.",
+    "vi": "Mình thích vận động, đặc biệt thích chơi bóng rổ."
+   },
+   {
+    "role": "小赵",
+    "cn": "你一周打几次篮球？",
+    "py": "Nǐ yì zhōu dǎ jǐ cì lánqiú?",
+    "vi": "Một tuần bạn chơi bóng rổ mấy lần?"
+   },
+   {
+    "role": "小林",
+    "cn": "我一般打两三次。你喜欢什么音乐？",
+    "py": "Wǒ yìbān dǎ liǎng-sān cì. Nǐ xǐhuan shénme yīnyuè?",
+    "vi": "Mình thường chơi hai, ba lần. Bạn thích nhạc gì?"
+   },
+   {
+    "role": "小赵",
+    "cn": "我喜欢流行音乐，有时候也听中文歌。",
+    "py": "Wǒ xǐhuan liúxíng yīnyuè, yǒu shíhou yě tīng Zhōngwén gē.",
+    "vi": "Mình thích nhạc pop, đôi khi cũng nghe nhạc tiếng Trung."
+   },
+   {
+    "role": "小林",
+    "cn": "你为什么喜欢听中文歌？",
+    "py": "Nǐ wèishénme xǐhuan tīng Zhōngwén gē?",
+    "vi": "Sao bạn thích nghe nhạc tiếng Trung?"
+   },
+   {
+    "role": "小赵",
+    "cn": "因为听中文歌可以帮助我学习汉语。",
+    "py": "Yīnwèi tīng Zhōngwén gē kěyǐ bāngzhù wǒ xuéxí Hànyǔ.",
+    "vi": "Vì nghe nhạc tiếng Trung có thể giúp mình học tiếng Trung."
+   },
+   {
+    "role": "小林",
+    "cn": "真不错！下次我们一起去唱歌吧。",
+    "py": "Zhēn búcuò! Xià cì wǒmen yìqǐ qù chàng gē ba.",
+    "vi": "Hay thật đấy! Lần sau chúng mình cùng đi hát nhé."
+   },
+   {
+    "role": "小赵",
+    "cn": "好啊，我也很喜欢唱歌！",
+    "py": "Hǎo a, wǒ yě hěn xǐhuan chàng gē!",
+    "vi": "Được đó, mình cũng rất thích hát!"
+   }
+  ],
+  "promptRows": [],
+  "wordRows": [
+   {
+    "cn": "平时",
+    "py": "píngshí",
+    "vi": "thường ngày"
+   },
+   {
+    "cn": "运动",
+    "py": "yùndòng",
+    "vi": "vận động, thể thao"
+   },
+   {
+    "cn": "打篮球",
+    "py": "dǎ lánqiú",
+    "vi": "chơi bóng rổ"
+   },
+   {
+    "cn": "流行音乐",
+    "py": "liúxíng yīnyuè",
+    "vi": "nhạc pop"
+   },
+   {
+    "cn": "有时候",
+    "py": "yǒu shíhou",
+    "vi": "đôi khi"
+   },
+   {
+    "cn": "帮助",
+    "py": "bāngzhù",
+    "vi": "giúp đỡ"
+   }
+  ]
+ },
+ {
+  "id": "hk-jie-dongxi",
+  "icon": "✏️",
+  "title": "借东西",
+  "titlePy": "Jiè dōngxi",
+  "vi": "Mượn đồ",
+  "level": "HSK 2",
+  "sec": 90,
+  "scene": "Hội thoại giữa Tiểu Minh và Tiểu Hoa. Nghe mẫu từng câu, luyện đọc theo cho trôi chảy, rồi ghi âm đọc cả bài (đóng cả 2 vai) hoặc chọn một vai và nói tự nhiên.",
+  "speakers": [
+   "小明",
+   "小华"
+  ],
+  "dialogueRows": [
+   {
+    "role": "小明",
+    "cn": "小华，你现在有空吗？",
+    "py": "Xiǎo Huá, nǐ xiànzài yǒu kòng ma?",
+    "vi": "Tiểu Hoa, bây giờ bạn có rảnh không?"
+   },
+   {
+    "role": "小华",
+    "cn": "有啊，怎么了？",
+    "py": "Yǒu a, zěnme le?",
+    "vi": "Có chứ, sao vậy?"
+   },
+   {
+    "role": "小明",
+    "cn": "我忘记带笔了，可以借我一支笔吗？",
+    "py": "Wǒ wàngjì dài bǐ le, kěyǐ jiè wǒ yì zhī bǐ ma?",
+    "vi": "Mình quên mang bút rồi, cho mình mượn một cây bút được không?"
+   },
+   {
+    "role": "小华",
+    "cn": "当然可以。你要黑色的还是蓝色的？",
+    "py": "Dāngrán kěyǐ. Nǐ yào hēisè de háishi lánsè de?",
+    "vi": "Tất nhiên là được. Bạn muốn cây màu đen hay màu xanh dương?"
+   },
+   {
+    "role": "小明",
+    "cn": "蓝色的就可以，谢谢！",
+    "py": "Lánsè de jiù kěyǐ, xièxie!",
+    "vi": "Màu xanh dương là được rồi, cảm ơn!"
+   },
+   {
+    "role": "小华",
+    "cn": "给你。你什么时候还我？",
+    "py": "Gěi nǐ. Nǐ shénme shíhou huán wǒ?",
+    "vi": "Đây. Khi nào bạn trả mình?"
+   },
+   {
+    "role": "小明",
+    "cn": "今天下午下课以后还你，可以吗？",
+    "py": "Jīntiān xiàwǔ xià kè yǐhòu huán nǐ, kěyǐ ma?",
+    "vi": "Chiều nay tan học mình trả nhé, được không?"
+   },
+   {
+    "role": "小华",
+    "cn": "没问题，你用完记得还我就行。",
+    "py": "Méi wèntí, nǐ yòng wán jìde huán wǒ jiù xíng.",
+    "vi": "Không vấn đề gì, dùng xong nhớ trả mình là được."
+   },
+   {
+    "role": "小明",
+    "cn": "放心吧，我不会忘记的。",
+    "py": "Fàngxīn ba, wǒ bú huì wàngjì de.",
+    "vi": "Yên tâm đi, mình sẽ không quên đâu."
+   },
+   {
+    "role": "小华",
+    "cn": "好，那你先用吧！",
+    "py": "Hǎo, nà nǐ xiān yòng ba!",
+    "vi": "Ừ, vậy bạn cứ dùng trước đi!"
+   }
+  ],
+  "promptRows": [],
+  "wordRows": [
+   {
+    "cn": "有空",
+    "py": "yǒu kòng",
+    "vi": "rảnh"
+   },
+   {
+    "cn": "忘记",
+    "py": "wàngjì",
+    "vi": "quên"
+   },
+   {
+    "cn": "带",
+    "py": "dài",
+    "vi": "mang theo"
+   },
+   {
+    "cn": "借",
+    "py": "jiè",
+    "vi": "mượn"
+   },
+   {
+    "cn": "还",
+    "py": "huán",
+    "vi": "trả lại"
+   },
+   {
+    "cn": "放心",
+    "py": "fàngxīn",
+    "vi": "yên tâm"
+   }
+  ]
+ },
+ {
+  "id": "hk-zuoye",
+  "icon": "📝",
+  "title": "你做完作业了吗？",
+  "titlePy": "Nǐ zuò wán zuòyè le ma?",
+  "vi": "Bạn làm xong bài tập chưa?",
+  "level": "HSK 3",
+  "sec": 90,
+  "scene": "Hội thoại giữa Tiểu Cương và Tiểu Lệ. Nghe mẫu từng câu, luyện đọc theo cho trôi chảy, rồi ghi âm đọc cả bài (đóng cả 2 vai) hoặc chọn một vai và nói tự nhiên.",
+  "speakers": [
+   "小刚",
+   "小丽"
+  ],
+  "dialogueRows": [
+   {
+    "role": "小刚",
+    "cn": "小丽，你做完今天的作业了吗？",
+    "py": "Xiǎo Lì, nǐ zuò wán jīntiān de zuòyè le ma?",
+    "vi": "Tiểu Lệ, bạn làm xong bài tập hôm nay chưa?"
+   },
+   {
+    "role": "小丽",
+    "cn": "还没有，我正在做数学题。你呢？",
+    "py": "Hái méiyǒu, wǒ zhèngzài zuò shùxué tí. Nǐ ne?",
+    "vi": "Chưa, mình đang làm bài toán. Còn bạn?"
+   },
+   {
+    "role": "小刚",
+    "cn": "我已经做完了，但是有一道题不会。",
+    "py": "Wǒ yǐjīng zuò wán le, dànshì yǒu yí dào tí bú huì.",
+    "vi": "Mình làm xong rồi, nhưng có một bài không biết làm."
+   },
+   {
+    "role": "小丽",
+    "cn": "哪一道题？我可以帮你看看。",
+    "py": "Nǎ yí dào tí? Wǒ kěyǐ bāng nǐ kànkan.",
+    "vi": "Bài nào? Mình có thể xem giúp bạn."
+   },
+   {
+    "role": "小刚",
+    "cn": "就是第二页最后一道题，我看了好几次还是不懂。",
+    "py": "Jiù shì dì-èr yè zuìhòu yí dào tí, wǒ kàn le hǎo jǐ cì háishi bù dǒng.",
+    "vi": "Chính là bài cuối cùng ở trang 2, mình xem mấy lần rồi mà vẫn không hiểu."
+   },
+   {
+    "role": "小丽",
+    "cn": "让我看看。哦，这道题需要先算这个，再算那个。",
+    "py": "Ràng wǒ kànkan. Ò, zhè dào tí xūyào xiān suàn zhège, zài suàn nàge.",
+    "vi": "Để mình xem. À, bài này cần tính cái này trước, rồi mới tính cái kia."
+   },
+   {
+    "role": "小刚",
+    "cn": "原来是这样！我明白了，谢谢你。",
+    "py": "Yuánlái shì zhèyàng! Wǒ míngbai le, xièxie nǐ.",
+    "vi": "Hoá ra là vậy! Mình hiểu rồi, cảm ơn bạn."
+   },
+   {
+    "role": "小丽",
+    "cn": "不客气。你今天怎么做得这么快？",
+    "py": "Bú kèqi. Nǐ jīntiān zěnme zuò de zhème kuài?",
+    "vi": "Không có gì. Sao hôm nay bạn làm nhanh thế?"
+   },
+   {
+    "role": "小刚",
+    "cn": "因为我下午没有出去玩，一直在家学习。",
+    "py": "Yīnwèi wǒ xiàwǔ méiyǒu chūqu wán, yìzhí zài jiā xuéxí.",
+    "vi": "Vì chiều nay mình không ra ngoài chơi, ở nhà học suốt."
+   },
+   {
+    "role": "小丽",
+    "cn": "难怪！我也得快一点儿了。",
+    "py": "Nánguài! Wǒ yě děi kuài yìdiǎnr le.",
+    "vi": "Thảo nào! Mình cũng phải nhanh lên mới được."
+   }
+  ],
+  "promptRows": [],
+  "wordRows": [
+   {
+    "cn": "作业",
+    "py": "zuòyè",
+    "vi": "bài tập"
+   },
+   {
+    "cn": "正在",
+    "py": "zhèngzài",
+    "vi": "đang"
+   },
+   {
+    "cn": "数学",
+    "py": "shùxué",
+    "vi": "toán học"
+   },
+   {
+    "cn": "道",
+    "py": "dào",
+    "vi": "lượng từ (câu hỏi, bài tập)"
+   },
+   {
+    "cn": "原来",
+    "py": "yuánlái",
+    "vi": "hoá ra"
+   },
+   {
+    "cn": "难怪",
+    "py": "nánguài",
+    "vi": "thảo nào"
+   }
+  ]
+ },
+ {
+  "id": "hk-zhongwu-chi",
+  "icon": "🍜",
+  "title": "今天中午吃什么？",
+  "titlePy": "Jīntiān zhōngwǔ chī shénme?",
+  "vi": "Trưa nay ăn gì?",
+  "level": "HSK 2",
+  "sec": 90,
+  "scene": "Hội thoại giữa Tiểu Vương và Tiểu Lý. Nghe mẫu từng câu, luyện đọc theo cho trôi chảy, rồi ghi âm đọc cả bài (đóng cả 2 vai) hoặc chọn một vai và nói tự nhiên.",
+  "speakers": [
+   "小王",
+   "小李"
+  ],
+  "dialogueRows": [
+   {
+    "role": "小王",
+    "cn": "小李，今天中午我们吃什么？",
+    "py": "Xiǎo Lǐ, jīntiān zhōngwǔ wǒmen chī shénme?",
+    "vi": "Tiểu Lý, trưa nay chúng mình ăn gì?"
+   },
+   {
+    "role": "小李",
+    "cn": "我还没想好。你想吃什么？",
+    "py": "Wǒ hái méi xiǎng hǎo. Nǐ xiǎng chī shénme?",
+    "vi": "Mình chưa nghĩ ra. Bạn muốn ăn gì?"
+   },
+   {
+    "role": "小王",
+    "cn": "我想吃米饭和炒菜，你呢？",
+    "py": "Wǒ xiǎng chī mǐfàn hé chǎocài, nǐ ne?",
+    "vi": "Mình muốn ăn cơm với món xào, còn bạn?"
+   },
+   {
+    "role": "小李",
+    "cn": "我有点儿想吃面条，最近天气有点儿冷。",
+    "py": "Wǒ yǒudiǎnr xiǎng chī miàntiáo, zuìjìn tiānqì yǒudiǎnr lěng.",
+    "vi": "Mình hơi thèm ăn mì, dạo này trời hơi lạnh."
+   },
+   {
+    "role": "小王",
+    "cn": "那我们去学校旁边的面馆吧。",
+    "py": "Nà wǒmen qù xuéxiào pángbiān de miànguǎn ba.",
+    "vi": "Vậy chúng mình đi quán mì cạnh trường đi."
+   },
+   {
+    "role": "小李",
+    "cn": "好啊！那家面馆的牛肉面很好吃。",
+    "py": "Hǎo a! Nà jiā miànguǎn de niúròumiàn hěn hǎochī.",
+    "vi": "Được đó! Mì bò của quán đó ngon lắm."
+   },
+   {
+    "role": "小王",
+    "cn": "一碗牛肉面多少钱？",
+    "py": "Yì wǎn niúròumiàn duōshao qián?",
+    "vi": "Một bát mì bò bao nhiêu tiền?"
+   },
+   {
+    "role": "小李",
+    "cn": "好像是二十五块钱，不太贵。",
+    "py": "Hǎoxiàng shì èrshíwǔ kuài qián, bú tài guì.",
+    "vi": "Hình như là 25 tệ, không đắt lắm."
+   },
+   {
+    "role": "小王",
+    "cn": "可以，那我们现在就去吧！",
+    "py": "Kěyǐ, nà wǒmen xiànzài jiù qù ba!",
+    "vi": "Được, vậy chúng mình đi luôn bây giờ nhé!"
+   },
+   {
+    "role": "小李",
+    "cn": "等一下，我先拿一下手机和钱包。",
+    "py": "Děng yíxià, wǒ xiān ná yíxià shǒujī hé qiánbāo.",
+    "vi": "Đợi chút, để mình lấy điện thoại và ví đã."
+   }
+  ],
+  "promptRows": [],
+  "wordRows": [
+   {
+    "cn": "米饭",
+    "py": "mǐfàn",
+    "vi": "cơm"
+   },
+   {
+    "cn": "炒菜",
+    "py": "chǎocài",
+    "vi": "món xào"
+   },
+   {
+    "cn": "面条",
+    "py": "miàntiáo",
+    "vi": "mì sợi"
+   },
+   {
+    "cn": "面馆",
+    "py": "miànguǎn",
+    "vi": "quán mì"
+   },
+   {
+    "cn": "好像",
+    "py": "hǎoxiàng",
+    "vi": "hình như"
+   },
+   {
+    "cn": "钱包",
+    "py": "qiánbāo",
+    "vi": "ví tiền"
+   }
+  ]
+ },
+ {
+  "id": "hk-gongzuo",
+  "icon": "💼",
+  "title": "你做什么工作？",
+  "titlePy": "Nǐ zuò shénme gōngzuò?",
+  "vi": "Bạn làm công việc gì?",
+  "level": "HSK 2–3",
+  "sec": 90,
+  "scene": "Hội thoại giữa Tiểu Trần và Tiểu An. Nghe mẫu từng câu, luyện đọc theo cho trôi chảy, rồi ghi âm đọc cả bài (đóng cả 2 vai) hoặc chọn một vai và nói tự nhiên.",
+  "speakers": [
+   "小陈",
+   "小安"
+  ],
+  "dialogueRows": [
+   {
+    "role": "小陈",
+    "cn": "小安，你现在做什么工作？",
+    "py": "Xiǎo Ān, nǐ xiànzài zuò shénme gōngzuò?",
+    "vi": "Tiểu An, hiện giờ bạn làm công việc gì?"
+   },
+   {
+    "role": "小安",
+    "cn": "我是一名老师，在一所中学教中文。",
+    "py": "Wǒ shì yì míng lǎoshī, zài yì suǒ zhōngxué jiāo Zhōngwén.",
+    "vi": "Mình là giáo viên, dạy tiếng Trung ở một trường trung học."
+   },
+   {
+    "role": "小陈",
+    "cn": "你工作几年了？",
+    "py": "Nǐ gōngzuò jǐ nián le?",
+    "vi": "Bạn đi làm được mấy năm rồi?"
+   },
+   {
+    "role": "小安",
+    "cn": "三年了。你呢？",
+    "py": "Sān nián le. Nǐ ne?",
+    "vi": "Ba năm rồi. Còn bạn?"
+   },
+   {
+    "role": "小陈",
+    "cn": "我在一家电脑公司工作，是一名程序员。",
+    "py": "Wǒ zài yì jiā diànnǎo gōngsī gōngzuò, shì yì míng chéngxùyuán.",
+    "vi": "Mình làm ở một công ty máy tính, là lập trình viên."
+   },
+   {
+    "role": "小安",
+    "cn": "你的工作忙不忙？",
+    "py": "Nǐ de gōngzuò máng bu máng?",
+    "vi": "Công việc của bạn có bận không?"
+   },
+   {
+    "role": "小陈",
+    "cn": "挺忙的，有时候要工作到晚上九点。",
+    "py": "Tǐng máng de, yǒu shíhou yào gōngzuò dào wǎnshang jiǔ diǎn.",
+    "vi": "Khá bận, có lúc phải làm đến 9 giờ tối."
+   },
+   {
+    "role": "小安",
+    "cn": "那你平时有时间休息吗？",
+    "py": "Nà nǐ píngshí yǒu shíjiān xiūxi ma?",
+    "vi": "Vậy bình thường bạn có thời gian nghỉ ngơi không?"
+   },
+   {
+    "role": "小陈",
+    "cn": "周末比较有时间，我喜欢出去运动。",
+    "py": "Zhōumò bǐjiào yǒu shíjiān, wǒ xǐhuan chūqu yùndòng.",
+    "vi": "Cuối tuần thì có thời gian hơn, mình thích ra ngoài vận động."
+   },
+   {
+    "role": "小安",
+    "cn": "真好！工作很重要，但是也要注意身体。",
+    "py": "Zhēn hǎo! Gōngzuò hěn zhòngyào, dànshì yě yào zhùyì shēntǐ.",
+    "vi": "Tốt quá! Công việc rất quan trọng, nhưng cũng phải chú ý sức khoẻ."
+   }
+  ],
+  "promptRows": [],
+  "wordRows": [
+   {
+    "cn": "名",
+    "py": "míng",
+    "vi": "lượng từ chỉ người"
+   },
+   {
+    "cn": "中学",
+    "py": "zhōngxué",
+    "vi": "trường trung học"
+   },
+   {
+    "cn": "公司",
+    "py": "gōngsī",
+    "vi": "công ty"
+   },
+   {
+    "cn": "程序员",
+    "py": "chéngxùyuán",
+    "vi": "lập trình viên"
+   },
+   {
+    "cn": "挺……的",
+    "py": "tǐng……de",
+    "vi": "khá là"
+   },
+   {
+    "cn": "注意身体",
+    "py": "zhùyì shēntǐ",
+    "vi": "chú ý sức khoẻ"
+   }
+  ]
+ },
+ {
+  "id": "hk-zhongguo-lvyou",
+  "icon": "✈️",
+  "title": "去中国旅游",
+  "titlePy": "Qù Zhōngguó lǚyóu",
+  "vi": "Du lịch Trung Quốc",
+  "level": "HSK 3",
+  "sec": 90,
+  "scene": "Hội thoại giữa Tiểu Mỹ và Tiểu Phương. Nghe mẫu từng câu, luyện đọc theo cho trôi chảy, rồi ghi âm đọc cả bài (đóng cả 2 vai) hoặc chọn một vai và nói tự nhiên.",
+  "speakers": [
+   "小美",
+   "小芳"
+  ],
+  "dialogueRows": [
+   {
+    "role": "小美",
+    "cn": "小芳，你去过中国吗？",
+    "py": "Xiǎo Fāng, nǐ qù guo Zhōngguó ma?",
+    "vi": "Tiểu Phương, bạn đã từng đến Trung Quốc chưa?"
+   },
+   {
+    "role": "小芳",
+    "cn": "去过！去年暑假我去了北京。",
+    "py": "Qù guo! Qùnián shǔjià wǒ qù le Běijīng.",
+    "vi": "Đi rồi! Kỳ nghỉ hè năm ngoái mình đã đi Bắc Kinh."
+   },
+   {
+    "role": "小美",
+    "cn": "真的吗？你觉得北京怎么样？",
+    "py": "Zhēn de ma? Nǐ juéde Běijīng zěnmeyàng?",
+    "vi": "Thật à? Bạn thấy Bắc Kinh thế nào?"
+   },
+   {
+    "role": "小芳",
+    "cn": "很漂亮，也很热闹。我还去了长城和故宫。",
+    "py": "Hěn piàoliang, yě hěn rènao. Wǒ hái qù le Chángchéng hé Gùgōng.",
+    "vi": "Rất đẹp, cũng rất náo nhiệt. Mình còn đi Vạn Lý Trường Thành và Cố Cung nữa."
+   },
+   {
+    "role": "小美",
+    "cn": "你最喜欢哪个地方？",
+    "py": "Nǐ zuì xǐhuan nǎge dìfang?",
+    "vi": "Bạn thích nơi nào nhất?"
+   },
+   {
+    "role": "小芳",
+    "cn": "我最喜欢长城，因为站在上面可以看到很远的地方。",
+    "py": "Wǒ zuì xǐhuan Chángchéng, yīnwèi zhàn zài shàngmiàn kěyǐ kàn dào hěn yuǎn de dìfang.",
+    "vi": "Mình thích Trường Thành nhất, vì đứng trên đó có thể nhìn thấy rất xa."
+   },
+   {
+    "role": "小美",
+    "cn": "你在北京吃了什么好吃的？",
+    "py": "Nǐ zài Běijīng chī le shénme hǎochī de?",
+    "vi": "Ở Bắc Kinh bạn đã ăn món gì ngon?"
+   },
+   {
+    "role": "小芳",
+    "cn": "我吃了北京烤鸭，味道特别好！",
+    "py": "Wǒ chī le Běijīng kǎoyā, wèidao tèbié hǎo!",
+    "vi": "Mình đã ăn vịt quay Bắc Kinh, hương vị cực kỳ ngon!"
+   },
+   {
+    "role": "小美",
+    "cn": "我也想去中国旅游。你觉得什么时候去最好？",
+    "py": "Wǒ yě xiǎng qù Zhōngguó lǚyóu. Nǐ juéde shénme shíhou qù zuì hǎo?",
+    "vi": "Mình cũng muốn đi du lịch Trung Quốc. Bạn thấy đi lúc nào là tốt nhất?"
+   },
+   {
+    "role": "小芳",
+    "cn": "我觉得春天和秋天最好，天气不太热，也不太冷。",
+    "py": "Wǒ juéde chūntiān hé qiūtiān zuì hǎo, tiānqì bú tài rè, yě bú tài lěng.",
+    "vi": "Mình thấy mùa xuân và mùa thu là tốt nhất, thời tiết không nóng quá, cũng không lạnh quá."
+   }
+  ],
+  "promptRows": [],
+  "wordRows": [
+   {
+    "cn": "去过",
+    "py": "qù guo",
+    "vi": "đã từng đi"
+   },
+   {
+    "cn": "暑假",
+    "py": "shǔjià",
+    "vi": "nghỉ hè"
+   },
+   {
+    "cn": "热闹",
+    "py": "rènao",
+    "vi": "náo nhiệt"
+   },
+   {
+    "cn": "长城",
+    "py": "Chángchéng",
+    "vi": "Vạn Lý Trường Thành"
+   },
+   {
+    "cn": "故宫",
+    "py": "Gùgōng",
+    "vi": "Cố Cung"
+   },
+   {
+    "cn": "烤鸭",
+    "py": "kǎoyā",
+    "vi": "vịt quay"
+   }
+  ]
+ },
+ {
+  "id": "hk-xuexi-zhongwen",
+  "icon": "📚",
+  "title": "怎么学习中文？",
+  "titlePy": "Zěnme xuéxí Zhōngwén?",
+  "vi": "Cách học tiếng Trung",
+  "level": "HSK 3",
+  "sec": 90,
+  "scene": "Hội thoại giữa Tiểu Lý và Tiểu Vương. Nghe mẫu từng câu, luyện đọc theo cho trôi chảy, rồi ghi âm đọc cả bài (đóng cả 2 vai) hoặc chọn một vai và nói tự nhiên.",
+  "speakers": [
+   "小李",
+   "小王"
+  ],
+  "dialogueRows": [
+   {
+    "role": "小李",
+    "cn": "小王，你的中文说得真好！你怎么学的？",
+    "py": "Xiǎo Wáng, nǐ de Zhōngwén shuō de zhēn hǎo! Nǐ zěnme xué de?",
+    "vi": "Tiểu Vương, bạn nói tiếng Trung giỏi thật! Bạn học thế nào vậy?"
+   },
+   {
+    "role": "小王",
+    "cn": "谢谢！我每天都学习中文。",
+    "py": "Xièxie! Wǒ měi tiān dōu xuéxí Zhōngwén.",
+    "vi": "Cảm ơn! Ngày nào mình cũng học tiếng Trung."
+   },
+   {
+    "role": "小李",
+    "cn": "你每天学习多长时间？",
+    "py": "Nǐ měi tiān xuéxí duō cháng shíjiān?",
+    "vi": "Mỗi ngày bạn học bao lâu?"
+   },
+   {
+    "role": "小王",
+    "cn": "大概两个小时。我每天背单词、读课文，还听中文录音。",
+    "py": "Dàgài liǎng ge xiǎoshí. Wǒ měi tiān bèi dāncí, dú kèwén, hái tīng Zhōngwén lùyīn.",
+    "vi": "Khoảng hai tiếng. Mỗi ngày mình học thuộc từ mới, đọc bài khoá, còn nghe ghi âm tiếng Trung."
+   },
+   {
+    "role": "小李",
+    "cn": "你觉得学习中文最难的是什么？",
+    "py": "Nǐ juéde xuéxí Zhōngwén zuì nán de shì shénme?",
+    "vi": "Bạn thấy học tiếng Trung khó nhất là gì?"
+   },
+   {
+    "role": "小王",
+    "cn": "我觉得汉字和声调比较难。你呢？",
+    "py": "Wǒ juéde Hànzì hé shēngdiào bǐjiào nán. Nǐ ne?",
+    "vi": "Mình thấy chữ Hán và thanh điệu khá khó. Còn bạn?"
+   },
+   {
+    "role": "小李",
+    "cn": "我觉得听力最难，有时候听不懂别人说什么。",
+    "py": "Wǒ juéde tīnglì zuì nán, yǒu shíhou tīng bu dǒng biérén shuō shénme.",
+    "vi": "Mình thấy nghe là khó nhất, có lúc nghe không hiểu người khác nói gì."
+   },
+   {
+    "role": "小王",
+    "cn": "你可以多听中文歌曲，也可以看中国电视剧。",
+    "py": "Nǐ kěyǐ duō tīng Zhōngwén gēqǔ, yě kěyǐ kàn Zhōngguó diànshìjù.",
+    "vi": "Bạn có thể nghe nhiều bài hát tiếng Trung, cũng có thể xem phim truyền hình Trung Quốc."
+   },
+   {
+    "role": "小李",
+    "cn": "好主意！那怎么练习口语呢？",
+    "py": "Hǎo zhǔyi! Nà zěnme liànxí kǒuyǔ ne?",
+    "vi": "Ý hay đấy! Vậy luyện khẩu ngữ thế nào?"
+   },
+   {
+    "role": "小王",
+    "cn": "你可以多跟中国朋友聊天，也可以每天自己练习说中文。",
+    "py": "Nǐ kěyǐ duō gēn Zhōngguó péngyou liáotiān, yě kěyǐ měi tiān zìjǐ liànxí shuō Zhōngwén.",
+    "vi": "Bạn có thể trò chuyện nhiều với bạn bè Trung Quốc, cũng có thể tự luyện nói tiếng Trung mỗi ngày."
+   }
+  ],
+  "promptRows": [],
+  "wordRows": [
+   {
+    "cn": "背单词",
+    "py": "bèi dāncí",
+    "vi": "học thuộc từ mới"
+   },
+   {
+    "cn": "课文",
+    "py": "kèwén",
+    "vi": "bài khoá"
+   },
+   {
+    "cn": "声调",
+    "py": "shēngdiào",
+    "vi": "thanh điệu"
+   },
+   {
+    "cn": "听力",
+    "py": "tīnglì",
+    "vi": "kỹ năng nghe"
+   },
+   {
+    "cn": "电视剧",
+    "py": "diànshìjù",
+    "vi": "phim truyền hình"
+   },
+   {
+    "cn": "口语",
+    "py": "kǒuyǔ",
+    "vi": "khẩu ngữ"
+   }
+  ]
+ }
+]
