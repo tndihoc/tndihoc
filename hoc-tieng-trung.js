@@ -77,8 +77,8 @@ window.tnVoice = (function () {
   const PANELS = [
     { id: "tongquan", icon: "📊", title: "Tổng quan", desc: "Chuỗi ngày học, lịch học và số từ đã ghi nhớ.", bg: "#E8F6EE", ink: "#1E7A46", line: "#BFE5CD",
       parts: [{ el: "streak-widget", label: "📊 Tổng quan" }] },
-    { id: "trochoi", icon: "🎮", title: "Trò chơi", desc: "Flashcard, nối cặp, trắc nghiệm, đấu trường, bảng xếp hạng.", bg: "#F0EAFE", ink: "#52329E", line: "#D9CCFA",
-      parts: [{ el: "vocab-games", label: "🎮 Trò chơi" }, { el: "notebook-section", label: "📓 Sổ tay từ vựng" }] },
+    { id: "trochoi", icon: "🎮", title: "Trò chơi", desc: "Flashcard, nối cặp, trắc nghiệm, đấu trường, bảng xếp hạng, tương tác bằng camera.", bg: "#F0EAFE", ink: "#52329E", line: "#D9CCFA",
+      parts: [{ el: "vocab-games", label: "🎮 Trò chơi" }, { el: "notebook-section", label: "📓 Sổ tay từ vựng" }, { el: "tt-gesture", label: "📷 Tương tác bằng camera" }] },
     { id: "chinhta", icon: "✍️", title: "Chép chính tả", desc: "Nghe – gõ lại, đo tốc độ chữ/phút; hoặc chép tay rồi đăng ảnh.", bg: "#E6F4F1", ink: "#1F6F62", line: "#BCE3DA",
       parts: [{ el: "tt-dictation", label: "✍️ Chép chính tả" }] },
     { id: "baidoc", icon: "📖", title: "Bài đọc", desc: "Kho bài đọc HSK 2–6, tra từng chữ, nghe đọc, thảo luận.", bg: "#FDE8F1", ink: "#B0306A", line: "#F7C6DB",
@@ -89,8 +89,6 @@ window.tnVoice = (function () {
       parts: [{ el: "tt-myclass", label: "🏫 Lớp của tôi" }, { el: "tt-review", label: "📚 Ôn từ vựng" }, { el: "tt-gallery", label: "🖼️ Luyện chữ" }, { el: "tt-vip", label: "⭐ Hội thoại 贯通" }] },
     { id: "bothu", icon: "部", title: "Bộ thủ", desc: "214 bộ thủ Khang Hy: nghĩa, âm Hán Việt, ví dụ và luyện tập.", bg: "#F3F0FA", ink: "#4B3C8C", line: "#DCD3F2",
       parts: [{ el: "tt-radicals", label: "部 Bộ thủ" }] },
-    { id: "cuchi", icon: "📷", title: "Học bằng cử chỉ", desc: "Bật camera: gật, lắc, nghiêng đầu để trả lời; giơ ngón tay để đếm số 一 → 十.", bg: "#FFF1E4", ink: "#C2621A", line: "#FAD3B0",
-      parts: [{ el: "tt-gesture", label: "📷 Cử chỉ" }] },
   ];
   const allIds = PANELS.flatMap(p => p.parts.flatMap(x => [x.el, ...(x.with || [])]));
   allIds.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add("hub-part"); });
@@ -373,7 +371,7 @@ window.tnVoice = (function () {
       say(q.r.r);
     });
   }
-  /* ================== 5) HỌC BẰNG CỬ CHỈ ==================
+  /* ================== 5) TƯƠNG TÁC BẰNG CAMERA (Trò chơi → tab "📷 Tương tác bằng camera") ==================
      Chỉ nạp game (MediaPipe ~8 MB + camera) khi thẻ đang hiện; rời thẻ/rời trang → gỡ iframe để tắt camera. */
   (function () {
     const box = document.getElementById("tt-gesture"), frame = document.getElementById("gesture-frame");
