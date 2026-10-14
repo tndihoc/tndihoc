@@ -169,8 +169,16 @@ const NUM_BANK = ['一', '二', '三', '四', '五', '六', '七', '八', '九',
 const $ = id => document.getElementById(id);
 const pickRandom = (arr, not) => { let q; do q = arr[(Math.random() * arr.length) | 0]; while (arr.length > 1 && q === not); return q; };
 
+// Embedded in tndihoc (index.html iframe, same origin): reuse the site's voice picker & streak tracker.
+const host = (() => { try { return window.parent !== window && window.parent.document ? window.parent : null; } catch { return null; } })();
+if (window.frameElement) {   // auto-fit iframe height to content (stacked layout on phones is taller)
+  new ResizeObserver(() => { window.frameElement.style.height = document.documentElement.scrollHeight + 'px'; })
+    .observe(document.body);
+}
+
 // Text-to-speech for pronunciation (free, offline on most OSes).
 function speak(text) {
+  if (host?.tnVoice?.ok) return host.tnVoice.speak(text, { rate: 0.85 });
   if (!('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text); u.lang = 'zh-CN'; u.rate = 0.85;
@@ -224,6 +232,7 @@ const Game = {
       if (!valid.includes(input)) return;
     }
     this.busy = true;
+    host?.trackStudyActivity?.();   // counts toward the site's "10 phút học liên tục" streak
     this.score += correct ? 10 : 0;
     this.streak = correct ? this.streak + 1 : 0;
     $('score').textContent = this.score; $('streak').textContent = this.streak;

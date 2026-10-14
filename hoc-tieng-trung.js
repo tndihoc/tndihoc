@@ -89,6 +89,8 @@ window.tnVoice = (function () {
       parts: [{ el: "tt-myclass", label: "🏫 Lớp của tôi" }, { el: "tt-review", label: "📚 Ôn từ vựng" }, { el: "tt-gallery", label: "🖼️ Luyện chữ" }, { el: "tt-vip", label: "⭐ Hội thoại 贯通" }] },
     { id: "bothu", icon: "部", title: "Bộ thủ", desc: "214 bộ thủ Khang Hy: nghĩa, âm Hán Việt, ví dụ và luyện tập.", bg: "#F3F0FA", ink: "#4B3C8C", line: "#DCD3F2",
       parts: [{ el: "tt-radicals", label: "部 Bộ thủ" }] },
+    { id: "cuchi", icon: "📷", title: "Học bằng cử chỉ", desc: "Bật camera: gật, lắc, nghiêng đầu để trả lời; giơ ngón tay để đếm số 一 → 十.", bg: "#FFF1E4", ink: "#C2621A", line: "#FAD3B0",
+      parts: [{ el: "tt-gesture", label: "📷 Cử chỉ" }] },
   ];
   const allIds = PANELS.flatMap(p => p.parts.flatMap(x => [x.el, ...(x.with || [])]));
   allIds.forEach(id => { const el = document.getElementById(id); if (el) el.classList.add("hub-part"); });
@@ -371,6 +373,21 @@ window.tnVoice = (function () {
       say(q.r.r);
     });
   }
+  /* ================== 5) HỌC BẰNG CỬ CHỈ ==================
+     Chỉ nạp game (MediaPipe ~8 MB + camera) khi thẻ đang hiện; rời thẻ/rời trang → gỡ iframe để tắt camera. */
+  (function () {
+    const box = document.getElementById("tt-gesture"), frame = document.getElementById("gesture-frame");
+    if (!box || !frame) return;
+    const sync = () => {
+      const on = box.classList.contains("hub-show") && page.classList.contains("is-active");
+      const src = on ? frame.dataset.src : "about:blank";
+      if (frame.getAttribute("src") !== src && (on || frame.getAttribute("src"))) frame.setAttribute("src", src);
+    };
+    const mo = new MutationObserver(sync);
+    mo.observe(box, { attributes: true, attributeFilter: ["class"] });
+    mo.observe(page, { attributes: true, attributeFilter: ["class"] });
+  })();
+
   document.addEventListener("tt-state", () => {
     const v = page.dataset.view;
     if (v === "lophoc" && document.getElementById("tt-review").classList.contains("hub-show")) renderReview();
