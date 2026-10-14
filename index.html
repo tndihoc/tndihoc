@@ -1384,6 +1384,11 @@ Trang quản trị
 <div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-myclass"></div>
 <div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-review"></div>
 <div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-radicals"></div>
+<!-- ===== TƯƠNG TÁC BẰNG CAMERA — tab trong "Trò chơi" (game-cu-chi.html, nạp vào iframe khi mở thẻ, đóng camera khi rời) ===== -->
+<div class="mt-10 pt-8 border-t border-ink/10 tt-block" id="tt-gesture">
+<p class="text-sm text-slate mb-4 max-w-2xl">Dùng camera: <strong>gật / lắc / nghiêng đầu</strong> để trả lời câu hỏi, <strong>giơ ngón tay</strong> để đếm số tiếng Trung. Hình ảnh chỉ xử lý trên máy bạn, không gửi đi đâu.</p>
+<iframe allow="camera; autoplay" class="gesture-frame" data-src="game-cu-chi.html" id="gesture-frame" style="width:100%;min-height:560px;border:0;border-radius:16px;background:#fffdf9;display:block" title="Tương tác bằng camera"></iframe>
+</div>
 <!-- ===== SỔ TAY TỪ VỰNG ===== -->
 <div class="mt-10 pt-8 border-t border-ink/10" id="notebook-section">
 <div class="flex items-center gap-2 mb-1">
@@ -3262,7 +3267,7 @@ Trang quản trị
 <script src="bai-doc.js?v=3" defer></script>
 <script src="bo-thu.js?v=1" defer></script>
 <script src="tu-vung-gt1.js?v=1" defer></script>
-<script src="hoc-tieng-trung.js?v=3" defer></script>
+<script src="hoc-tieng-trung.js?v=5" defer></script>
 <!-- ===== Bộ đếm lượt truy cập hôm nay (dùng dịch vụ CountAPI miễn phí, không cần backend riêng) ===== -->
 <script>
 (function () {
