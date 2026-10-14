@@ -1,0 +1,60 @@
+/* =====================================================================
+   LUYỆN KHẨU NGỮ HSKK — dùng chung giao diện Training phỏng vấn (phong-van.css),
+   chỉ thêm phần riêng: thẻ bài mẫu 1/2/3, khoá VIP, lưới cấu trúc.
+   ===================================================================== */
+.hk-hub { margin-bottom: 1.1rem; }
+.hk-hub .hoc-card { min-height: 230px; }
+
+.hk-vip { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; font-size: 13.5px; line-height: 1.6; color: #4A5060;
+  padding: .85rem 1rem; border-radius: 12px; background: #FFF8EF; border: 1px solid #FBD8B4; margin-bottom: 1.1rem; }
+.hk-vip > span:nth-child(2) { flex: 1; min-width: 220px; }
+.hk-vip.on { background: #F1F8F3; border-color: #CFE8D8; }
+.hk-vip-ico { font-size: 20px; }
+
+/* Thẻ câu hỏi: màu theo trình độ */
+.hk-q .pv-n { background: color-mix(in srgb, var(--c-ink) 12%, #fff); color: var(--c-ink); }
+.hk-q.open .pv-n { background: var(--c-ink); color: #fff; }
+.hk-q:hover { border-color: color-mix(in srgb, var(--c-ink) 35%, #fff); }
+.hk-q.open { border-color: color-mix(in srgb, var(--c-ink) 45%, #fff); box-shadow: 0 10px 26px rgba(46,52,64,.08); }
+
+/* Cấu trúc gợi ý */
+.hk-sub-t { font-size: 12.5px; font-weight: 700; letter-spacing: .02em; color: #8A8FA0; text-transform: uppercase; margin: .3rem 0 .5rem; }
+.hk-sub-t ~ .hk-sub-t { margin-top: 1.1rem; }
+.hk-pats { display: grid; gap: .5rem; }
+@media (min-width: 760px) { .hk-pats { grid-template-columns: repeat(2, 1fr); } }
+.hk-pat { border-left: 3px solid #FFC98A; background: #FFFBF6; border-radius: 0 10px 10px 0; padding: .5rem .75rem; }
+.hk-pat-p { font-size: 17px; font-weight: 700; color: #000080; line-height: 1.55; }
+.hk-blank { color: #FF7D00; font-weight: 400; letter-spacing: -.05em; }
+.hk-pat-vi { font-size: 12.5px; color: #6B7280; margin-top: .1rem; line-height: 1.5; }
+.hk-phr { display: grid; gap: .5rem; }
+@media (min-width: 640px) { .hk-phr { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1100px) { .hk-phr { grid-template-columns: repeat(3, 1fr); } }
+.hk-ph { background: #F6F4FC; border: 1px solid #E4DEF5; border-radius: 10px; padding: .5rem .7rem; }
+.hk-ph-w { display: flex; align-items: flex-start; gap: .4rem; font-size: 16.5px; font-weight: 700; color: #3F2F86; line-height: 1.5; }
+.hk-ph-w .tt-hz { flex: 1; }
+.hk-ph-w .pv-mini { width: 24px; height: 24px; font-size: 11px; }
+.hk-ph-py { font-size: 12.5px; color: #6E61B0; font-style: italic; margin-top: .05rem; }
+.hk-ph-vi { font-size: 12.5px; color: #5B6170; margin-top: .15rem; line-height: 1.5; }
+
+/* Bài mẫu 1 / 2 / 3 */
+.hk-stabs { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .7rem; }
+.hk-stab { padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 700; color: #5B6170; background: #fff; border: 1px solid rgba(46,52,64,.14); cursor: pointer; transition: all .15s; }
+.hk-stab:hover { border-color: #FFC98A; color: #B35600; }
+.hk-stab.on { background: #FF7D00; border-color: #FF7D00; color: #fff; }
+.hk-stab.locked { color: #9AA0AE; background: #F6F6F9; }
+.hk-stab.locked.on { background: #8A8FA0; border-color: #8A8FA0; color: #fff; }
+.hk-ans { font-size: 18px; line-height: 1.95; color: #2E3440; }
+.hk-ans p + p { margin-top: .7rem; }
+.hk-locked { text-align: center; padding: 1.4rem 1rem; border-radius: 12px; background: linear-gradient(135deg, #FFF6EC, #fff 60%, #F3F3FA); border: 1px dashed #FBD3AE; }
+.hk-locked .ico { font-size: 26px; margin-bottom: .3rem; }
+.hk-locked p { font-size: 13.5px; color: #5B6170; margin: .35rem auto .8rem; max-width: 30rem; line-height: 1.6; }
+
+/* Hướng dẫn */
+.hk-cur { background: #FFF6EC; }
+.tt-table tr.hk-cur td { background: #FFF6EC; }
+@media (min-width: 1024px) { .hk-frame3 { grid-template-columns: repeat(3, 1fr) !important; } }
+.hk-frames { display: grid; gap: .8rem; }
+@media (min-width: 900px) { .hk-frames { grid-template-columns: repeat(2, 1fr); } }
+.hk-fr { border-radius: 12px; padding: .8rem .95rem; background: #FCFCFE; border: 1px solid rgba(46,52,64,.09); }
+.hk-fr-cn { color: #000080; font-size: 15px; }
+.hk-uni td.tt-hz { font-size: 15px; color: #000080; }
