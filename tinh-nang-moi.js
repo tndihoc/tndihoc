@@ -13,6 +13,13 @@
 /* ---------------- Tiện ích chung ---------------- */
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// Chống Stored XSS: chỉ chấp nhận URL ảnh/âm thanh hợp lệ (data:/blob:/https), rồi mã hoá cho thuộc tính HTML.
+// Giá trị lạ (vd thumb bị chèn 'x" onerror="...') sẽ bị loại bỏ, trả về "" để không thể thoát khỏi dấu ngoặc của src.
+const safeMedia = (src) => {
+  const s = String(src ?? "");
+  if (!/^(data:(?:image|audio)\/[a-z0-9.+-]+;base64,[a-z0-9+/=\s]*|blob:https?:\/\/[^\s"'<>]+|https?:\/\/[^\s"'<>]+)$/i.test(s)) return "";
+  return esc(s);
+};
 const initialOf = (n) => (String(n || "?").trim().charAt(0) || "?").toUpperCase();
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 const pad2 = (n) => String(n).padStart(2, "0");
@@ -681,7 +688,7 @@ function drawGallery() {
   const list = $("g-list"); if (!list) return;
   list.innerHTML = (GAL.items || []).length ? GAL.items.map(p => `
     <button class="tt-shot" data-post="${p.id}">
-      <img src="${p.thumb || ""}" alt="Bài chép tay của ${esc(p.name)}" loading="lazy">
+      <img src="${safeMedia(p.thumb)}" alt="Bài chép tay của ${esc(p.name)}" loading="lazy">
       <div class="meta"><span class="who">${esc(p.name)}</span><span class="what">${p.hsk ? "HSK " + esc(p.hsk) + " · " : ""}${esc(p.readingTitle || "")}</span>
         <span class="cnt"><span>${(p.likes || []).includes(T.user.uid) ? "❤️" : "🤍"} ${p.likesCount || 0}</span><span>💬 ${p.commentCount || 0}</span><span>${fmtTime(p.createdAt)}</span></span></div>
     </button>`).join("") : `<div class="tt-empty" style="grid-column:1/-1">Chưa có bài nào. Hãy mở “Chép chính tả → Chép tay” và đăng bài đầu tiên!</div>`;
@@ -691,7 +698,7 @@ function drawGallery() {
 }
 async function openPost(id) {
   const p = GAL.items.find(x => x.id === id); if (!p) return;
-  const m = modal(`<img class="full" id="pp-img" src="${p.thumb}" alt="">
+  const m = modal(`<img class="full" id="pp-img" src="${safeMedia(p.thumb)}" alt="">
     <div class="tt-row between" style="margin:.7rem 0 .2rem"><div><b>${esc(p.name)}</b> <span class="tt-small">· ${fmtTime(p.createdAt)}</span><div class="tt-small">${p.hsk ? "HSK " + esc(p.hsk) + " · " : ""}${esc(p.readingTitle || "")}</div></div>
       <div class="tt-row"><button class="tt-btn ghost sm" id="pp-like"></button>${(p.uid === T.user.uid || isStaff()) ? `<button class="tt-btn danger sm" id="pp-del">Xoá</button>` : ""}</div></div>
     ${p.caption ? `<p style="font-size:14px;margin:.4rem 0">${esc(p.caption)}</p>` : ""}
@@ -844,7 +851,7 @@ function drawTake() {
   const el = $("spk-take"); if (!el) return;
   const r = SPK.take;
   if (!r) { el.innerHTML = `<p class="tt-small">Bấm ghi âm, nói xong bấm dừng. Bạn có thể nghe lại và ghi lại nhiều lần trước khi nộp.</p>`; return; }
-  el.innerHTML = `<audio class="tt-audio" controls src="${r.url}" style="width:100%"></audio>
+  el.innerHTML = `<audio class="tt-audio" controls src="${safeMedia(r.url)}" style="width:100%"></audio>
     <div class="tt-row" style="margin-top:.6rem;justify-content:space-between"><span class="tt-small">Độ dài: ${fmtClock(r.duration)} · ${(r.dataUrl.length / 1024).toFixed(0)} KB</span>
     ${T.user ? `<button class="tt-btn peach" id="spk-submit">📤 Nộp cho giáo viên</button>` : `<button class="tt-btn" data-tt-login>Đăng nhập để nộp bài</button>`}</div>`;
   $("spk-submit")?.addEventListener("click", () => submitSpeaking(SPK.current, r));
@@ -892,12 +899,12 @@ async function showSubAudio(s, target) {
     const snap = await D().getDoc(D().doc(db(), "submissionAudio", s.id));
     if (!snap.exists()) { target.innerHTML = `<p class="tt-small">Không tìm thấy file ghi âm.</p>`; return; }
     const a = snap.data();
-    if (a.audio) target.innerHTML = `<audio class="tt-audio" controls src="${a.audio}" style="width:100%;margin-top:.4rem"></audio>`;
+    if (a.audio) target.innerHTML = `<audio class="tt-audio" controls src="${safeMedia(a.audio)}" style="width:100%;margin-top:.4rem"></audio>`;
     else {
       const clips = a.clips || {};
       target.innerHTML = Object.keys(clips).sort((x, y) => x - y).map(i => {
         const line = (s.lines || [])[i] || {};
-        return `<div class="tt-row" style="margin-top:.35rem;flex-wrap:nowrap"><span class="tt-role ${line.role === "B" ? "r2" : "r1"}">${esc(line.role || Number(i) + 1)}</span><span class="tt-hz" style="flex:1;min-width:0;font-size:15px">${esc(line.cn || "")}</span><audio controls src="${clips[i]}" style="height:32px;max-width:55%"></audio></div>`;
+        return `<div class="tt-row" style="margin-top:.35rem;flex-wrap:nowrap"><span class="tt-role ${line.role === "B" ? "r2" : "r1"}">${esc(line.role || Number(i) + 1)}</span><span class="tt-hz" style="flex:1;min-width:0;font-size:15px">${esc(line.cn || "")}</span><audio controls src="${safeMedia(clips[i])}" style="height:32px;max-width:55%"></audio></div>`;
       }).join("");
     }
   } catch (e) { target.innerHTML = `<p class="tt-small">${esc(errText(e))}</p>`; }
@@ -1030,7 +1037,7 @@ function renderVipPractice(box, head) {
           <div class="acts"><button class="tt-btn ghost sm" data-play="${i}">🔊 Nghe mẫu</button>
           ${on ? `<button class="tt-btn rec sm" data-rec="${i}" ${heard || takes[i] ? "" : "disabled title='Nghe mẫu trước rồi mới ghi âm'"}>${takes[i] ? "● Ghi lại" : "● Ghi âm"}</button>
           <span class="tt-timer" data-t="${i}"></span>
-          ${takes[i] ? `<audio controls src="${takes[i].url}" class="tt-audio" style="width:210px"></audio><span class="tt-badge green">✓</span>` : ""}` : ""}</div></div></div>`; }).join("")}</div>
+          ${takes[i] ? `<audio controls src="${safeMedia(takes[i].url)}" class="tt-audio" style="width:210px"></audio><span class="tt-badge green">✓</span>` : ""}` : ""}</div></div></div>`; }).join("")}</div>
     <div class="tt-row between" style="margin-top:1rem">
       <span class="tt-small">Đã ghi <b>${recorded}/${need.length}</b> câu${VIP.roleFilter !== "all" ? " (vai " + esc(VIP.roleFilter) + ")" : ""}. Mỗi câu tối đa 20 giây.</span>
       <div class="tt-row">${VIP.textIdx + 1 < lesson.texts.length ? `<button class="tt-btn ghost" id="vp-next">Đoạn tiếp ▶</button>` : ""}
