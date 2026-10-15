@@ -17,7 +17,8 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<"
 // Giá trị lạ (vd thumb bị chèn 'x" onerror="...') sẽ bị loại bỏ, trả về "" để không thể thoát khỏi dấu ngoặc của src.
 const safeMedia = (src) => {
   const s = String(src ?? "");
-  if (!/^(data:(?:image|audio)\/[a-z0-9.+-]+;base64,[a-z0-9+/=\s]*|blob:https?:\/\/[^\s"'<>]+|https?:\/\/[^\s"'<>]+)$/i.test(s)) return "";
+  // data URL ghi âm của Chrome có thêm tham số: "data:audio/webm;codecs=opus;base64,…" → cho phép ";tên=giá trị"
+  if (!/^(data:(?:image|audio)\/[a-z0-9.+-]+(?:;[a-z0-9.+-]+=[a-z0-9.+-]+)*;base64,[a-z0-9+/=\s]*|blob:https?:\/\/[^\s"'<>]+|https?:\/\/[^\s"'<>]+)$/i.test(s)) return "";
   return esc(s);
 };
 const initialOf = (n) => (String(n || "?").trim().charAt(0) || "?").toUpperCase();
