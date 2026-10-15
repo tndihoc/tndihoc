@@ -126,3 +126,16 @@
   .site-header .nav-dot { display: none; }
 }
 .pv-hero > div { position: relative; z-index: 1; }
+
+/* Bản 3 (15/10/2026): tag hệ / ngành, câu hỏi tiếng Việt, bộ lọc */
+.pv-filters { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; }
+.pv-tag { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #F3F1FB; color: #5B4B9A; border: 1px solid #E2DDF5; white-space: nowrap; }
+.pv-tag.he-dh { background: #E8F6EE; color: #1E7A46; border-color: #BFE5CD; }
+.pv-tag.he-ths { background: #EEF2FC; color: #2E48C4; border-color: #D6E0F7; }
+.pv-tag.he-both { background: #FFF1E3; color: #B35600; border-color: #FBD3AE; }
+.pv-tag.he-unk { background: #F3F4F6; color: #6B7280; border-color: #E5E7EB; }
+.pv-tag.hint { background: #FFFBEA; color: #8A6A00; border-color: #F5E3A3; }
+.pv-cn.vi { font-family: inherit; font-size: 16px; font-weight: 600; color: #000080; line-height: 1.5; }
+.pv-src { margin: 0 0 .6rem; line-height: 1.6; }
+.pv-ans.hint { font-size: 15.5px; line-height: 1.85; }
+.pv-more > summary { font-weight: 600; font-size: 13.5px; }

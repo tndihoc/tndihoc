@@ -14,19 +14,21 @@
    ===================================================================== */
 
 const SETS_META = {
-  xh: { title: "Các ngành xã hội", cn: "人文社科类", icon: "🏛️", n: 25, bg: "#FFF1E3", ink: "#C2570C", line: "#FBD3AE",
-    desc: "Giáo dục, Ngôn ngữ, Văn hoá, Giáo dục Hán ngữ quốc tế… — 25 câu hỏi thường gặp.", tags: ["Bản thân & động lực", "Nghiên cứu", "Văn hoá", "AI & chuyển ngành"] },
-  kt: { title: "Các ngành kinh tế", cn: "经济类", icon: "📈", n: 45, bg: "#EAF3FF", ink: "#2E5AAC", line: "#CFE0FA",
-    desc: "Kinh tế, Tài chính, Thương mại quốc tế — 45 câu tổng hợp từ review phỏng vấn thực tế (ZJU, SUFE, BUAA, BNU…).", tags: ["8 nhóm câu hỏi", "Kiến thức chuyên ngành", "Có câu hỏi tiếng Anh"] },
+  xh: { title: "Các ngành xã hội", cn: "人文社科类", icon: "🏛️", n: 114, bg: "#FFF1E3", ink: "#C2570C", line: "#FBD3AE",
+    desc: "GDHNQT, Hán ngữ, Ngôn ngữ học, Truyền thông, QHQT, Luật… — tổng hợp từ review phỏng vấn thực tế, hệ đại học & thạc sĩ.", tags: ["Đại học", "Thạc sĩ", "GDHNQT", "Ngữ pháp – chữ Hán", "Truyền thông"] },
+  kt: { title: "Các ngành kinh tế", cn: "经济类", icon: "📈", n: 80, bg: "#EAF3FF", ink: "#2E5AAC", line: "#CFE0FA",
+    desc: "Kinh tế, Tài chính, Thương mại quốc tế, QTKD… — tổng hợp từ review thực tế (ZJU, SUFE, BUAA, XMU, Nam Kinh…).", tags: ["Đại học", "Thạc sĩ", "Toán & kiến thức kinh tế", "Có câu hỏi tiếng Anh"] },
 };
 const MAX_SEC = 150; // tối đa 2 phút 30 giây / câu
+/* Tag hệ: dh = Đại học · ths = Thạc sĩ · both = cả hai (câu chung) · unk = chưa rõ hệ */
+const HE = { dh: "Đại học", ths: "Thạc sĩ", both: "Đại học + Thạc sĩ", unk: "Chưa rõ hệ" };
 
 function start(api) {
   const { T, can, isStaff, isAdmin, myName, fbReady, db, D, REC, TTS, toast, errText, esc, fmtClock, fmtTime, blobToDataURL, lockedHtml, onState, showSubAudio } = api;
   const $ = (id) => document.getElementById(id);
   const root = $("pv-root"); if (!root) return;
 
-  const PV = { data: {}, loadErr: {}, set: null, tab: "q", group: "all", query: "", openN: null, takes: {}, rec: null, recN: null, subs: null, subsLoading: false };
+  const PV = { data: {}, loadErr: {}, set: null, tab: "q", group: "all", he: "all", nganh: "all", query: "", openN: null, takes: {}, rec: null, recN: null, subs: null, subsLoading: false };
 
   /* ---------- Lưu bản ghi nháp trên máy (IndexedDB) — không gửi đi đâu ---------- */
   const IDB = {
@@ -113,6 +115,10 @@ function start(api) {
   let rate = 1.0;
   try { const r = Number(localStorage.getItem("tn_pv_rate")); if (r >= 0.5 && r <= 1.5) rate = r; } catch (e) {}
   function voiceName() { const v = window.tnVoice && window.tnVoice.voice; return v ? v.name.replace(/^(Microsoft|Google)\s*/i, "").replace(/\s*-\s*Chinese.*$/i, "") : ""; }
+  const hasCJK = (s) => /[\u4e00-\u9fff]/.test(s || "");
+  const hasViet = (s) => /[ăâđêôơưàáảãạằắẳẵặầấẩẫậèéẻẽẹềếểễệìíỉĩịòóỏõọồốổỗộờớởỡợùúủũụừứửữựỳýỷỹỵ]/i.test(s || "");
+  /** Có thể đọc bằng giọng Trung/Anh không (câu hỏi tiếng Việt thì không đọc) */
+  function speakable(s) { s = String(s || ""); return !hasViet(s) && (hasCJK(s) || isEnglish(s)); }
   function say(text) {
     text = plain(text);
     if (isEnglish(text) && "speechSynthesis" in window) {
@@ -143,7 +149,8 @@ function start(api) {
   async function renderHub(head) {
     const prog = {};
     for (const k of Object.keys(SETS_META)) { if (!PV.takes[k]) await loadTakes(k); }
-    await loadSubs();
+    await Promise.all([loadSubs(), ...Object.keys(SETS_META).map(k => loadSet(k))]);
+    Object.keys(SETS_META).forEach(k => { if (PV.data[k] && PV.data[k].items) SETS_META[k].n = PV.data[k].items.length; });
     Object.keys(SETS_META).forEach(k => {
       const sub = new Set((PV.subs || []).filter(s => s.set === k).map(s => s.qn));
       prog[k] = { rec: Object.keys(PV.takes[k] || {}).length, sub: sub.size };
@@ -166,7 +173,7 @@ function start(api) {
 
   async function openSet(set) {
     stopAll();
-    PV.set = set; PV.tab = "q"; PV.group = "all"; PV.query = ""; PV.openN = null;
+    PV.set = set; PV.tab = "q"; PV.group = "all"; PV.he = "all"; PV.nganh = "all"; PV.query = ""; PV.openN = null;
     root.innerHTML = `<div class="tt-empty"><span class="tt-spin"></span> Đang tải bộ câu hỏi…</div>`;
     toTop();
     await Promise.all([loadSet(set), loadTakes(set), loadSubs()]);
@@ -227,15 +234,24 @@ function start(api) {
   function filtered(S) {
     const q = PV.query.trim().toLowerCase();
     return (S.items || []).filter(it => (PV.group === "all" || it.group === PV.group || (PV.group === "todo" && !(PV.takes[PV.set] || {})[it.n]))
-      && (!q || [it.q, it.vi, it.orig, String(it.n)].some(x => String(x || "").toLowerCase().includes(q))));
+      && (PV.he === "all" || it.he === PV.he || (it.he === "both" && PV.he !== "unk"))
+      && (PV.nganh === "all" || (it.nganh || []).includes(PV.nganh))
+      && (!q || [it.q, it.vi, it.orig, it.src, String(it.n), ...(it.more || []).map(m => m.q)].some(x => String(x || "").toLowerCase().includes(q))));
   }
 
   function renderQuestions(S, unsent) {
     const body = $("pv-body");
     const groups = S.groups || [];
     const list = filtered(S);
+    const nganhs = [...new Set((S.items || []).flatMap(it => it.nganh || []))].sort((a, b) => a === "Mọi ngành" ? -1 : b === "Mọi ngành" ? 1 : a.localeCompare(b, "vi"));
+    const hasUnk = (S.items || []).some(it => it.he === "unk");
     body.innerHTML = `
       <div class="pv-tools">
+        <div class="pv-filters">
+          <label class="pv-voice">🎓 Hệ <select id="pv-he"><option value="all">Tất cả</option><option value="dh" ${PV.he === "dh" ? "selected" : ""}>Đại học</option><option value="ths" ${PV.he === "ths" ? "selected" : ""}>Thạc sĩ</option>${hasUnk ? `<option value="unk" ${PV.he === "unk" ? "selected" : ""}>Chưa rõ hệ</option>` : ""}</select></label>
+          <label class="pv-voice">🏷️ Ngành <select id="pv-nganh"><option value="all">Tất cả ngành</option>${nganhs.map(n => `<option ${PV.nganh === n ? "selected" : ""}>${esc(n)}</option>`).join("")}</select></label>
+          <span class="tt-small">Đang hiện <b>${list.length}</b>/${(S.items || []).length} câu · câu “Đại học + Thạc sĩ” hiện ở cả hai hệ</span>
+        </div>
         <div class="pv-chips">
           <button class="pv-chip ${PV.group === "all" ? "on" : ""}" data-g="all">Tất cả</button>
           ${groups.map(g => `<button class="pv-chip ${PV.group === g.id ? "on" : ""}" data-g="${esc(g.id)}">${esc(g.id)}. ${esc(g.name)}</button>`).join("")}
@@ -250,6 +266,8 @@ function start(api) {
       </div>
       <div class="pv-list">${list.length ? list.map(it => qCard(it, groups)).join("") : `<div class="tt-empty">Không có câu nào phù hợp.</div>`}</div>`;
     body.querySelectorAll("[data-g]").forEach(b => b.addEventListener("click", () => { PV.group = b.dataset.g; renderQuestions(S, unsent); }));
+    $("pv-he").addEventListener("change", e => { PV.he = e.target.value; renderQuestions(S, unsent); });
+    $("pv-nganh").addEventListener("change", e => { PV.nganh = e.target.value; renderQuestions(S, unsent); });
     const qi = $("pv-q");
     qi.addEventListener("input", () => { PV.query = qi.value; clearTimeout(PV.qt); PV.qt = setTimeout(() => { renderQuestions(S, unsent); const i = $("pv-q"); if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } }, 250); });
     $("pv-rand").addEventListener("click", () => {
@@ -257,13 +275,13 @@ function start(api) {
       const it = pool[Math.floor(Math.random() * pool.length)];
       stopAll(); PV.openN = it.n; renderQuestions(S, unsent);
       const el = body.querySelector(`[data-qn="${it.n}"]`); el && el.scrollIntoView({ behavior: "smooth", block: "start" });
-      setTimeout(() => say(it.q), 400);
+      if (speakable(it.q)) setTimeout(() => say(it.q), 400);
       toast("🎲 Câu " + it.n + " — hãy tự trả lời trước khi mở gợi ý!");
     });
     $("pv-sendall")?.addEventListener("click", () => sendAll(S));
     $("pv-rate").addEventListener("change", e => {
       rate = Number(e.target.value); try { localStorage.setItem("tn_pv_rate", String(rate)); } catch (err) {}
-      const open = (S.items || []).find(x => x.n === PV.openN); say(open ? open.q : "请你简单介绍一下自己。");
+      const open = (S.items || []).find(x => x.n === PV.openN); say(open && speakable(open.q) ? open.q : "请你简单介绍一下自己。");
     });
     body.querySelectorAll("[data-toggle]").forEach(b => b.addEventListener("click", () => {
       const n = Number(b.dataset.toggle); stopAll(); PV.openN = PV.openN === n ? null : n; renderQuestions(S, unsent);
@@ -284,8 +302,8 @@ function start(api) {
     return `<div class="pv-q ${isOpen ? "open" : ""}" data-qn="${it.n}">
       <button type="button" class="pv-q-head" data-toggle="${it.n}" aria-expanded="${isOpen}">
         <span class="pv-n">${it.n}</span>
-        <span class="pv-q-text"><span class="tt-hz pv-cn">${esc(it.q)}</span><span class="pv-vi">${esc(it.vi || "")}</span>
-          <span class="pv-q-meta">${g ? `<span class="pv-g">${esc(g.id)} · ${esc(g.name)}</span>` : ""}${badges}</span></span>
+        <span class="pv-q-text"><span class="${it.lang === "vi" ? "pv-cn vi" : "tt-hz pv-cn"}">${esc(it.q)}</span>${it.vi ? `<span class="pv-vi">${esc(it.vi)}</span>` : ""}
+          <span class="pv-q-meta">${it.he ? `<span class="pv-tag he-${esc(it.he)}">🎓 ${esc(HE[it.he] || it.he)}</span>` : ""}${(it.nganh || []).map(n => `<span class="pv-tag">🏷️ ${esc(n)}</span>`).join("")}${it.hint ? `<span class="pv-tag hint">💡 có gợi ý</span>` : ""}${g ? `<span class="pv-g">${esc(g.id)} · ${esc(g.name)}</span>` : ""}${badges}</span></span>
         <span class="pv-caret">${isOpen ? "▴" : "▾"}</span>
       </button>
       ${isOpen ? qBody(it, take, subs) : ""}
@@ -296,21 +314,23 @@ function start(api) {
     const S = PV.data[PV.set], items = S.items, idx = items.findIndex(x => x.n === it.n);
     const prev = items[idx - 1], next = items[idx + 1];
     return `<div class="pv-q-body tt-fade">
-      <div class="tt-row" style="margin-bottom:.7rem">
-        <button class="tt-btn ghost sm" data-say-q>🔊 Nghe câu hỏi</button>
+      ${speakable(it.q) || it.orig ? `<div class="tt-row" style="margin-bottom:.7rem">
+        ${speakable(it.q) ? `<button class="tt-btn ghost sm" data-say-q>🔊 Nghe câu hỏi</button>` : ""}
         ${it.orig ? `<span class="tt-small pv-orig">🗂️ Câu hỏi gốc: ${esc(it.orig)}</span>` : ""}
-      </div>
-      <p class="pv-tip">💭 Hãy thử tự trả lời trước, sau đó mới mở gợi ý bên dưới để so sánh.</p>
-      <details class="pv-d"><summary>💡 Ý chính cần có</summary><div class="pv-d-body pv-key">${hl(it.key)}</div></details>
-      <details class="pv-d"><summary>📝 Câu trả lời mẫu · <span class="tt-hz">参考答案</span></summary>
-        <div class="pv-d-body"><div class="${isEnglish(it.answer) ? "pv-ans en" : "tt-hz pv-ans"}">${hl(it.answer)}</div>
-        <div class="tt-row" style="margin-top:.6rem"><button class="tt-btn ghost sm" data-say-ans>🔊 Nghe đọc mẫu</button><button class="tt-btn ghost sm" data-stop>■ Dừng</button>
-        <span class="tt-small">Phần <mark class="pv-fill">【 】</mark> là thông tin cá nhân — thay bằng thông tin thật của bạn.</span></div></div></details>
-      <details class="pv-d"><summary>🧩 Mẫu câu hay dùng · <span class="tt-hz">常用句型</span> (${(it.patterns || []).length})</summary>
+      </div>` : ""}
+      ${it.src ? `<p class="tt-small pv-src">🏫 <b>Trường đã hỏi:</b> ${esc(it.src)}</p>` : ""}
+      ${(it.more || []).length ? `<details class="pv-d pv-more"><summary>🔁 Các cách hỏi khác đã gặp (${it.more.length})</summary><div class="pv-d-body"><ul class="pv-ul">${it.more.map(m => `<li>${esc(m.q)}${m.src ? ` <span class="tt-small">— 🏫 ${esc(m.src)}</span>` : ""}</li>`).join("")}</ul></div></details>` : ""}
+      ${it.key || it.answer ? `<p class="pv-tip">💭 Hãy thử tự trả lời trước, sau đó mới mở gợi ý bên dưới để so sánh.</p>` : `<p class="pv-tip">🙋 Câu hỏi về bản thân — không có đáp án cố định. Trả lời theo khung <b>Kết luận – Lý do – Ví dụ – Mục tiêu</b> (xem tab “Hướng dẫn & mẹo”), 30–60 giây.</p>`}
+      ${it.key ? `<details class="pv-d"><summary>💡 Ý chính cần có</summary><div class="pv-d-body pv-key">${hl(it.key)}</div></details>` : ""}
+      ${it.answer ? `<details class="pv-d"><summary>${it.hint ? "💡 Gợi ý trả lời" : `📝 Câu trả lời mẫu · <span class="tt-hz">参考答案</span>`}</summary>
+        <div class="pv-d-body"><div class="${isEnglish(it.answer) && !hasViet(it.answer) ? "pv-ans en" : (it.hint ? "pv-ans hint" : "tt-hz pv-ans")}">${hl(it.answer)}</div>
+        <div class="tt-row" style="margin-top:.6rem">${speakable(it.answer) ? `<button class="tt-btn ghost sm" data-say-ans>🔊 Nghe đọc mẫu</button><button class="tt-btn ghost sm" data-stop>■ Dừng</button>` : ""}
+        ${/【/.test(it.answer) ? `<span class="tt-small">Phần <mark class="pv-fill">【 】</mark> là thông tin cá nhân — thay bằng thông tin thật của bạn.</span>` : ""}</div></div></details>` : ""}
+      ${(it.patterns || []).length ? `<details class="pv-d"><summary>🧩 Mẫu câu hay dùng · <span class="tt-hz">常用句型</span> (${(it.patterns || []).length})</summary>
         <div class="pv-d-body"><div class="pv-pats">${(it.patterns || []).map((p, i) => `<div class="pv-pat">
           <div class="${isEnglish(p.p) ? "pv-pat-p en" : "tt-hz pv-pat-p"}">${esc(p.p)}</div>
           <div class="pv-pat-use">${esc(p.use)}</div>
-          <div class="pv-pat-ex"><span class="${isEnglish(p.ex) ? "" : "tt-hz"}">${esc(p.ex)}</span><button class="pv-mini" data-say-ex="${i}" title="Nghe ví dụ">🔊</button></div></div>`).join("")}</div></div></details>
+          <div class="pv-pat-ex"><span class="${isEnglish(p.ex) ? "" : "tt-hz"}">${esc(p.ex)}</span><button class="pv-mini" data-say-ex="${i}" title="Nghe ví dụ">🔊</button></div></div>`).join("")}</div></div></details>` : ""}
       ${it.note ? `<div class="tt-note warn" style="margin-top:.7rem">⚠️ <b>Lưu ý:</b> ${hl(it.note)}</div>` : ""}
 
       <div class="pv-rec">
@@ -345,7 +365,7 @@ function start(api) {
 
   function bindOpen(S, it) {
     const box = root.querySelector(`[data-qn="${it.n}"]`); if (!box) return;
-    box.querySelector("[data-say-q]").addEventListener("click", () => say(it.q));
+    box.querySelector("[data-say-q]")?.addEventListener("click", () => say(it.q));
     box.querySelector("[data-say-ans]")?.addEventListener("click", () => say(it.answer));
     box.querySelector("[data-stop]")?.addEventListener("click", () => TTS.stop());
     box.querySelectorAll("[data-say-ex]").forEach(b => b.addEventListener("click", () => say(it.patterns[Number(b.dataset.sayEx)].ex)));
