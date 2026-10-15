@@ -81,7 +81,7 @@ function dataURLToBlob(url) {
 /* ---------------- Trạng thái đăng nhập + Firebase ---------------- */
 const T = {
   user: null, profile: null, fb: null,
-  defaults: { dictation: true, speakingTasks: true, contributeEdits: true, vipDialogue: false, interview: false, hskk: false },
+  defaults: { dictation: true, speakingTasks: true, contributeEdits: true, vipDialogue: false, interview: false, hskk: false, culture: false },
   myClasses: [], ready: false,
 };
 const FLAGS = [
@@ -91,6 +91,7 @@ const FLAGS = [
   { perm: "can_contribute_edits", feat: "contributeEdits", label: "Góp ý sửa bản dịch", icon: "📝" },
   { perm: "can_access_interview", feat: "interview", label: "Training phỏng vấn (VIP)", icon: "🎤" },
   { perm: "can_access_hskk", feat: "hskk", label: "Bài mẫu HSKK (VIP)", icon: "📝" },
+  { perm: "can_access_culture", feat: "culture", label: "Bổ túc văn hoá Trung Quốc (VIP)", icon: "🏮" },
 ];
 const flagOf = (feat) => FLAGS.find(f => f.feat === feat);
 const role = () => (T.profile && T.profile.role) || "user";
@@ -128,7 +129,7 @@ function needLoginHtml(what) {
 function lockedHtml(feat) {
   const f = flagOf(feat);
   if (!T.user) return `<div class="tt-lock"><div class="ico">${f.icon}</div><b>${esc(f.label)}</b><p>Tính năng này dành cho học viên đã đăng nhập và được giáo viên mở quyền.</p><button class="tt-btn" data-tt-login>Đăng nhập</button></div>`;
-  return `<div class="tt-lock"><div class="ico">🔒</div><b>${esc(f.label)} chưa được mở cho tài khoản của bạn</b><p>${feat === "vipDialogue" ? "Đây là tính năng VIP dành cho học viên lớp giáo trình 《贯通中文》. " : feat === "interview" ? "Đây là tính năng VIP dành cho học viên được cô Thúy cấp quyền luyện phỏng vấn du học. " : feat === "hskk" ? "Đây là phần bài mẫu VIP của mục Luyện HSKK. " : ""}Hãy nhập <b>mã lớp</b> giáo viên gửi ở mục “Lớp của tôi”, hoặc liên hệ cô Thúy để được mở quyền.</p><button type="button" class="tt-btn peach" data-go-myclass>🏫 Nhập mã lớp</button></div>`;
+  return `<div class="tt-lock"><div class="ico">🔒</div><b>${esc(f.label)} chưa được mở cho tài khoản của bạn</b><p>${feat === "vipDialogue" ? "Đây là tính năng VIP dành cho học viên lớp giáo trình 《贯通中文》. " : feat === "interview" ? "Đây là tính năng VIP dành cho học viên được cô Thúy cấp quyền luyện phỏng vấn du học. " : feat === "hskk" ? "Đây là phần bài mẫu VIP của mục Luyện HSKK. " : feat === "culture" ? "Đây là mục bài đọc VIP “中国文化补习 – Bổ túc văn hoá Trung Quốc”. " : ""}Hãy nhập <b>mã lớp</b> giáo viên gửi ở mục “Lớp của tôi”, hoặc liên hệ cô Thúy để được mở quyền.</p><button type="button" class="tt-btn peach" data-go-myclass>🏫 Nhập mã lớp</button></div>`;
 }
 document.addEventListener("click", e => {
   if (e.target.closest("[data-tt-login]")) { e.preventDefault(); window.tnOpenLogin ? window.tnOpenLogin("login") : alert("Đang tải chức năng đăng nhập, thử lại sau giây lát."); }
@@ -393,7 +394,7 @@ function readingExtraBox() {
 function renderReadingExtra() {
   const box = readingExtraBox(); if (!box) return;
   const l = lessonById(READ.openId);
-  if (!l) { box.hidden = true; return; }
+  if (!l) { box.hidden = true; $("baidoc-detail-card")?.classList.remove("tt-can-suggest"); return; }   // bài văn hoá VIP: không góp ý / chép chính tả
   box.hidden = false;
   const hasContent = l.content && l.content.length;
   const card = $("baidoc-detail-card");
@@ -1322,6 +1323,7 @@ const LMS_TABS = [
   { id: "pvdata", label: "🎤 Dữ liệu phỏng vấn", admin: true },
   { id: "hskkdata", label: "📝 Dữ liệu HSKK", admin: true },
   { id: "readdata", label: "📖 Dữ liệu bài đọc", admin: true },
+  { id: "culturedata", label: "🏮 Dữ liệu văn hoá", admin: true },
 ];
 function renderLms() {
   const box = $("tt-lms"); if (!box) return;
@@ -1333,7 +1335,7 @@ function renderLms() {
   if (!tabs.some(t => t.id === LMS.tab)) LMS.tab = "classes";
   box.innerHTML = `<div class="tt-tabs">${tabs.map(t => `<button class="tt-tab ${t.id === LMS.tab ? "active" : ""}" data-lt="${t.id}">${t.label}</button>`).join("")}</div><div id="lms-body" class="tt-fade"></div>`;
   box.querySelectorAll("[data-lt]").forEach(b => b.addEventListener("click", () => { LMS.tab = b.dataset.lt; renderLms(); }));
-  ({ classes: lmsClasses, users: lmsUsers, subs: lmsSubs, contrib: lmsContrib, topics: lmsTopics, defaults: lmsDefaults, vipdata: lmsVipData, readdata: lmsReadData,
+  ({ classes: lmsClasses, users: lmsUsers, subs: lmsSubs, contrib: lmsContrib, topics: lmsTopics, defaults: lmsDefaults, vipdata: lmsVipData, readdata: lmsReadData, culturedata: lmsCultureData,
     pvdata: () => window.tnInterviewAdmin ? window.tnInterviewAdmin(lmsBody()) : (lmsBody().innerHTML = `<div class="tt-note warn">Chưa tải được phong-van.js — hãy kiểm tra file này đã có trên GitHub.</div>`),
     hskkdata: () => window.tnHskkAdmin ? window.tnHskkAdmin(lmsBody()) : (lmsBody().innerHTML = `<div class="tt-note warn">Chưa tải được hskk.js — hãy kiểm tra file này đã có trên GitHub.</div>`) })[LMS.tab]();
 }
@@ -1573,7 +1575,7 @@ async function exportBaiDoc() {
 
 /* ---------- Kho bài đọc trên máy chủ (chỉ tài khoản đã đăng nhập mới đọc được) ---------- */
 /** Chia mảng bài đọc thành nhiều tài liệu ≤ ~850 KB (Firestore giới hạn 1 MB/tài liệu) rồi ghi lên readings/* */
-async function publishReadings(arr, onStep) {
+async function publishReadings(arr, onStep, col = "readings", extraMeta = {}) {
   if (!Array.isArray(arr) || !arr.length) throw new Error("Không có bài đọc nào để lưu.");
   const enc = new TextEncoder(), LIMIT = 850000;
   const parts = []; let cur = [], size = 2;
@@ -1586,10 +1588,47 @@ async function publishReadings(arr, onStep) {
   const ids = parts.map((_, i) => "p" + (i + 1));
   for (let i = 0; i < parts.length; i++) {
     onStep && onStep(i + 1, parts.length);
-    await D().setDoc(D().doc(db(), "readings", ids[i]), { json: JSON.stringify(parts[i]), count: parts[i].length });
+    await D().setDoc(D().doc(db(), col, ids[i]), { json: JSON.stringify(parts[i]), count: parts[i].length });
   }
-  await D().setDoc(D().doc(db(), "readings", "_meta"), { version: Date.now(), parts: ids, count: arr.length, updatedAt: D().serverTimestamp() });
+  await D().setDoc(D().doc(db(), col, "_meta"), { version: Date.now(), parts: ids, count: arr.length, ...extraMeta, updatedAt: D().serverTimestamp() });
   return arr.length;
+}
+
+/* ---------- Bài đọc VIP "中国文化补习 – Bổ túc văn hoá Trung Quốc" (collection culture/*) ----------
+   Luật Firestore chỉ cho người có quyền can_access_culture (hoặc lớp được mở "culture") đọc.
+   File nạp: bo-tuc-van-hoa.json = { kind: "tndihoc-culture", groups: [{id, zh, vi}], lessons: [...] } */
+async function lmsCultureData() {
+  lmsBody().innerHTML = `<div class="tt-card"><b>🏮 中国文化补习 – Bổ túc văn hoá Trung Quốc (VIP)</b>
+    <p class="tt-small" style="margin:.4rem 0 .8rem;line-height:1.7">Bài đọc văn hoá nằm riêng trên máy chủ (collection <code>culture</code>), chỉ người được mở quyền
+      <b>🏮 Bổ túc văn hoá Trung Quốc (VIP)</b> mới tải được. Nạp file <b>bo-tuc-van-hoa.json</b> để thay toàn bộ mục này (không ảnh hưởng kho bài đọc HSK).</p>
+    <div id="cd-now" class="tt-small" style="margin-bottom:.6rem"><span class="tt-spin"></span></div>
+    <input type="file" accept=".json,application/json" id="cd-file" class="tt-input" style="width:100%">
+    <div class="tt-row" style="justify-content:flex-end;margin-top:.6rem"><button class="tt-btn peach" id="cd-go" disabled>⤒ Nạp lên máy chủ</button></div>
+    <div id="cd-log" style="margin-top:.7rem"></div></div>`;
+  (async () => {
+    try { const m = await D().getDoc(D().doc(db(), "culture", "_meta"));
+      $("cd-now") && ($("cd-now").innerHTML = m.exists() ? `✓ Đang có <b>${m.data().count}</b> bài · cập nhật ${esc(fmtTime(m.data().updatedAt))}` : "✗ Chưa nạp bài đọc văn hoá.");
+    } catch (e) { $("cd-now") && ($("cd-now").innerHTML = `<span style="color:#B91C1C">${esc(errText(e))}</span> — cần thêm luật Firestore cho <code>culture</code>.`); }
+  })();
+  let pkg = null;
+  $("cd-file").addEventListener("change", async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      pkg = JSON.parse(await f.text());
+      if (pkg.kind !== "tndihoc-culture" || !Array.isArray(pkg.lessons)) throw new Error("File không đúng định dạng bo-tuc-van-hoa.json");
+      const n = {}; pkg.lessons.forEach(l => n[l.group] = (n[l.group] || 0) + 1);
+      $("cd-log").innerHTML = `<div class="tt-note ok">Đã đọc ${pkg.lessons.length} bài: ${(pkg.groups || []).map(g => `${esc(g.zh)} ${n[g.id] || 0}`).join(" · ")}</div>`;
+      $("cd-go").disabled = false;
+    } catch (err) { pkg = null; $("cd-log").innerHTML = `<div class="tt-note err">${esc(err.message)}</div>`; }
+  });
+  $("cd-go").addEventListener("click", async () => {
+    if (!pkg) return; const b = $("cd-go"); b.disabled = true;
+    try {
+      await publishReadings(pkg.lessons, (i, n) => { $("cd-log").innerHTML = `<div class="tt-note">Đang nạp phần ${i}/${n}…</div><div class="tt-progress"><i style="width:${i / n * 100}%"></i></div>`; },
+        "culture", { groups: pkg.groups || [] });
+      $("cd-log").innerHTML = `<div class="tt-note ok">🎉 Xong! Đã nạp ${pkg.lessons.length} bài văn hoá. Tải lại trang để xem.</div>`;
+    } catch (e) { $("cd-log").innerHTML = `<div class="tt-note err">${esc(errText(e))}</div>`; b.disabled = false; }
+  });
 }
 async function lmsReadData() {
   lmsBody().innerHTML = `<div class="tt-card"><b>Kho bài đọc trên máy chủ</b>

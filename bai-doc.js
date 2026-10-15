@@ -10,6 +10,11 @@
    Đăng xuất → xoá bản nhớ trên máy.
    Admin nạp / cập nhật dữ liệu: "Lớp học & phân quyền" → tab "📖 Dữ liệu bài đọc".
    Mỗi bài: { id, title, hsk, summary, content: [{ cn, pinyin, vi, note?, chars, words }] }
+
+   Mục VIP "中国文化补习 – Bổ túc văn hoá Trung Quốc" (nút lọc data-baidoc-filter="vh"):
+   - Dữ liệu riêng ở collection "culture" (cùng cấu trúc _meta + p1..pN, _meta có thêm groups),
+     luật Firestore chỉ cho người có quyền can_access_culture đọc.
+   - Không trộn vào readingLessons (để chép chính tả / góp ý bản dịch / xuất kho không đụng tới).
    ===================================================================== */
 (function () {
   const readingLessons = []; // được nạp sau khi đăng nhập (giữ nguyên mảng này để các file khác dùng chung)
@@ -23,31 +28,77 @@
   if (!listEl) return; // mục "bài đọc" chưa có trên trang này
 
   let currentFilter = 'all';
+  const cultureLessons = [];                 // bài đọc văn hoá VIP
+  const CS = { status: 'idle', groups: [], err: '', uid: null };   // idle | loading | ready | error
 
   function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
+  function lessonCard(lesson, i, badgeHtml) {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'baidoc-card focus-ring';
+    card.style.animationDelay = (i * 0.05) + 's';
+    card.dataset.baidocId = lesson.id;
+    card.innerHTML = `
+      ${badgeHtml}
+      <h4 class="font-sans font-semibold text-ink mb-1">${escapeHtml(lesson.title)}</h4>
+      <p class="text-sm text-slate leading-relaxed">${escapeHtml(lesson.summary || '')}</p>
+    `;
+    card.addEventListener('click', () => openDetail(lesson.id));
+    return card;
+  }
+
+  function renderCulture() {
+    pillsWrap.classList.remove('hidden');
+    emptyEl.classList.add('hidden');
+    const msg = html => { listEl.innerHTML = html; };
+    if (RS.status === 'guest') {
+      msg(`<div class="tt-lock" style="grid-column:1/-1"><div class="ico">🏮</div><b>中国文化补习 – Bổ túc văn hoá Trung Quốc</b>
+        <p>Mục bài đọc VIP về văn hoá Trung Quốc: tiết khí, danh nhân, tư tưởng, tứ đại danh tác, lễ tết, danh thắng. Đăng nhập để xem.</p>
+        <button class="tt-btn" data-tt-login>Đăng nhập / Đăng ký</button></div>`); return;
+    }
+    const can = window.tnCan;
+    if (!can || RS.status === 'checking') { msg(`<div class="tt-empty" style="grid-column:1/-1"><span class="tt-spin"></span> Đang kiểm tra quyền truy cập…</div>`); return; }
+    if (!can('culture')) {
+      const api = window.tnApi;
+      msg(`<div style="grid-column:1/-1">${api && api.lockedHtml ? api.lockedHtml('culture') : '<div class="tt-lock"><div class="ico">🔒</div><b>Mục VIP</b><p>Liên hệ cô Thúy để được mở quyền.</p></div>'}</div>`);
+      return;
+    }
+    if (CS.status === 'error') {
+      msg(`<div class="tt-note warn" style="grid-column:1/-1">${escapeHtml(CS.err)} <button class="tt-link" data-vh-retry>Thử lại</button></div>`);
+      listEl.querySelector('[data-vh-retry]').addEventListener('click', () => { CS.status = 'idle'; renderList(); });
+      return;
+    }
+    if (CS.status !== 'ready') {
+      msg(`<div class="tt-empty" style="grid-column:1/-1"><span class="tt-spin"></span> Đang tải bài đọc văn hoá…</div>`);
+      if (CS.status === 'idle') loadCulture();
+      return;
+    }
+    listEl.innerHTML = '';
+    if (!cultureLessons.length) { msg(`<p class="text-sm text-slate italic" style="grid-column:1/-1">Chưa có bài đọc văn hoá nào.</p>`); return; }
+    const groups = CS.groups.length ? CS.groups : [...new Set(cultureLessons.map(l => l.group))].map(id => ({ id, zh: id, vi: '' }));
+    let n = 0;
+    groups.forEach(g => {
+      const items = cultureLessons.filter(l => l.group === g.id);
+      if (!items.length) return;
+      const h = document.createElement('div');
+      h.className = 'baidoc-vh-group';
+      h.innerHTML = `<b class="font-hanzi">${escapeHtml(g.zh)}</b><span>${escapeHtml(g.vi || '')} · ${items.length} bài</span>`;
+      listEl.appendChild(h);
+      items.forEach(l => listEl.appendChild(lessonCard(l, n++, `<span class="baidoc-badge vh font-hanzi">${escapeHtml(g.zh)}</span>`)));
+    });
+  }
+
   function renderList() {
+    if (currentFilter === 'vh') { renderCulture(); return; }
     if (RS.status !== 'ready' || !readingLessons.length) { renderGate(); return; }
     pillsWrap.classList.remove('hidden');
     const filtered = readingLessons.filter(l => currentFilter === 'all' || l.hsk === currentFilter);
     listEl.innerHTML = '';
     emptyEl.classList.toggle('hidden', filtered.length > 0);
-    filtered.forEach((lesson, i) => {
-      const card = document.createElement('button');
-      card.type = 'button';
-      card.className = 'baidoc-card focus-ring';
-      card.style.animationDelay = (i * 0.05) + 's';
-      card.dataset.baidocId = lesson.id;
-      card.innerHTML = `
-        <span class="baidoc-badge">hsk ${escapeHtml(lesson.hsk)}</span>
-        <h4 class="font-sans font-semibold text-ink mb-1">${escapeHtml(lesson.title)}</h4>
-        <p class="text-sm text-slate leading-relaxed">${escapeHtml(lesson.summary || '')}</p>
-      `;
-      card.addEventListener('click', () => openDetail(lesson.id));
-      listEl.appendChild(card);
-    });
+    filtered.forEach((lesson, i) => listEl.appendChild(lessonCard(lesson, i, `<span class="baidoc-badge">hsk ${escapeHtml(lesson.hsk)}</span>`)));
   }
 
   // ===== Tab (汉字 / 拼音 / Tiếng Việt) + audio + tra cứu chữ Hán khi nhấp đúp =====
@@ -231,13 +282,15 @@
     audioRate.addEventListener('change', () => { if (audioBtn.dataset.playing) { stopAudio(); delete audioBtn.dataset.playing; } });
   }
 
+  function findLesson(id) { return readingLessons.find(l => l.id === id) || cultureLessons.find(l => l.id === id); }
   function openDetail(id) {
-    const lesson = readingLessons.find(l => l.id === id);
+    const lesson = findLesson(id);
     if (!lesson) return;
     if (window.trackStudyActivity) window.trackStudyActivity();
     stopAudio();
 
-    document.getElementById('baidoc-detail-badge').textContent = 'hsk ' + lesson.hsk;
+    const grp = lesson.group ? CS.groups.find(g => g.id === lesson.group) : null;
+    document.getElementById('baidoc-detail-badge').textContent = lesson.group ? '中国文化补习 · ' + (grp ? grp.zh : lesson.group) : 'hsk ' + lesson.hsk;
     document.getElementById('baidoc-detail-title').textContent = lesson.title;
     document.getElementById('baidoc-detail-summary').textContent = lesson.summary || '';
 
@@ -284,7 +337,7 @@
   let currentOpenId = null;
   // Vẽ lại bài đang mở (dùng khi bản dịch vừa được duyệt/cập nhật)
   window.tnReadingRerender = function () {
-    const lesson = readingLessons.find(l => l.id === currentOpenId);
+    const lesson = findLesson(currentOpenId);
     if (!lesson || detailEl.classList.contains('hidden') || !(lesson.content && lesson.content.length)) return;
     currentTabHtml = buildTabHtml(lesson);
     renderCurrentTab();
@@ -351,6 +404,53 @@
     listEl.querySelector('[data-baidoc-retry]')?.addEventListener('click', () => { RS.uid = null; handleAuth(window.tnAuth); });
   }
 
+  /* ----- Bài đọc văn hoá VIP: tải khi người có quyền bấm vào mục 中国文化补习 ----- */
+  const CULTURE_KEY = 'culture';
+  const cGet = () => idb('readonly', s => s.get(CULTURE_KEY));
+  const cPut = (v) => idb('readwrite', s => s.put(v, CULTURE_KEY));
+  const cDel = () => idb('readwrite', s => s.delete(CULTURE_KEY));
+  let lastFb = null;
+  async function loadCulture() {
+    const fb = lastFb || (window.tnEnsureFb ? await window.tnEnsureFb() : null);
+    if (!fb) { CS.status = 'error'; CS.err = 'Không kết nối được máy chủ.'; renderList(); return; }
+    CS.status = 'loading'; CS.uid = RS.uid;
+    try {
+      const { db, D } = fb;
+      const metaSnap = await D.getDoc(D.doc(db, 'culture', '_meta'));
+      if (!metaSnap.exists()) throw new Error('Mục bài đọc văn hoá chưa được nạp lên máy chủ. (Admin: “Lớp học & phân quyền” → tab “🏮 Dữ liệu văn hoá”.)');
+      const meta = metaSnap.data();
+      const cached = await cGet();
+      let arr;
+      if (cached && cached.version === meta.version && cached.uid === RS.uid && Array.isArray(cached.lessons)) arr = cached.lessons;
+      else {
+        const parts = await Promise.all((meta.parts || []).map(id => D.getDoc(D.doc(db, 'culture', id))));
+        arr = [];
+        parts.forEach(p => { if (p.exists()) arr.push(...JSON.parse(p.data().json || '[]')); });
+        cPut({ version: meta.version, uid: RS.uid, lessons: arr });
+      }
+      cultureLessons.splice(0, cultureLessons.length, ...arr);
+      CS.groups = meta.groups || [];
+      CS.status = 'ready';
+    } catch (e) {
+      CS.status = 'error';
+      const code = (e && e.code) || '';
+      CS.err = code.includes('permission') ? 'Tài khoản chưa có quyền đọc mục này, hoặc luật Firestore cho “culture” chưa được cập nhật.'
+        : code.includes('unavailable') ? 'Không kết nối được máy chủ. Kiểm tra mạng (ở Trung Quốc cần bật VPN) rồi thử lại.'
+        : (e && e.message) || 'Không tải được bài đọc văn hoá.';
+    }
+    renderList();
+  }
+  function clearCulture() {
+    cultureLessons.splice(0); CS.status = 'idle'; CS.groups = []; CS.uid = null; cDel();
+    if (currentOpenId && !findLesson(currentOpenId) && !detailEl.classList.contains('hidden')) backToList();
+  }
+  // Quyền thay đổi (đăng nhập xong, admin mở/khoá quyền, đổi lớp…) → vẽ lại mục văn hoá
+  document.addEventListener('tt-state', () => {
+    const allowed = window.tnCan && window.tnCan('culture');
+    if (!allowed && cultureLessons.length) clearCulture();
+    if (currentFilter === 'vh' && detailEl.classList.contains('hidden')) renderList();
+  });
+
   function setLessons(arr) {
     readingLessons.splice(0, readingLessons.length, ...arr);
     document.dispatchEvent(new CustomEvent('tn-readings-ready', { detail: { count: readingLessons.length } }));
@@ -392,14 +492,17 @@
       if (RS.uid !== null || RS.status !== 'guest') {
         RS.uid = null; RS.status = 'guest';
         if (readingLessons.length) { cacheDel(); setLessons([]); }
+        clearCulture();
         if (!detailEl.classList.contains('hidden')) backToList();
         renderList();
       }
       return;
     }
     if (RS.uid === uid && (RS.status === 'ready' || RS.status === 'loading')) return;
+    if (CS.uid && CS.uid !== uid) clearCulture();
     RS.uid = uid;
     const fb = detail.fb || (window.tnEnsureFb ? await window.tnEnsureFb() : null);
+    lastFb = fb;
     if (!fb) { RS.status = 'error'; RS.err = 'Không kết nối được máy chủ.'; renderList(); return; }
     loadReadings(fb);
   }

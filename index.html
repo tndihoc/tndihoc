@@ -1559,9 +1559,17 @@ Trang quản trị
 <span class="bd-check">✓</span>
 <span class="text-base font-black">HSK 7-9</span>
 </button>
+<button class="baidoc-level baidoc-level-vh focus-ring" data-baidoc-filter="vh" style="grid-column:1/-1;background:linear-gradient(90deg,#FFE3C8,#FFF4E8 70%);color:#8A3B00;">
+<span class="bd-check">✓</span>
+<span class="text-base font-black"><span class="font-hanzi">🏮 中国文化补习</span> <span class="baidoc-vh-sub">Bổ túc văn hoá Trung Quốc · VIP</span></span>
+</button>
 </div>
 </div>
-<style>@media (min-width:640px){ .baidoc-pills-7 { grid-template-columns: repeat(7, minmax(0, 1fr)); } }</style>
+<style>@media (min-width:640px){ .baidoc-pills-7 { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
+.baidoc-vh-sub { font-size: 12px; font-weight: 600; opacity: .8; margin-left: 6px; }
+.baidoc-vh-group { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 10px; margin: 10px 0 2px; padding-bottom: 6px; border-bottom: 2px solid #FFD9B8; }
+.baidoc-vh-group b { font-size: 20px; color: #8A3B00; } .baidoc-vh-group span { font-size: 13px; color: #6B7280; }
+.baidoc-card .baidoc-badge.vh { background: #FFE8D4; color: #A64B00; }</style>
 <!-- LIST VIEW -->
 <div class="grid sm:grid-cols-2 gap-4" id="baidoc-list"></div>
 <p class="hidden text-sm text-slate italic" id="baidoc-empty">Chưa có bài đọc nào ở cấp độ này.</p>
@@ -3514,7 +3522,7 @@ Trang quản trị
 })();
 </script>
 <script>try { localStorage.removeItem("tn_ai_chat_history_v1"); } catch (e) {}</script>
-<script src="bai-doc.js?v=3" defer></script>
+<script src="bai-doc.js?v=4" defer></script>
 <script src="bo-thu.js?v=1" defer></script>
 <script src="tu-vung-gt1.js?v=1" defer></script>
 <script src="hoc-tieng-trung.js?v=7" defer></script>
@@ -3588,7 +3596,7 @@ Tiếp tục với Google
 </div>
 </div>
 <script src="auth.js?v=tt2" type="module"></script>
-<script src="tinh-nang-moi.js?v=9" type="module"></script>
+<script src="tinh-nang-moi.js?v=10" type="module"></script>
 <script src="phong-van.js?v=3" type="module"></script>
 <script src="hskk.js?v=1" type="module"></script>
 <script src="game-cu-chi.js?v=2" type="module"></script>
