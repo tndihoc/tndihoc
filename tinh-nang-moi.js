@@ -1594,10 +1594,10 @@ async function publishReadings(arr, onStep) {
 async function lmsReadData() {
   lmsBody().innerHTML = `<div class="tt-card"><b>Kho bài đọc trên máy chủ</b>
     <p class="tt-small" style="margin:.4rem 0 .8rem;line-height:1.7">Nội dung bài đọc không còn nằm trên GitHub — chỉ tài khoản <b>đã đăng nhập</b> mới tải được.
-      Muốn thêm/sửa nhiều bài: nhờ Claude sửa file <b>bai-doc-data.json</b> rồi nạp lại ở đây (ghi đè toàn bộ kho). Bản dịch học viên góp ý được duyệt vẫn tự cập nhật như cũ.</p>
+      Nạp file <b>.json</b> bài đọc (dạng bai-doc-data.json) rồi chọn: <b>＋ Thêm vào kho</b> (giữ bài cũ, bài trùng mã sẽ được cập nhật) hoặc <b>Thay toàn bộ kho</b>. Bản dịch học viên góp ý được duyệt vẫn tự cập nhật như cũ.</p>
     <div id="rd-now" class="tt-small" style="margin-bottom:.6rem"><span class="tt-spin"></span></div>
     <input type="file" accept=".json,application/json" id="rd-file" class="tt-input" style="width:100%">
-    <div class="tt-row" style="justify-content:flex-end;margin-top:.6rem"><button class="tt-btn peach" id="rd-go" disabled>⤒ Nạp lên máy chủ</button></div>
+    <div class="tt-row" style="justify-content:flex-end;margin-top:.6rem"><button class="tt-btn peach" id="rd-add" disabled>＋ Thêm vào kho (giữ bài cũ)</button><button class="tt-btn ghost" id="rd-go" disabled>⤒ Thay toàn bộ kho</button></div>
     <div id="rd-log" style="margin-top:.7rem"></div></div>`;
   (async () => {
     try { const m = await D().getDoc(D().doc(db(), "readings", "_meta"));
@@ -1613,15 +1613,36 @@ async function lmsReadData() {
       arr = pkg.lessons;
       const lv = {}; arr.forEach(l => lv[l.hsk] = (lv[l.hsk] || 0) + 1);
       $("rd-log").innerHTML = `<div class="tt-note ok">Đã đọc ${arr.length} bài: ${Object.entries(lv).map(([k, v]) => `HSK ${esc(k)}: ${v}`).join(" · ")}</div>`;
-      $("rd-go").disabled = false;
+      $("rd-go").disabled = false; $("rd-add").disabled = false;
     } catch (err) { arr = null; $("rd-log").innerHTML = `<div class="tt-note err">${esc(err.message)}</div>`; }
   });
-  $("rd-go").addEventListener("click", async () => {
-    if (!arr) return; const b = $("rd-go"); b.disabled = true;
+  const progress = (i, n) => { $("rd-log").innerHTML = `<div class="tt-note">Đang nạp phần ${i}/${n}…</div><div class="tt-progress"><i style="width:${i / n * 100}%"></i></div>`; };
+  $("rd-add").addEventListener("click", async () => {
+    if (!arr) return; $("rd-add").disabled = $("rd-go").disabled = true;
     try {
-      await publishReadings(arr, (i, n) => { $("rd-log").innerHTML = `<div class="tt-note">Đang nạp phần ${i}/${n}…</div><div class="tt-progress"><i style="width:${i / n * 100}%"></i></div>`; });
+      // Đọc thẳng kho hiện có trên máy chủ rồi gộp theo mã bài (id): trùng mã → thay bài mới, khác mã → thêm vào cuối
+      const m = await D().getDoc(D().doc(db(), "readings", "_meta"));
+      const cur = [];
+      if (m.exists()) for (const id of m.data().parts || []) {
+        const d = await D().getDoc(D().doc(db(), "readings", id));
+        if (d.exists()) cur.push(...JSON.parse(d.data().json || "[]"));
+      }
+      const byId = new Map(cur.map((l, i) => [l.id, i]));
+      let added = 0, updated = 0;
+      arr.forEach(l => { if (byId.has(l.id)) { cur[byId.get(l.id)] = l; updated++; } else { cur.push(l); added++; } });
+      if (!confirm(`Kho hiện có ${cur.length - added} bài. Thêm ${added} bài mới${updated ? `, cập nhật ${updated} bài trùng mã` : ""} → tổng ${cur.length} bài?`)) { $("rd-add").disabled = $("rd-go").disabled = false; $("rd-log").innerHTML = ""; return; }
+      await publishReadings(cur, progress);
+      $("rd-log").innerHTML = `<div class="tt-note ok">🎉 Xong! Đã thêm ${added} bài${updated ? `, cập nhật ${updated} bài` : ""}. Kho có ${cur.length} bài. Tải lại trang để thấy bài mới.</div>`;
+    } catch (e) { $("rd-log").innerHTML = `<div class="tt-note err">${esc(errText(e))}</div>`; $("rd-add").disabled = $("rd-go").disabled = false; }
+  });
+  $("rd-go").addEventListener("click", async () => {
+    if (!arr) return;
+    if (!confirm(`Thay TOÀN BỘ kho bằng ${arr.length} bài trong file? Các bài hiện có không nằm trong file sẽ bị xoá khỏi kho.`)) return;
+    $("rd-add").disabled = $("rd-go").disabled = true;
+    try {
+      await publishReadings(arr, progress);
       $("rd-log").innerHTML = `<div class="tt-note ok">🎉 Xong! Đã nạp ${arr.length} bài. Tải lại trang để thấy kho bài đọc mới.</div>`;
-    } catch (e) { $("rd-log").innerHTML = `<div class="tt-note err">${esc(errText(e))}</div>`; b.disabled = false; }
+    } catch (e) { $("rd-log").innerHTML = `<div class="tt-note err">${esc(errText(e))}</div>`; $("rd-add").disabled = $("rd-go").disabled = false; }
   });
 }
 
