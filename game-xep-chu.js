@@ -6,8 +6,10 @@
      • 4 ô thẳng hàng  → tạo "chữ sọc"  (nổ nguyên hàng / cột).
      • Xếp hình chữ L / T → tạo "chữ bọc" (nổ vùng 3×3).
      • 5 ô thẳng hàng  → tạo "ngôi sao ✦"  (đổi với ô nào thì xoá mọi ô cùng chữ đó).
-   Mỗi màn có số lượt giới hạn + điểm mục tiêu. Mỗi lần xếp, hiện chữ Hán + pinyin + nghĩa
-   và (tuỳ chọn) đọc to từ đó.
+   Mỗi màn có 10 → 20 từ (tăng dần theo màn), nhưng trên bảng chỉ có 5–6 từ cùng lúc:
+   mỗi khi một từ được xếp đủ số lượng, nó rời bảng và từ tiếp theo trong hàng chờ thế chỗ
+   (các ô của từ cũ biến thành từ mới). Thu thập đủ mọi từ trước khi hết lượt để qua màn.
+   Mỗi lần xếp, hiện chữ Hán + pinyin + nghĩa và (tuỳ chọn) đọc to từ đó.
 
    Từ lấy theo cấp độ đang chọn ở khu Trò chơi (hàm chung gameWords() trong index.html).
    Kỷ lục lưu trên máy: localStorage "tn_xc_best_v1" = { level, score }.
@@ -22,11 +24,17 @@ const PRAISE = [
   ['好！', 'hǎo'], ['很好！', 'hěn hǎo'], ['太棒了！', 'tài bàng le'],
   ['厉害！', 'lìhai'], ['了不起！', 'liǎobuqǐ'], ['完美！', 'wánměi'],
 ];
-const levelCfg = L => ({
-  moves: L <= 3 ? 20 : 18,
-  target: 4000 + (L - 1) * 1200,
-  kinds: L <= 3 ? 5 : 6,
-});
+const COLORS = 8;                  // số màu pastel (xc-k0 … xc-k7)
+// Độ khó theo màn: số từ (10 → 20), số loại chữ cùng lúc trên bảng, số ô cần xếp cho mỗi từ.
+// Số lượt được tính từ mô phỏng (≈ ô xoá được mỗi lượt), biên dư giảm dần theo màn.
+function levelCfg(L, poolSize) {
+  const words = Math.max(5, Math.min(20, 9 + L, poolSize));
+  const kinds = Math.min(L <= 3 ? 5 : 6, words);
+  const quota = L <= 4 ? 12 : 15;
+  const perMove = kinds <= 5 ? 8 : 6;
+  const margin = Math.max(1.2, 1.5 - (L - 1) * 0.03);
+  return { words, kinds, quota, moves: Math.max(15, Math.round(words * quota / perMove * margin)) };
+}
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -44,7 +52,7 @@ function init() {
   panel.innerHTML = TEMPLATE;
 
   const el = {
-    setup: $('xc-setup'), play: $('xc-play'), result: $('xc-result'),
+    setup: $('xc-setup'), play: $('xc-play'), result: $('xc-result'), queue: $('xc-queue'),
     start: $('xc-start'), restart1: $('xc-restart1'), startLv: $('xc-start-level'),
     warn: $('xc-warn'), deck: $('xc-deck'), bestLv: $('xc-best-level'), bestSc: $('xc-best-score'),
     voice: $('xc-voice'),
@@ -111,23 +119,31 @@ function init() {
   function startLevel(L) {
     const p = pool();
     if (p.length < 5) { refreshSetup(); return; }
-    const cfg = levelCfg(L);
-    const kinds = Math.min(cfg.kinds, p.length);
-    const words = shuffle(p).slice(0, kinds);
+    const cfg = levelCfg(L, p.length);
+    const words = shuffle(p).slice(0, cfg.words);
+    const kinds = cfg.kinds;
     if (S) S.dead = true;
-    S = { L, words, kinds, moves: cfg.moves, target: cfg.target, score: 0, busy: false, dead: false,
-          grid: [], sel: null, cleared: new Array(kinds).fill(0), hintTimer: null, won: false };
+    // tile.t = số thứ tự "ô từ" (slot) trên bảng; S.slot[t] = từ đang nằm ở slot đó.
+    S = { L, words, kinds, quota: cfg.quota, moves: cfg.moves, score: 0, busy: false, dead: false,
+          grid: [], sel: null, cleared: new Array(words.length).fill(0), hintTimer: null, won: false,
+          slot: [], retired: new Array(kinds).fill(false), queue: [], wcolor: new Array(words.length).fill(0) };
+    for (let i = 0; i < words.length; i++) (i < kinds ? S.slot : S.queue).push(i);
+    S.slot.forEach((w, i) => { S.wcolor[w] = i; });
     tiles.clear(); el.board.innerHTML = '';
     fillBoard();
     show('play');
     renderLegend(); renderHud(); render(true);
-    el.word.innerHTML = '<p class="xc-word-tip">Đổi chỗ 2 ô cạnh nhau để có <b>3 chữ giống nhau</b> thẳng hàng.<br>Mỗi lần xếp được, nghĩa của từ sẽ hiện ở đây.</p>';
+    el.word.innerHTML = `<p class="xc-word-tip">Đổi chỗ 2 ô cạnh nhau để có <b>3 chữ giống nhau</b> thẳng hàng.<br>Màn này có <b>${words.length} từ</b> — mỗi từ xếp đủ <b>${S.quota} ô</b> thì từ mới sẽ thay thế.</p>`;
     call('trackStudyActivity');
     armHint();
   }
 
   /* ---------------- Tạo bảng ---------------- */
   const newTile = (t, s = null) => ({ id: uid++, t, s, fresh: true });
+  const liveSlots = () => S.slot.map((w, i) => i).filter(i => !S.retired[i]);
+  const spawnType = () => { const l = liveSlots(); return l[rnd(l.length)]; };
+  const wordOf = t => S.slot[t];                    // slot → chỉ số từ
+  const colorOf = t => 'xc-k' + S.wcolor[S.slot[t]];
   function fillBoard() {
     for (let tries = 0; tries < 50; tries++) {
       S.grid = [];
@@ -135,7 +151,7 @@ function init() {
         S.grid.push([]);
         for (let c = 0; c < N; c++) {
           let t;
-          do { t = rnd(S.kinds); } while (
+          do { t = spawnType(); } while (
             (c >= 2 && S.grid[r][c - 1].t === t && S.grid[r][c - 2].t === t) ||
             (r >= 2 && S.grid[r - 1][c].t === t && S.grid[r - 2][c].t === t));
           const tile = newTile(t); tile.from = r - N; S.grid[r].push(tile);
@@ -148,12 +164,13 @@ function init() {
   /* ---------------- Vẽ ---------------- */
   function faceHtml(tile) {
     if (tile.s === 'b') return '<span class="xc-face"><span class="xc-star">✦</span></span>';
-    const h = S.words[tile.t].hanzi; const len = [...h].length;
+    const h = S.words[wordOf(tile.t)].hanzi; const len = [...h].length;
     return `<span class="xc-face"><span class="xc-han font-hanzi xc-len${Math.min(len, 3)}">${esc(h)}</span></span>`;
   }
   function tileClass(tile) {
-    return 'xc-tile ' + (tile.s === 'b' ? 'xc-bomb' : 'xc-k' + tile.t) + (tile.s && tile.s !== 'b' ? ' xc-s-' + tile.s : '');
+    return 'xc-tile ' + (tile.s === 'b' ? 'xc-bomb' : colorOf(tile.t)) + (tile.s && tile.s !== 'b' ? ' xc-s-' + tile.s : '');
   }
+  const sigOf = tile => (tile.s || '') + tile.t + ':' + (tile.s === 'b' ? '' : wordOf(tile.t));
   function render(first) {
     const fresh = [];
     for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
@@ -161,13 +178,13 @@ function init() {
       let d = tiles.get(tile.id);
       if (!d) {
         d = document.createElement('div');
-        d.innerHTML = faceHtml(tile); d.className = tileClass(tile); d.dataset.sig = (tile.s || '') + tile.t;
+        d.innerHTML = faceHtml(tile); d.className = tileClass(tile); d.dataset.sig = sigOf(tile);
         const fr = tile.from ?? -1;
         d.style.transition = 'none';
         d.style.transform = `translate(${c * 100}%, ${fr * 100}%)`;
         el.board.appendChild(d); tiles.set(tile.id, d); fresh.push([d, r, c]);
       } else {
-        const sig = (tile.s || '') + tile.t;
+        const sig = sigOf(tile);
         if (d.dataset.sig !== sig) { d.innerHTML = faceHtml(tile); d.className = tileClass(tile); d.dataset.sig = sig; d.classList.add('xc-born'); }
         d.style.transform = `translate(${c * 100}%, ${r * 100}%)`;
       }
@@ -181,25 +198,45 @@ function init() {
   }
   function renderHud() {
     el.lv.textContent = S.L; el.moves.textContent = S.moves;
-    el.score.textContent = fmt(S.score); el.target.textContent = fmt(S.target);
-    el.bar.style.width = Math.min(100, (S.score / S.target) * 100) + '%';
+    el.score.textContent = fmt(S.score);
+    el.target.textContent = `${doneCount()}/${S.words.length}`;
+    const got = S.cleared.reduce((a, n) => a + Math.min(n, S.quota), 0);
+    el.bar.style.width = Math.min(100, got / (S.words.length * S.quota) * 100) + '%';
     el.moves.parentElement.classList.toggle('xc-low', S.moves <= 3);
   }
-  function renderLegend() {
-    el.legend.innerHTML = S.words.map((w, i) => `
-      <button type="button" class="xc-leg xc-k${i}" data-xc-say="${i}" title="Nghe đọc">
-        <span class="xc-leg-h font-hanzi">${esc(w.hanzi)}</span>
-        <span class="xc-leg-t"><b>${esc(w.pinyin || '')}</b><small>${esc(w.mean)}</small></span>
-        <span class="xc-leg-n" data-xc-n="${i}">×${S.cleared[i]}</span>
-      </button>`).join('');
+  const doneCount = () => S.cleared.filter(n => n >= S.quota).length;
+  function legCount(w) {
+    const n = Math.min(S.cleared[w], S.quota);
+    return { txt: n >= S.quota ? '✓' : `${n}/${S.quota}`, pct: n / S.quota * 100 };
   }
+  function renderLegend() {
+    el.legend.innerHTML = S.slot.map((w, t) => {
+      if (S.retired[t]) return '';
+      const x = S.words[w]; const k = legCount(w);
+      return `
+      <button type="button" class="xc-leg xc-k${S.wcolor[w]}${S.cleared[w] >= S.quota ? ' xc-leg-done' : ''}" data-xc-say="${w}" title="Nghe đọc">
+        <span class="xc-leg-h font-hanzi">${esc(x.hanzi)}</span>
+        <span class="xc-leg-t"><b>${esc(x.pinyin || '')}</b><small>${esc(x.mean)}</small>
+          <span class="xc-leg-bar"><i data-xc-bar="${w}" style="width:${k.pct}%"></i></span></span>
+        <span class="xc-leg-n" data-xc-n="${w}">${k.txt}</span>
+      </button>`;
+    }).join('');
+    const done = S.words.map((x, i) => i).filter(i => S.cleared[i] >= S.quota && !S.slot.some((w, t) => w === i && !S.retired[t]));
+    el.queue.innerHTML = `
+      <p class="xc-side-h">Đã thu thập <b>${doneCount()}/${S.words.length}</b> từ${S.queue.length ? ` · còn <b>${S.queue.length}</b> từ chờ xuất hiện` : ''}</p>
+      <div class="xc-chips">${done.map(i => `<button type="button" class="xc-chip xc-k${S.wcolor[i]} font-hanzi" data-xc-say="${i}" title="${esc(S.words[i].pinyin || '')} · ${esc(S.words[i].mean)}">✓ ${esc(S.words[i].hanzi)}</button>`).join('')}${S.queue.map(() => '<span class="xc-chip xc-chip-q">?</span>').join('')}</div>`;
+  }
+  el.queue.addEventListener('click', e => {
+    const b = e.target.closest('[data-xc-say]'); if (!b || !S) return;
+    const w = S.words[+b.dataset.xcSay]; if (window.tnVoice) window.tnVoice.speak(w.hanzi, { rate: 0.85 });
+  });
   el.legend.addEventListener('click', e => {
     const b = e.target.closest('[data-xc-say]'); if (!b || !S) return;
     const w = S.words[+b.dataset.xcSay]; if (window.tnVoice) window.tnVoice.speak(w.hanzi, { rate: 0.85 });
   });
-  function showWord(t) {
-    const w = S.words[t];
-    el.word.innerHTML = `<div class="xc-word-card xc-k${t}">
+  function showWord(wi, label) {
+    const w = S.words[wi];
+    el.word.innerHTML = `<div class="xc-word-card xc-k${S.wcolor[wi]}">${label ? `<span class="xc-word-new">${label}</span>` : ''}
       <span class="xc-word-h font-hanzi">${esc(w.hanzi)}</span>
       <span class="xc-word-p">${esc(w.pinyin || '')}</span>
       <span class="xc-word-m">${esc(w.mean)}</span></div>`;
@@ -355,7 +392,7 @@ function init() {
     if (me.dead) return;
     if (combo >= 3) { const p = PRAISE[Math.min(combo - 3, PRAISE.length - 1)]; fx(p[0], p[1]); }
 
-    if (S.score >= S.target) return finish(true);
+    if (doneCount() >= S.words.length) return finish(true);
     if (S.moves <= 0) return finish(false);
     if (!findMove()) {
       fx('洗牌', 'xǐpái · xáo lại bảng'); await sleep(500); if (me.dead) return;
@@ -418,7 +455,7 @@ function init() {
     let n = 0;
     set.forEach(k => {
       const r = (k / N) | 0, c = k % N; const tile = S.grid[r][c]; if (!tile) return;
-      n++; if (tile.s !== 'b') S.cleared[tile.t]++;
+      n++; if (tile.s !== 'b') S.cleared[wordOf(tile.t)]++;
       const d = tiles.get(tile.id);
       if (d) { d.classList.add('xc-pop'); tiles.delete(tile.id); setTimeout(() => d.remove(), 260); }
       S.grid[r][c] = null;
@@ -426,13 +463,22 @@ function init() {
     creates.forEach(({ pos, t, s }) => { const tile = S.grid[pos[0]][pos[1]]; if (tile) { tile.s = s; tile.t = s === 'b' ? -1 : t; } n += 1; });
     const gain = Math.round(n * PTS * (1 + (combo - 1) * 0.5)) + creates.length * 100;
     S.score += gain;
-    if (wordType != null && wordType >= 0) {
-      showWord(wordType);
-      if (combo === 1) speak(S.words[wordType].hanzi);
+    const clearedWord = wordType != null && wordType >= 0 ? wordOf(wordType) : -1;
+    const arrived = rotateWords();
+    if (arrived.length) {
+      const w = arrived[arrived.length - 1];
+      showWord(w, '✨ Từ mới xuất hiện');
+      fx('新词', 'Từ mới: ' + arrived.map(i => S.words[i].hanzi).join(' · '));
+      setTimeout(() => { if (S === me) speak(S.words[w].hanzi); }, 650);
+    } else if (clearedWord >= 0) {
+      showWord(clearedWord);
+      if (combo === 1) speak(S.words[clearedWord].hanzi);
     }
-    if (creates.length) fx(creates.some(x => x.s === 'b') ? '✦ 星星' : creates.some(x => x.s === 'w') ? '炸弹' : '条纹', creates.some(x => x.s === 'b') ? 'Ngôi sao cầu vồng!' : creates.some(x => x.s === 'w') ? 'Chữ bọc · nổ 3×3' : 'Chữ sọc · nổ cả hàng');
+    if (arrived.length) { /* đã báo từ mới */ }
+    else if (creates.length) fx(creates.some(x => x.s === 'b') ? '✦ 星星' : creates.some(x => x.s === 'w') ? '炸弹' : '条纹', creates.some(x => x.s === 'b') ? 'Ngôi sao cầu vồng!' : creates.some(x => x.s === 'w') ? 'Chữ bọc · nổ 3×3' : 'Chữ sọc · nổ cả hàng');
     else if (combo === 2) fx('+' + fmt(gain), 'combo ×2');
-    renderHud(); updateLegendCounts(); render();
+    renderHud(); if (arrived.length || retiredNow) renderLegend(); else updateLegendCounts(); render();
+    retiredNow = false;
     await sleep(240); if (me.dead) return;
     gravity(); render();
     await sleep(300);
@@ -445,14 +491,44 @@ function init() {
       el.board.appendChild(f); setTimeout(() => f.remove(), 450);
     });
   }
-  function updateLegendCounts() { S.cleared.forEach((n, i) => { const x = el.legend.querySelector(`[data-xc-n="${i}"]`); if (x) x.textContent = '×' + n; }); }
+  function updateLegendCounts() {
+    let changed = false;
+    S.slot.forEach(w => {
+      const k = legCount(w); const x = el.legend.querySelector(`[data-xc-n="${w}"]`); const b = el.legend.querySelector(`[data-xc-bar="${w}"]`);
+      if (x) x.textContent = k.txt; if (b) b.style.width = k.pct + '%';
+      if (S.cleared[w] >= S.quota && x && !x.closest('.xc-leg-done')) changed = true;
+    });
+    if (changed) renderLegend();
+  }
+
+  // Từ nào đã xếp đủ số lượng → rời bảng, từ kế tiếp trong hàng chờ thế chỗ (ô cũ đổi thành từ mới).
+  // Hết hàng chờ → bỏ hẳn slot đó (ô chuyển sang các từ còn lại) nhưng luôn giữ ít nhất 3 loại chữ.
+  let retiredNow = false;
+  function rotateWords() {
+    const arrived = [];
+    S.slot.forEach((w, t) => {
+      if (S.retired[t] || S.cleared[w] < S.quota) return;
+      if (S.queue.length) {
+        const nw = S.queue.shift();
+        const used = new Set(S.slot.filter((x, i) => !S.retired[i] && i !== t).map(x => S.wcolor[x]));
+        const free = [...Array(COLORS).keys()].filter(c => !used.has(c) && c !== S.wcolor[w]);
+        S.wcolor[nw] = free.length ? free[rnd(free.length)] : S.wcolor[w];
+        S.slot[t] = nw; arrived.push(nw);
+      } else if (liveSlots().length > 3) {
+        S.retired[t] = true; retiredNow = true;
+        const l = liveSlots();
+        for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) { const x = S.grid[r][c]; if (x && x.t === t) x.t = l[rnd(l.length)]; }
+      }
+    });
+    return arrived;
+  }
 
   function gravity() {
     for (let c = 0; c < N; c++) {
       let w = N - 1;
       for (let r = N - 1; r >= 0; r--) if (S.grid[r][c]) { const t = S.grid[r][c]; S.grid[r][c] = null; S.grid[w][c] = t; w--; }
       const missing = w + 1;
-      for (let r = w; r >= 0; r--) { const t = newTile(rnd(S.kinds)); t.from = r - missing; S.grid[r][c] = t; }
+      for (let r = w; r >= 0; r--) { const t = newTile(spawnType()); t.from = r - missing; S.grid[r][c] = t; }
     }
   }
   function reshuffle() {
@@ -483,17 +559,17 @@ function init() {
     $('xc-r-title').textContent = win ? `Qua màn ${S.L}! 过关了！` : `Hết lượt rồi — màn ${S.L}`;
     $('xc-r-sub').innerHTML = win
       ? `Đạt mục tiêu với <b>${me.moves}</b> lượt còn dư (+${fmt(bonus)} điểm thưởng).`
-      : `Còn thiếu <b>${fmt(Math.max(0, S.target - S.score))}</b> điểm để qua màn. Thử lại nhé!`;
+      : `Đã thu thập <b>${doneCount()}/${S.words.length}</b> từ — còn <b>${S.words.length - doneCount()}</b> từ chưa đủ ${S.quota} ô. Thử lại nhé!`;
     $('xc-r-score').textContent = fmt(S.score);
     $('xc-r-best').textContent = fmt(best.score) + (newRec ? ' 🎉' : '');
-    $('xc-r-words').innerHTML = S.words.map((w, i) => `
-      <div class="xc-rw xc-k${i}">
+    $('xc-r-words').innerHTML = S.words.map((w, i) => S.cleared[i] || S.slot.includes(i) ? `
+      <div class="xc-rw xc-k${S.wcolor[i]}">
         <button type="button" class="xc-rw-say" data-xc-rsay="${i}" title="Nghe đọc">🔊</button>
         <span class="xc-rw-h font-hanzi">${esc(w.hanzi)}</span>
         <span class="xc-rw-t"><b>${esc(w.pinyin || '')}</b> · ${esc(w.mean)}</span>
-        <span class="xc-rw-n">×${S.cleared[i]}</span>
+        <span class="xc-rw-n">${S.cleared[i] >= S.quota ? '✓' : `${S.cleared[i]}/${S.quota}`}</span>
         <button type="button" class="xc-rw-nb" data-xc-nb="${i}" title="Thêm vào sổ tay từ vựng">+ Sổ tay</button>
-      </div>`).join('');
+      </div>` : '').join('');
     const next = $('xc-next');
     next.textContent = win ? `Màn ${S.L + 1} →` : 'Chơi lại màn này';
     next.dataset.level = win ? S.L + 1 : S.L;
@@ -529,7 +605,7 @@ const TEMPLATE = `
       <span class="jn-sun">🍬</span>
       <div>
         <h3 class="font-sans font-semibold text-lg text-ink">Xếp chữ 消消乐 <span class="xc-py">xiāoxiāolè</span></h3>
-        <p class="text-xs text-ink/70">Luật như Candy Crush: đổi chỗ 2 ô cạnh nhau để có <strong>3 chữ Hán giống nhau</strong> thẳng hàng — chúng sẽ biến mất. Đạt đủ điểm mục tiêu trước khi hết lượt để qua màn!</p>
+        <p class="text-xs text-ink/70">Luật như Candy Crush: đổi chỗ 2 ô cạnh nhau để có <strong>3 chữ Hán giống nhau</strong> thẳng hàng — chúng sẽ biến mất. Mỗi màn có <strong>10–20 từ</strong> lần lượt xuất hiện: từ nào xếp đủ số lượng sẽ nhường chỗ cho từ mới. Thu thập đủ mọi từ trước khi hết lượt để qua màn!</p>
       </div>
     </div>
     <div class="jn-setup-card">
@@ -555,7 +631,8 @@ const TEMPLATE = `
     <div class="jn-topbar">
       <span class="jn-progress-pill">Màn <span class="text-mint" id="xc-lv">1</span></span>
       <span class="jn-progress-pill">Lượt còn: <span id="xc-moves">20</span></span>
-      <span class="jn-progress-pill">Điểm: <span class="text-mint" id="xc-score">0</span> / <span id="xc-target">0</span></span>
+      <span class="jn-progress-pill">Từ: <span class="text-mint" id="xc-target">0</span></span>
+      <span class="jn-progress-pill">Điểm: <span class="text-mint" id="xc-score">0</span></span>
       <span class="flex items-center gap-2">
         <button class="text-xs font-semibold text-ink/70 hover:text-ink bg-white/70 rounded-full px-3 py-1.5" id="xc-hint" type="button">💡 Gợi ý</button>
         <button class="text-xs font-semibold text-ink/70 hover:text-ink underline bg-white/70 rounded-full px-3 py-1.5" id="xc-quit" type="button">Dừng lại</button>
@@ -571,6 +648,7 @@ const TEMPLATE = `
         <div class="xc-word" id="xc-word"></div>
         <p class="xc-side-h">Các từ trên bảng <small>(bấm để nghe)</small></p>
         <div class="xc-legend" id="xc-legend"></div>
+        <div class="xc-queue" id="xc-queue"></div>
       </div>
     </div>
   </div>
@@ -599,13 +677,15 @@ function injectCss() {
   const st = document.createElement('style'); st.id = 'xc-style';
   st.textContent = `
   .xc-py { font-size: 12px; font-weight: 600; color: #5B6472; margin-left: 4px; }
-  /* 6 màu pastel cho 6 loại chữ */
+  /* 8 màu pastel cho các từ (mỗi lúc trên bảng tối đa 6) */
   .xc-k0 { --bg:#FFD8C2; --bd:#F4A97F; --fg:#9A3F0E; }
   .xc-k1 { --bg:#CDEFD9; --bd:#8FD3AC; --fg:#1F6B43; }
   .xc-k2 { --bg:#CFE2FF; --bd:#93B7F0; --fg:#1E3F8F; }
   .xc-k3 { --bg:#FFF0A8; --bd:#EBCD55; --fg:#7A5A00; }
   .xc-k4 { --bg:#E3D9FF; --bd:#B7A3F0; --fg:#4E3497; }
   .xc-k5 { --bg:#FFD6E4; --bd:#F2A2BE; --fg:#9A2E58; }
+  .xc-k6 { --bg:#C8F0EE; --bd:#82D2CC; --fg:#16625D; }
+  .xc-k7 { --bg:#F2E2CE; --bd:#D8B48A; --fg:#6E4A1E; }
   .xc-bomb { --bg:#000080; --bd:#FF7D00; --fg:#FFD35C; }
 
   .xc-rules { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
@@ -666,7 +746,15 @@ function injectCss() {
   .xc-leg-h { min-width:40px; height:36px; padding:0 4px; border-radius:9px; background:var(--bg); color:var(--fg); display:flex; align-items:center; justify-content:center; font-size:20px; }
   .xc-leg-t { flex:1; min-width:0; display:flex; flex-direction:column; line-height:1.25; }
   .xc-leg-t b { font-size:12.5px; color:#2E3440; } .xc-leg-t small { font-size:12px; color:#5B6472; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .xc-leg-n { font-size:12px; font-weight:800; color:var(--fg); }
+  .xc-leg-n { font-size:12px; font-weight:800; color:var(--fg); white-space:nowrap; }
+  .xc-leg-bar { display:block; height:4px; margin-top:3px; border-radius:9999px; background:#EEF0F3; overflow:hidden; }
+  .xc-leg-bar i { display:block; height:100%; background:var(--bd); border-radius:9999px; transition:width .3s ease; }
+  .xc-leg-done { opacity:.6; }
+  .xc-queue { background:rgba(255,255,255,.72); border-radius:14px; padding:8px 10px; }
+  .xc-chips { display:flex; flex-wrap:wrap; gap:5px; margin-top:6px; }
+  .xc-chip { font-size:14px; line-height:1; padding:5px 8px; border-radius:9999px; background:var(--bg); color:var(--fg); box-shadow: inset 0 -2px 0 var(--bd); }
+  .xc-chip-q { background:#fff; color:#9AA3AF; border:1px dashed #C9CED6; box-shadow:none; font-family:inherit; }
+  .xc-word-new { font-size:11.5px; font-weight:800; color:#B35900; background:#FFF3E6; border-radius:9999px; padding:2px 10px; margin-bottom:2px; }
   #xc-moves { color:#000080; } .xc-low #xc-moves { color:#D6524F; }
   .xc-bar { background:#FF7D00; }
 
