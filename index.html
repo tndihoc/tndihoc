@@ -1078,7 +1078,7 @@ Trang quản trị
 <h3 class="font-sans font-semibold text-xl text-ink">Trò chơi ôn từ vựng</h3>
 </div>
 <p class="text-sm text-slate mb-5 max-w-2xl">6 Trò chơi + flashcard ôn tập từ vựng, kèm bảng xếp hạng tuần/tháng. chọn cấp độ hsk mong muốn bên dưới — cả 7 mục (nối cặp từ, trắc nghiệm, đấu trường sinh tồn, ghép cặp phản xạ nhanh, flashcard, tương tác camera, xếp chữ 消消乐) đều dùng chung 1 cấp độ này, không cần chọn lại ở từng mục.</p>
-<div class="mb-7">
+<div class="mb-7" id="game-hsk-box">
 <label class="text-sm font-semibold text-ink mb-2.5 block">Cấp độ chơi</label>
 <div class="bg-ink/[0.04] rounded-3xl p-3 sm:p-4">
 <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5" id="game-hsk-pills">
@@ -2111,6 +2111,9 @@ Trang quản trị
       window.gameStopHandlers.forEach(fn => { try { fn(); } catch (e) {} });
       gameTabs.forEach(t => t.classList.toggle('active', t === tab));
       Object.entries(gamePanels).forEach(([key, panel]) => panel.classList.toggle('active', key === tab.dataset.gameTab));
+      // Pikachu lượng từ có ô chọn trình độ riêng → ẩn ô chọn cấp HSK chung
+      const hskBox = document.getElementById('game-hsk-box');
+      if (hskBox) hskBox.classList.toggle('hidden', tab.dataset.gameTab === 'pikachu');
     });
   });
 
@@ -3585,7 +3588,7 @@ Tiếp tục với Google
 <script src="hskk.js?v=1" type="module"></script>
 <script src="game-cu-chi.js?v=2" type="module"></script>
 <script src="game-xep-chu.js?v=2" type="module"></script>
-<script src="game-pikachu.js?v=1" type="module"></script>
+<script src="game-pikachu.js?v=2" type="module"></script>
 <!-- ===== TUYỂN SINH (điều khiển) — đổi ngày ở TS_END để banner tự ẩn ===== -->
 <script>
 (function () {

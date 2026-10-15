@@ -9,14 +9,27 @@
        các ô còn lại vẫn ghép hết được; nếu không, đổi chữ của ô danh từ bị "lẻ" cho khớp.
      • Hết đường nối → tự xáo bảng. Ghép sai → trừ 5 giây và hiện lượng từ đúng.
      • Từ màn 4, sau mỗi lần ghép các ô dồn về một phía (xuống / lên / trái / phải).
-   Dữ liệu ở luong-tu-data.js (lấy từ bảng 200 lượng từ).
-   Kỷ lục lưu trên máy: localStorage "tn_pk_best_v1" = { level, score }.
+   Người chơi chọn trình độ riêng (KHÔNG dùng ô chọn cấp HSK chung của khu Trò chơi):
+     sơ cấp = lượng từ + danh từ HSK1–3 · trung cấp = HSK1–5 · cao cấp = tất cả.
+   Dữ liệu ở luong-tu-data.js (bảng 200 lượng từ, đã gắn cấp HSK).
+   Kỷ lục lưu trên máy theo từng trình độ: localStorage "tn_pk_best_v2" = { so|trung|cao: { level, score } }.
    File này tự chèn giao diện + CSS vào <div id="game-pikachu">.
    ===================================================================== */
 
-import { CLASSIFIERS, NOUNS } from './luong-tu-data.js';
+import { CLASSIFIERS, NOUNS } from './luong-tu-data.js?v=2';
 
-const LS_BEST = 'tn_pk_best_v1';
+const LS_BEST = 'tn_pk_best_v2';
+const LS_BEST_OLD = 'tn_pk_best_v1';
+const LS_TR = 'tn_pk_trinhdo';
+const TRINH = {
+  so: { name: 'Sơ cấp', zh: '初级', sub: 'HSK 1–3', max: 3 },
+  trung: { name: 'Trung cấp', zh: '中级', sub: 'HSK 1–5', max: 5 },
+  cao: { name: 'Cao cấp', zh: '高级', sub: 'HSK 1–9 · tất cả', max: 99 },
+};
+// Cấp HSK 0 = không có trong danh sách HSK → chỉ xuất hiện ở cao cấp
+const inLevel = (hsk, tr) => TRINH[tr].max >= 99 || (hsk >= 1 && hsk <= TRINH[tr].max);
+const okCl = (c, tr) => inLevel(CLASSIFIERS[c][2], tr);
+const okNoun = (n, tr) => inLevel(n.hsk, tr);
 const LS_PY = 'tn_pk_pinyin';
 const LS_VOICE = 'tn_pk_voice';
 const PENALTY = 5;                       // giây bị trừ khi ghép sai
@@ -24,12 +37,12 @@ const SHIFTS = ['down', 'left', 'up', 'right', 'none'];
 const SHIFT_TXT = { none: '', down: 'các ô dồn xuống dưới', up: 'các ô dồn lên trên', left: 'các ô dồn sang trái', right: 'các ô dồn sang phải' };
 
 function levelCfg(L) {
-  if (L === 1) return { rows: 4, cols: 6, tier: 1, time: 180, shift: 'none' };
-  if (L === 2) return { rows: 5, cols: 6, tier: 1, time: 200, shift: 'none' };
-  if (L === 3) return { rows: 6, cols: 6, tier: 2, time: 230, shift: 'none' };
-  if (L === 4) return { rows: 6, cols: 8, tier: 2, time: 300, shift: 'down' };
-  if (L === 5) return { rows: 6, cols: 8, tier: 3, time: 300, shift: 'left' };
-  return { rows: 7, cols: 8, tier: 3, time: Math.max(260, 340 - (L - 6) * 10), shift: SHIFTS[(L - 6) % SHIFTS.length] };
+  if (L === 1) return { rows: 4, cols: 6, time: 180, shift: 'none' };
+  if (L === 2) return { rows: 5, cols: 6, time: 200, shift: 'none' };
+  if (L === 3) return { rows: 6, cols: 6, time: 230, shift: 'none' };
+  if (L === 4) return { rows: 6, cols: 8, time: 300, shift: 'down' };
+  if (L === 5) return { rows: 6, cols: 8, time: 300, shift: 'left' };
+  return { rows: 7, cols: 8, time: Math.max(260, 340 - (L - 6) * 10), shift: SHIFTS[(L - 6) % SHIFTS.length] };
 }
 
 const $ = id => document.getElementById(id);
@@ -53,15 +66,23 @@ function init() {
   const el = {
     setup: $('pk-setup'), play: $('pk-play'), result: $('pk-result'),
     start: $('pk-start'), restart1: $('pk-restart1'), startLv: $('pk-start-level'),
-    bestLv: $('pk-best-level'), bestSc: $('pk-best-score'), py: $('pk-py'), voice: $('pk-voice'),
+    bestLv: $('pk-best-level'), trs: $('pk-trs'), trName: $('pk-tr-name'), trPill: $('pk-tr-pill'), bestSc: $('pk-best-score'), py: $('pk-py'), voice: $('pk-voice'),
     board: $('pk-board'), svg: $('pk-svg'), lv: $('pk-lv'), left: $('pk-left'), score: $('pk-score'),
     time: $('pk-time'), bar: $('pk-bar'), info: $('pk-info'), log: $('pk-log'), shiftNote: $('pk-shift'),
     hint: $('pk-hint'), hintN: $('pk-hint-n'), shuf: $('pk-shuf'), shufN: $('pk-shuf-n'), quit: $('pk-quit'),
   };
 
   /* ---------------- Kỷ lục + tuỳ chọn ---------------- */
-  const loadBest = () => { try { return JSON.parse(localStorage.getItem(LS_BEST)) || { level: 1, score: 0 }; } catch (e) { return { level: 1, score: 0 }; } };
-  const saveBest = b => { try { localStorage.setItem(LS_BEST, JSON.stringify(b)); } catch (e) {} };
+  let tr = 'so';
+  try { if (TRINH[localStorage.getItem(LS_TR)]) tr = localStorage.getItem(LS_TR); } catch (e) {}
+  const loadAll = () => {
+    let all = {};
+    try { all = JSON.parse(localStorage.getItem(LS_BEST)) || {}; } catch (e) {}
+    if (!all.cao) { try { const old = JSON.parse(localStorage.getItem(LS_BEST_OLD)); if (old) all.cao = old; } catch (e) {} }
+    return all;
+  };
+  const loadBest = (t = tr) => loadAll()[t] || { level: 1, score: 0 };
+  const saveBest = (b, t = tr) => { const all = loadAll(); all[t] = b; try { localStorage.setItem(LS_BEST, JSON.stringify(all)); } catch (e) {} };
   try { el.py.checked = localStorage.getItem(LS_PY) !== '0'; el.voice.checked = localStorage.getItem(LS_VOICE) !== '0'; } catch (e) {}
   el.py.addEventListener('change', () => { try { localStorage.setItem(LS_PY, el.py.checked ? '1' : '0'); } catch (e) {} panel.classList.toggle('pk-nopy', !el.py.checked); });
   el.voice.addEventListener('change', () => { try { localStorage.setItem(LS_VOICE, el.voice.checked ? '1' : '0'); } catch (e) {} });
@@ -69,10 +90,20 @@ function init() {
   const speak = t => { if (el.voice.checked && window.tnVoice) { try { window.tnVoice.speak(t, { rate: 0.85 }); } catch (e) {} } };
 
   function refreshSetup() {
+    el.trs.querySelectorAll('[data-pk-tr]').forEach(btn => {
+      const k = btn.dataset.pkTr; btn.classList.toggle('pk-tr-on', k === tr); btn.setAttribute('aria-pressed', k === tr);
+      btn.querySelector('.pk-tr-best').textContent = 'Màn cao nhất: ' + loadBest(k).level;
+    });
+    el.trName.textContent = TRINH[tr].name;
     const b = loadBest();
     el.startLv.textContent = b.level; el.bestLv.textContent = b.level; el.bestSc.textContent = fmt(b.score || 0);
     el.restart1.classList.toggle('hidden', b.level <= 1);
   }
+  el.trs.addEventListener('click', e => {
+    const b = e.target.closest('[data-pk-tr]'); if (!b) return;
+    tr = b.dataset.pkTr; try { localStorage.setItem(LS_TR, tr); } catch (x) {}
+    refreshSetup();
+  });
   refreshSetup();
 
   /* ---------------- Trạng thái ---------------- */
@@ -96,18 +127,24 @@ function init() {
   el.restart1.addEventListener('click', () => startLevel(1));
 
   /* ---------------- Tạo màn ---------------- */
-  function makePairs(n, tier) {
-    const pool = Object.keys(CLASSIFIERS).filter(c => CLASSIFIERS[c][2] <= tier);
+  function makePairs(n, t) {
+    const pool = Object.keys(CLASSIFIERS).filter(c => okCl(c, t));
     const usedNoun = new Set(); const usedCl = new Map(); const pairs = [];
-    let cls = shuffle(pool);
-    while (pairs.length < n && cls.length) {
+    const candOf = c => NOUNS.filter(x => x.cl.includes(c) && okNoun(x, t) && !usedNoun.has(x.h));
+    // Mỗi lượng từ tối đa 2 lần; trình độ ít lượng từ (sơ cấp) không đủ thì nới dần lên 5 lần
+    let cls = shuffle(pool); let cap = 2;
+    while (pairs.length < n) {
+      while (!cls.length && cap <= 5) {
+        cls = shuffle(pool.filter(x => (usedCl.get(x) || 0) < cap && candOf(x).length));
+        if (!cls.length) cap++;
+      }
+      if (!cls.length) break;
       const c = cls.shift();
-      const cand = NOUNS.filter(x => x.cl.includes(c) && !usedNoun.has(x.h));
+      const cand = candOf(c);
       if (!cand.length) continue;
       const noun = pick(cand);
       usedNoun.add(noun.h); usedCl.set(c, (usedCl.get(c) || 0) + 1);
       pairs.push([c, noun]);
-      if (!cls.length && pairs.length < n) cls = shuffle(pool.filter(x => (usedCl.get(x) || 0) < 2));
     }
     return pairs;
   }
@@ -119,9 +156,9 @@ function init() {
     if (panel.clientWidth && panel.clientWidth < 600 && cols > rows) [rows, cols] = [cols, rows];
     const shift = cfg.shift === 'none' ? 'none'
       : (rows !== cfg.rows ? { down: 'right', up: 'left', left: 'up', right: 'down' }[cfg.shift] : cfg.shift);
-    const pairs = makePairs(rows * cols / 2, cfg.tier);
+    const pairs = makePairs(rows * cols / 2, tr);
     if (S) { S.dead = true; clearInterval(S.timer); }
-    S = { L, R: rows, C: cols, shift, total: cfg.time, timeLeft: cfg.time, score: 0, sel: null, busy: false, dead: false,
+    S = { tr, L, R: rows, C: cols, shift, total: cfg.time, timeLeft: cfg.time, score: 0, sel: null, busy: false, dead: false,
           hints: 3, shufs: 2, grid: [], done: [], timer: null, last: Date.now(), streak: 0, lastMatch: 0 };
     nodes.clear(); el.board.querySelectorAll('.pk-tile').forEach(d => d.remove());
     const tiles = [];
@@ -140,6 +177,7 @@ function init() {
     el.shiftNote.textContent = shift === 'none' ? '' : `Màn này: sau mỗi lần nối, ${SHIFT_TXT[shift]}.`;
     el.info.innerHTML = `<p class="pk-tip">Bấm 1 ô <b class="pk-tip-c">lượng từ</b> rồi 1 ô <b>danh từ</b> đi được với nó.<br>Đường nối rẽ tối đa <b>2 lần</b>. Một lượng từ có thể hợp với nhiều danh từ — chọn cặp nào đúng cũng được!</p>`;
     el.log.innerHTML = '';
+    el.trPill.textContent = `${TRINH[tr].name} · ${TRINH[tr].sub}`;
     show('play');
     render(); renderHud();
     S.timer = setInterval(tick, 250);
@@ -196,7 +234,7 @@ function init() {
       : `<div class="pk-card"><span class="pk-card-h font-hanzi">${esc(t.n.h)}</span><span class="pk-card-p">${esc(t.n.p)}</span><span class="pk-card-m">${esc(t.n.v)}</span></div>`;
   }
   function infoMatch(c, n) {
-    const others = n.cl.filter(x => x !== c);
+    const others = n.cl.filter(x => x !== c && okCl(x, S.tr));
     el.info.innerHTML = `<div class="pk-card pk-card-ok">
       <span class="pk-ok">✓ Chính xác</span>
       <span class="pk-card-h font-hanzi">一${esc(c)}${esc(n.h)}</span>
@@ -209,7 +247,7 @@ function init() {
       <span class="pk-bad">✗ Chưa đúng (−${PENALTY} giây)</span>
       <span class="pk-card-h font-hanzi"><s>一${esc(c)}${esc(n.h)}</s></span>
       <span class="pk-card-m"><b class="font-hanzi">${esc(n.h)}</b> ${esc(n.p)} · ${esc(n.v)} — dùng với:
-        ${n.cl.map(x => `<b class="font-hanzi">${esc(x)}</b> <small>${esc(clPy(x))}</small>`).join(' / ')}</span>
+        ${n.cl.filter(x => okCl(x, S.tr)).map(x => `<b class="font-hanzi">${esc(x)}</b> <small>${esc(clPy(x))}</small>`).join(' / ')}</span>
       <span class="pk-also"><b class="font-hanzi">${esc(c)}</b> ${esc(clPy(c))}: ${esc(CLASSIFIERS[c][1])}</span></div>`;
   }
   function pushLog(c, n) {
@@ -277,7 +315,7 @@ function init() {
     const onBoard = new Set(ns.map(t => t.n.h));
     freeN.forEach((t, i) => {
       const c = freeC[i]; if (!c) return;
-      const cand = NOUNS.filter(x => x.cl.includes(c.c));
+      const cand = NOUNS.filter(x => x.cl.includes(c.c) && okNoun(x, S.tr));
       const fresh = cand.filter(x => !onBoard.has(x.h));
       t.n = pick(fresh.length ? fresh : cand); onBoard.add(t.n.h);
     });
@@ -404,10 +442,10 @@ function init() {
     const me = S; S.busy = true; clearInterval(S.timer);
     let bonus = 0;
     if (win) { bonus = Math.ceil(S.timeLeft) * 10; S.score += bonus; }
-    const best = loadBest(); let newRec = false;
+    const best = loadBest(S.tr); let newRec = false;
     if (win && S.L + 1 > best.level) best.level = S.L + 1;
     if (S.score > (best.score || 0)) { best.score = S.score; newRec = true; }
-    saveBest(best);
+    saveBest(best, S.tr);
     call('trackStudyActivity');
     call(win ? (typeof window.sndWin === 'function' ? 'sndWin' : 'sndCorrect') : (typeof window.sndLose === 'function' ? 'sndLose' : 'sndWrong'));
 
@@ -460,9 +498,18 @@ const TEMPLATE = `
         <div><span class="pk-mini pk-mini-path">↱</span><b>Đường nối rẽ tối đa 2 lần</b><small>đi qua ô trống, được vòng ra ngoài mép bảng</small></div>
         <div><span class="pk-mini pk-mini-bad">−5</span><b>Ghép sai trừ 5 giây</b><small>và hiện các lượng từ đúng của danh từ đó</small></div>
       </div>
-      <p class="text-xs text-ink/70 mt-3">Dữ liệu: <b class="text-mint">${Object.keys(CLASSIFIERS).length} lượng từ · ${NOUNS.length} danh từ</b> (từ bảng 200 lượng từ). Màn đầu dùng lượng từ thông dụng, các màn sau thêm lượng từ khó, bảng to hơn và các ô dồn về một phía sau mỗi lần nối.</p>
+      <p class="pk-tr-h">Chọn trình độ <small>(game này dùng trình độ riêng, không theo ô chọn cấp HSK ở trên)</small></p>
+      <div class="pk-trs" id="pk-trs">${Object.entries(TRINH).map(([k, t]) => {
+        const cls = Object.keys(CLASSIFIERS).filter(c => okCl(c, k));
+        return `<button type="button" class="pk-tr" data-pk-tr="${k}">
+          <span class="pk-tr-zh font-hanzi">${t.zh}</span><b>Trình độ ${t.name.toLowerCase()}</b>
+          <small>${t.sub} · ${cls.length} lượng từ</small>
+          <span class="pk-tr-ex font-hanzi">${cls.slice(0, 8).join(' ')}…</span>
+          <span class="pk-tr-best"></span></button>`;
+      }).join('')}</div>
+      <p class="text-xs text-ink/70 mt-3">Lượng từ và danh từ lấy theo danh sách từ vựng HSK của web (bảng 200 lượng từ). Màn càng cao bảng càng to, thời gian ít hơn, và các ô dồn về một phía sau mỗi lần nối.</p>
       <div class="flex flex-wrap items-center gap-3 mt-3">
-        <button class="px-5 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring" id="pk-start" type="button">🀄 Chơi màn <span id="pk-start-level">1</span></button>
+        <button class="px-5 py-2.5 rounded-xl bg-mint text-white text-sm font-semibold hover:opacity-90 focus-ring" id="pk-start" type="button">🀄 Chơi màn <span id="pk-start-level">1</span> · <span id="pk-tr-name">Sơ cấp</span></button>
         <button class="hidden text-xs font-semibold text-ink/70 hover:text-ink underline" id="pk-restart1" type="button">Chơi lại từ màn 1</button>
         <span class="jn-progress-pill">Màn cao nhất: <span class="text-mint" id="pk-best-level">1</span></span>
         <span class="jn-progress-pill">Điểm cao nhất: <span class="text-mint" id="pk-best-score">0</span></span>
@@ -476,6 +523,7 @@ const TEMPLATE = `
 
   <div class="hidden" id="pk-play">
     <div class="jn-topbar">
+      <span class="jn-progress-pill" id="pk-tr-pill"></span>
       <span class="jn-progress-pill">Màn <span class="text-mint" id="pk-lv">1</span></span>
       <span class="jn-progress-pill">⏱ <span id="pk-time">0:00</span></span>
       <span class="jn-progress-pill">Còn <span class="text-mint" id="pk-left">0</span> cặp</span>
@@ -533,6 +581,17 @@ function injectCss() {
   .pk-mini.pk-n { background:#fff; color:#1E2A5A; box-shadow: inset 0 0 0 2px #C9D3EA; }
   .pk-mini-path { background:#E6EEFF; color:#FF7D00; font-weight:800; font-family:inherit; }
   .pk-mini-bad { background:#FFE1E1; color:#C0392B; font-weight:800; font-size:13px; font-family:inherit; }
+  .pk-tr-h { font-size:13px; font-weight:700; color:#2E3440; margin:14px 0 8px; } .pk-tr-h small { font-weight:500; color:#5B6472; }
+  .pk-trs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+  @media (max-width:640px){ .pk-trs { grid-template-columns:1fr; } }
+  .pk-tr { position:relative; display:flex; flex-direction:column; align-items:flex-start; gap:2px; text-align:left; background:#fff; border-radius:16px; padding:12px 14px; border:2px solid transparent; box-shadow:0 2px 6px rgba(0,0,0,.05); transition: border-color .15s ease, transform .15s ease; }
+  .pk-tr:hover { transform:translateY(-1px); }
+  .pk-tr b { font-size:14px; color:#2E3440; } .pk-tr small { font-size:12px; color:#5B6472; }
+  .pk-tr-zh { position:absolute; top:10px; right:12px; font-size:20px; color:#FFB877; }
+  .pk-tr-ex { font-size:15px; color:#A64B00; letter-spacing:2px; margin-top:2px; }
+  .pk-tr-best { font-size:11.5px; font-weight:700; color:#000080; margin-top:4px; }
+  .pk-tr-on { border-color:#FF7D00; background:#FFF6EE; }
+  .pk-tr-on::after { content:'✓'; position:absolute; bottom:10px; right:12px; width:20px; height:20px; border-radius:9999px; background:#FF7D00; color:#fff; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; }
   .pk-tg { display:inline-flex; align-items:center; gap:8px; font-size:13px; color:#2E3440; cursor:pointer; }
   .pk-tg input { width:16px; height:16px; accent-color:#000080; }
   .pk-tool { font-size:12px; font-weight:600; color:rgba(46,52,64,.8); background:rgba(255,255,255,.75); border-radius:9999px; padding:6px 12px; }
