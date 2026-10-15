@@ -163,7 +163,9 @@ if (TTS.ok) speechSynthesis.onvoiceschanged = () => {};
 const REC = {
   supported: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder),
   mime() {
-    const c = ["audio/webm;codecs=opus", "audio/mp4", "audio/ogg;codecs=opus", "audio/webm"];
+    // Ưu tiên MP4/AAC (Chrome mới trên Windows/Mac có hỗ trợ) vì Safari, iPhone phát được;
+    // không có thì dùng WebM-Opus (Chrome/Android) — khi phát trên Safari sẽ tự chuyển định dạng (xem playableAudio).
+    const c = ["audio/mp4;codecs=mp4a.40.2", "audio/webm;codecs=opus", "audio/mp4", "audio/ogg;codecs=opus", "audio/webm"];
     return c.find(m => { try { return MediaRecorder.isTypeSupported(m); } catch (e) { return false; } }) || "";
   },
   /** Bắt đầu ghi; trả về { stop(): Promise<{blob,url,dataUrl,duration}>, cancel() } */
@@ -197,6 +199,104 @@ const REC = {
     return ctl;
   },
 };
+
+/* ---------------- Phát lại bài nộp trên mọi trình duyệt ----------------
+   Bài ghi bằng Chrome/Android là WebM-Opus → Safari (iPhone, iPad, Mac đời cũ) không phát được.
+   Khi đó tự chuyển sang WAV ngay trên máy người nghe: thử bộ giải mã có sẵn của trình duyệt,
+   không được thì dùng bộ giải mã Opus (vendor/opus-decoder.min.js, chỉ tải khi cần).
+   Mọi bản ghi đều phát qua blob: URL (Safari phát data: URL dài không ổn định). */
+const CAN_WEBM = (() => { try { return !!document.createElement("audio").canPlayType('audio/webm; codecs="opus"'); } catch (e) { return false; } })();
+let opusLib = null;
+function loadOpusDecoder() {
+  if (!opusLib) opusLib = new Promise((res, rej) => {
+    const sc = document.createElement("script"); sc.src = "vendor/opus-decoder.min.js";
+    sc.onload = () => window["opus-decoder"] ? res(window["opus-decoder"].OpusDecoder) : rej(new Error("opus"));
+    sc.onerror = () => { opusLib = null; rej(new Error("Không tải được bộ giải mã âm thanh.")); };
+    document.head.appendChild(sc);
+  });
+  return opusLib;
+}
+// Tách các khung Opus khỏi file WebM (Matroska) mà MediaRecorder tạo ra
+function webmOpusFrames(u8) {
+  const vint = (pos, keep) => {
+    const b = u8[pos]; let len = 1, mask = 0x80;
+    while (len <= 8 && !(b & mask)) { len++; mask >>= 1; }
+    if (len > 8) throw new Error("webm");
+    let val = keep ? b : (b & (mask - 1)); let ones = (b & (mask - 1)) === mask - 1;
+    for (let i = 1; i < len; i++) { val = val * 256 + u8[pos + i]; if (u8[pos + i] !== 255) ones = false; }
+    return { val, len, unknown: !keep && ones };
+  };
+  const MASTER = new Set([0x18538067, 0x1F43B675, 0xA0, 0x1654AE6B, 0xAE]);   // Segment, Cluster, BlockGroup, Tracks, TrackEntry
+  const frames = []; let head = null; let pos = 0;
+  while (pos < u8.length - 1) {
+    const id = vint(pos, true); pos += id.len;
+    const sz = vint(pos, false); pos += sz.len;
+    if (MASTER.has(id.val)) continue;                 // đi vào trong (kể cả khi kích thước "không xác định")
+    if (sz.unknown) break;
+    const end = Math.min(u8.length, pos + sz.val);
+    if (id.val === 0xA3 || id.val === 0xA1) {        // SimpleBlock / Block
+      const tn = vint(pos, false); const flags = u8[pos + tn.len + 2];
+      if (((flags >> 1) & 3) === 0) frames.push(u8.slice(pos + tn.len + 3, end));
+    } else if (id.val === 0x63A2) head = u8.slice(pos, end);   // CodecPrivate = OpusHead
+    pos = end;
+  }
+  return { frames, head };
+}
+function wavBlob(chans, rate) {
+  const n = chans[0].length; const buf = new ArrayBuffer(44 + n * 2); const v = new DataView(buf);
+  const str = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+  str(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); str(8, "WAVE"); str(12, "fmt "); v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true); str(36, "data"); v.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) {
+    let x = 0; for (const c of chans) x += c[i]; x = Math.max(-1, Math.min(1, x / chans.length));
+    v.setInt16(44 + i * 2, x < 0 ? x * 0x8000 : x * 0x7fff, true);
+  }
+  return new Blob([buf], { type: "audio/wav" });
+}
+async function toWav(blob, { wasmOnly = false } = {}) {
+  const ab = await blob.arrayBuffer();
+  if (!wasmOnly) {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      const ctx = new AC();
+      const audio = await new Promise((res, rej) => { const p = ctx.decodeAudioData(ab.slice(0), res, rej); if (p && p.catch) p.catch(rej); });
+      ctx.close && ctx.close();
+      return wavBlob([...Array(audio.numberOfChannels).keys()].map(i => audio.getChannelData(i)), audio.sampleRate);
+    } catch (e) { /* trình duyệt không tự giải mã được → dùng bộ giải mã Opus */ }
+  }
+  const { frames, head } = webmOpusFrames(new Uint8Array(ab));
+  if (!frames.length) throw new Error("Không đọc được file ghi âm.");
+  const OpusDecoder = await loadOpusDecoder();
+  const ch = head && head.length >= 19 ? head[9] : 1;
+  const opts = { preSkip: head && head.length >= 19 ? head[10] | (head[11] << 8) : 0, channels: ch > 2 ? 2 : ch };
+  if (ch === 1) Object.assign(opts, { streamCount: 1, coupledStreamCount: 0, channelMappingTable: [0] });
+  const dec = new OpusDecoder(opts); await dec.ready;
+  const out = dec.decodeFrames(frames); dec.free();
+  return wavBlob(out.channelData, out.sampleRate);
+}
+/** HTML cho thẻ <audio> của bài nộp; gọi mountAudios(vùng chứa) sau khi gắn vào trang */
+const subAudioTag = (src, style, wrap = "display:block") => `<span class="tt-aud" style="${wrap}"><audio class="tt-audio" controls preload="metadata" data-tt-src="${safeMedia(src)}" style="${style}"></audio></span>`;
+function mountAudios(root) {
+  root.querySelectorAll("audio[data-tt-src]").forEach(a => {
+    const src = a.getAttribute("data-tt-src"); a.removeAttribute("data-tt-src");
+    if (!src) return;
+    if (!src.startsWith("data:")) { a.src = src; return; }
+    const blob = dataURLToBlob(src);
+    const convert = async () => {
+      const note = document.createElement("span"); note.className = "tt-small"; note.textContent = " ⏳ Đang chuyển định dạng để phát trên trình duyệt này…";
+      a.after(note);
+      try { a.src = URL.createObjectURL(await toWav(blob)); note.remove(); }
+      catch (e) {
+        const ext = /mp4/.test(blob.type) ? "m4a" : /ogg/.test(blob.type) ? "ogg" : "webm";
+        note.innerHTML = ` Trình duyệt này không phát được bản ghi. Hãy mở bằng Chrome, hoặc <a href="${URL.createObjectURL(blob)}" download="bai-ghi-am.${ext}" style="text-decoration:underline">tải file về</a>.`;
+      }
+    };
+    if (/webm|ogg/.test(blob.type) && !CAN_WEBM) { convert(); return; }
+    a.addEventListener("error", convert, { once: true });
+    a.src = URL.createObjectURL(blob);
+  });
+}
 
 /* ---------------- Nén ảnh trước khi lưu ---------------- */
 async function compressImage(file, maxSide, maxChars, q = 0.8) {
@@ -945,14 +1045,15 @@ async function showSubAudio(s, target) {
     const snap = await D().getDoc(D().doc(db(), "submissionAudio", s.id));
     if (!snap.exists()) { target.innerHTML = `<p class="tt-small">Không tìm thấy file ghi âm.</p>`; return; }
     const a = snap.data();
-    if (a.audio) target.innerHTML = `<audio class="tt-audio" controls src="${safeMedia(a.audio)}" style="width:100%;margin-top:.4rem"></audio>`;
+    if (a.audio) target.innerHTML = subAudioTag(a.audio, "width:100%;margin-top:.4rem");
     else {
       const clips = a.clips || {};
       target.innerHTML = Object.keys(clips).sort((x, y) => x - y).map(i => {
         const line = (s.lines || [])[i] || {};
-        return `<div class="tt-row" style="margin-top:.35rem;flex-wrap:nowrap"><span class="tt-role ${line.role === "B" ? "r2" : "r1"}">${esc(line.role || Number(i) + 1)}</span><span class="tt-hz" style="flex:1;min-width:0;font-size:15px">${esc(line.cn || "")}</span><audio controls src="${safeMedia(clips[i])}" style="height:32px;max-width:55%"></audio></div>`;
+        return `<div class="tt-row" style="margin-top:.35rem;flex-wrap:nowrap"><span class="tt-role ${line.role === "B" ? "r2" : "r1"}">${esc(line.role || Number(i) + 1)}</span><span class="tt-hz" style="flex:1;min-width:0;font-size:15px">${esc(line.cn || "")}</span>${subAudioTag(clips[i], "height:32px;width:100%", "flex:0 1 55%;min-width:0")}</div>`;
       }).join("");
     }
+    mountAudios(target);
   } catch (e) { target.innerHTML = `<p class="tt-small">${esc(errText(e))}</p>`; }
 }
 onState(() => { SPK.mySubs = null; SPK.topics = null; renderSpeaking(); });
@@ -1660,7 +1761,7 @@ onState(() => { LMS.classes = null; LMS.users = null; LMS.subs = null; renderLms
 
 /* ---------------- Cho các file khác dùng chung (phong-van.js) ---------------- */
 window.tnApi = { T, can, isStaff, isAdmin, myName, fbReady, db, D, REC, TTS, toast, errText, esc, modal, fmtClock, fmtTime, blobToDataURL,
-  lockedHtml, needLoginHtml, onState, showSubAudio, invalidateMySubs: () => { SPK.mySubs = null; renderSpeaking(); } };
+  lockedHtml, needLoginHtml, onState, showSubAudio, toWav, invalidateMySubs: () => { SPK.mySubs = null; renderSpeaking(); } };
 document.dispatchEvent(new CustomEvent("tn-api-ready"));
 
 /* ---------------- Khởi động ---------------- */
