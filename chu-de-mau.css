@@ -1,0 +1,90 @@
+/* =====================================================================
+   MÀU CHỦ ĐỀ THEO TỪNG MỤC — trang "Học tiếng Trung"
+   ---------------------------------------------------------------------
+   Khi mở 1 thẻ lớn (Bài đọc, Trò chơi, Lớp học của tôi…), hoc-tieng-trung.js gắn
+   data-theme="<mục>" và 7 sắc --t0 (nhạt nhất) … --t6 (đậm nhất) lên #chinese.
+   File này đổi mọi màu nhấn bên trong (nút, tab, huy hiệu, nền, các nút chọn cấp độ…)
+   sang đúng thang màu của mục đó, nên màu bên ngoài thẻ và bên trong luôn đồng nhất.
+   ===================================================================== */
+
+#chinese[data-theme] {
+  /* biến màu dùng chung của tinh-nang-moi.css → đổi theo chủ đề */
+  --tt-navy: var(--t5); --tt-navy-l: var(--t1); --tt-navy-b: var(--t3);
+  --tt-peach: var(--t4); --tt-peach-l: var(--t1); --tt-peach-b: var(--t3);
+  --tt-line: color-mix(in srgb, var(--t3) 45%, transparent);
+}
+/* Nền nhạt của mục phủ toàn trang (chỉ khi đang ở trang Học tiếng Trung và đã mở 1 mục) */
+body:has(#chinese.is-active[data-theme]) { background: linear-gradient(180deg, var(--t0) 0, var(--t0) 360px, #fff 1100px) !important; }
+
+/* Thanh trên cùng (‹ Học tiếng Trung + các tab con) */
+#chinese[data-theme] .hoc-back { color: var(--t6); background: var(--t1); }
+#chinese[data-theme] .hoc-back:hover { background: var(--t2); }
+#chinese[data-theme] .hoc-tab { border-color: var(--t2); }
+#chinese[data-theme] .hoc-tab.active { background: var(--t5); border-color: var(--t5); color: #fff; }
+
+/* Nút, chữ màu nhấn (lớp Tailwind có sẵn) */
+#chinese[data-theme] .bg-mint { background-color: var(--t5) !important; }
+#chinese[data-theme] .bg-mint-light { background-color: var(--t1) !important; }
+#chinese[data-theme] .text-mint { color: var(--t5) !important; }
+#chinese[data-theme] .bg-peach { background-color: var(--t4) !important; }
+#chinese[data-theme] .text-peach { color: var(--t5) !important; }
+#chinese[data-theme] .tt-btn:not(.ghost):not(.soft):not(.danger):not(.rec):hover { background: var(--t6); }
+#chinese[data-theme] .tt-btn.peach:hover { background: var(--t5); }
+#chinese[data-theme] .tt-btn.soft { color: var(--t6); }
+#chinese[data-theme] .tt-btn.soft:hover { background: var(--t2); }
+#chinese[data-theme] .tt-link { color: var(--t5); }
+#chinese[data-theme] .tt-lock { background: linear-gradient(135deg, var(--t0), #fff 70%); border-color: var(--t3); }
+#chinese[data-theme] .tt-tab.active { background: var(--t5); border-color: var(--t5); color: #fff; }
+#chinese[data-theme] .seal-stamp { background: var(--t5) !important; color: var(--t0) !important; }
+
+/* Trò chơi: tab chọn game, nền "bầu trời" của các game */
+#chinese[data-theme] .game-tab { border-color: var(--t2); }
+#chinese[data-theme] .game-tab:hover { background: var(--t0); }
+#chinese[data-theme] .game-tab.active,
+#chinese[data-theme] .game-tab--lb.active { background: var(--t5); color: #fff; border-color: var(--t5); }
+#chinese[data-theme] .game-tab--lb { color: var(--t5); background: var(--t0); }
+#chinese[data-theme] .jn-sky { background: linear-gradient(180deg, var(--t2) 0%, var(--t1) 55%, var(--t0) 100%); }
+
+/* Nút chọn cấp độ HSK của khu trò chơi: nhạt → đậm theo thang màu */
+#chinese[data-theme] .game-hsk-pill { transition: transform .15s ease, box-shadow .15s ease; }
+#chinese[data-theme] .game-hsk-pill[data-game-hsk="1"]  { background: var(--t0) !important; color: var(--t6) !important; }
+#chinese[data-theme] .game-hsk-pill[data-game-hsk="2"]  { background: var(--t1) !important; color: var(--t6) !important; }
+#chinese[data-theme] .game-hsk-pill[data-game-hsk="3"]  { background: var(--t2) !important; color: var(--t6) !important; }
+#chinese[data-theme] .game-hsk-pill[data-game-hsk="4"]  { background: var(--t3) !important; color: var(--t6) !important; }
+#chinese[data-theme] .game-hsk-pill[data-game-hsk="5"]  { background: var(--t4) !important; color: #fff !important; }
+#chinese[data-theme] .game-hsk-pill[data-game-hsk="6"]  { background: var(--t5) !important; color: #fff !important; }
+#chinese[data-theme] .game-hsk-pill[data-game-hsk="79"] { background: var(--t6) !important; color: #fff !important; }
+#chinese[data-theme] .game-hsk-pill[data-game-hsk="notebook"] { background: #fff !important; color: var(--t6) !important; outline: 2px dashed var(--t3); outline-offset: -6px; }
+#chinese[data-theme] .gh-check { color: var(--t5) !important; }
+
+/* Bài đọc: nút chọn cấp độ nhạt → đậm, tab 汉字/拼音/Tiếng Việt, nút nghe, huy hiệu */
+#chinese[data-theme] .baidoc-level[data-baidoc-filter="all"] { background: var(--t0) !important; color: var(--t6) !important; }
+#chinese[data-theme] .baidoc-level[data-baidoc-filter="2"]   { background: var(--t1) !important; color: var(--t6) !important; }
+#chinese[data-theme] .baidoc-level[data-baidoc-filter="3"]   { background: var(--t2) !important; color: var(--t6) !important; }
+#chinese[data-theme] .baidoc-level[data-baidoc-filter="4"]   { background: var(--t3) !important; color: var(--t6) !important; }
+#chinese[data-theme] .baidoc-level[data-baidoc-filter="5"]   { background: var(--t4) !important; color: #fff !important; }
+#chinese[data-theme] .baidoc-level[data-baidoc-filter="6"]   { background: var(--t5) !important; color: #fff !important; }
+#chinese[data-theme] .baidoc-level[data-baidoc-filter="7-9"] { background: var(--t6) !important; color: #fff !important; }
+#chinese[data-theme] .baidoc-level.active { border-color: var(--t6); box-shadow: 0 10px 20px -6px color-mix(in srgb, var(--t5) 45%, transparent); }
+#chinese[data-theme] .baidoc-level .bd-check { color: var(--t5); }
+#chinese[data-theme] .baidoc-tab-btn.active { background: var(--t5); }
+#chinese[data-theme] .baidoc-audio-btn { color: var(--t6); background: var(--t1); border-color: var(--t3); }
+#chinese[data-theme] .baidoc-audio-btn:hover { background: var(--t2); }
+#chinese[data-theme] .baidoc-badge { color: var(--t6); background: var(--t1); }
+#chinese[data-theme] .baidoc-card:hover { border-color: var(--t3); }
+
+/* Nút "中国文化补习": hồng đậm, viền đỏ, chữ trắng nổi bật */
+#chinese .baidoc-level-vh {
+  background: linear-gradient(120deg, #E0457B 0%, #C2185B 55%, #9C1050 100%) !important;
+  border: 3px solid #E53935 !important; color: #fff !important;
+  box-shadow: 0 8px 20px -8px rgba(194, 24, 91, .55);
+}
+#chinese .baidoc-level-vh.active { border-color: #B71C1C !important; box-shadow: 0 0 0 3px #FFCDD2, 0 10px 22px -8px rgba(183, 28, 28, .6); }
+#chinese .baidoc-level-vh .baidoc-vh-chip { background: transparent; box-shadow: none; color: #fff; padding: 2px 6px; }
+#chinese .baidoc-level-vh .baidoc-vh-zh { color: #fff; text-shadow: 0 1px 2px rgba(80, 0, 30, .45); }
+#chinese .baidoc-level-vh .baidoc-vh-sub { color: #FFE3EE; }
+#chinese .baidoc-level-vh .bd-check { color: #C2185B; }
+
+@supports not (color: color-mix(in srgb, red 50%, transparent)) {
+  #chinese[data-theme] { --tt-line: var(--t1); }
+}

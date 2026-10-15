@@ -114,14 +114,15 @@
       listEl.appendChild(lessonCard(l, i, `<span class="baidoc-badge vh font-hanzi" style="background:${c.from};color:${c.badgeInk}">${escapeHtml(g.zh)}</span>`)));
   }
 
-  // Thang tím của các nút HSK — chia đều cho số chủ đề, mỗi thẻ chuyển từ sắc này sang sắc kế tiếp
-  const VH_SCALE = ['#F5F0FF', '#E6DAFD', '#CDB8FA', '#A98BF0', '#7C5CD6', '#52329E', '#2E1760'];
+  // Thang màu của mục Bài đọc (--t0 … --t6 do hoc-tieng-trung.js gắn, nền hồng) — chia đều cho số chủ đề,
+  // mỗi thẻ chuyển từ sắc này sang sắc kế tiếp. Giá trị sau dấu phẩy là màu dự phòng.
+  const VH_SCALE = ['#FDF0F6', '#FADCEA', '#F5BBD5', '#EB8DB7', '#D65C95', '#B0306A', '#7A1A47'].map((c, i) => `var(--t${i}, ${c})`);
   const VH_ICON = { jieqi: '🌾', mingren: '🧑‍🏫', sixiang: '☯️', mingzhu: '📚', jieri: '🏮', mingsheng: '🏯' };
   function vhShade(i, n) {
     const pos = n <= 1 ? 0 : i * (VH_SCALE.length - 2) / (n - 1);
     const k = Math.min(VH_SCALE.length - 2, Math.round(pos));
-    const dark = k >= 3;
-    return { from: VH_SCALE[k], to: VH_SCALE[k + 1], dark, ink: dark ? '#FFFFFF' : '#2E1760', badgeInk: k >= 4 ? '#FFFFFF' : '#2E1760' };
+    const dark = k >= 4;
+    return { from: VH_SCALE[k], to: VH_SCALE[k + 1], dark, ink: dark ? '#FFFFFF' : VH_SCALE[6], badgeInk: dark ? '#FFFFFF' : VH_SCALE[6] };
   }
   const shortTitle = t => String(t).split(/[：:]/)[0].replace(/[《》]/g, '');
 
