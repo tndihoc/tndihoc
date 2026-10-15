@@ -1559,17 +1559,38 @@ Trang quản trị
 <span class="bd-check">✓</span>
 <span class="text-base font-black">HSK 7-9</span>
 </button>
-<button class="baidoc-level baidoc-level-vh focus-ring" data-baidoc-filter="vh" style="grid-column:1/-1;background:linear-gradient(90deg,#FFE3C8,#FFF4E8 70%);color:#8A3B00;">
+<button class="baidoc-level baidoc-level-vh focus-ring" data-baidoc-filter="vh">
 <span class="bd-check">✓</span>
-<span class="text-base font-black"><span class="font-hanzi">🏮 中国文化补习</span> <span class="baidoc-vh-sub">Bổ túc văn hoá Trung Quốc · VIP</span></span>
+<span class="baidoc-vh-chip"><span class="font-hanzi baidoc-vh-zh">中国文化补习</span><span class="baidoc-vh-sub">Bổ túc văn hoá Trung Quốc · VIP</span></span>
 </button>
 </div>
 </div>
 <style>@media (min-width:640px){ .baidoc-pills-7 { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
-.baidoc-vh-sub { font-size: 12px; font-weight: 600; opacity: .8; margin-left: 6px; }
-.baidoc-vh-group { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 10px; margin: 10px 0 2px; padding-bottom: 6px; border-bottom: 2px solid #FFD9B8; }
-.baidoc-vh-group b { font-size: 20px; color: #8A3B00; } .baidoc-vh-group span { font-size: 13px; color: #6B7280; }
-.baidoc-card .baidoc-badge.vh { background: #FFE8D4; color: #A64B00; }</style>
+/* Nút "中国文化补习": dải chuyển màu trải hết thang tím của các nút HSK (nhạt → đậm) */
+.baidoc-level-vh { grid-column: 1 / -1; padding: 14px 8px;
+  background: linear-gradient(90deg, #F5F0FF 0%, #E6DAFD 17%, #CDB8FA 34%, #A98BF0 51%, #7C5CD6 68%, #52329E 84%, #2E1760 100%); }
+.baidoc-vh-chip { display: inline-flex; align-items: baseline; flex-wrap: wrap; justify-content: center; gap: 4px 10px; background: rgba(255,255,255,.92);
+  color: #2E1760; border-radius: 9999px; padding: 7px 18px; box-shadow: 0 4px 14px rgba(46,23,96,.18); }
+.baidoc-vh-zh { font-size: 19px; font-weight: 700; letter-spacing: 1px; }
+.baidoc-vh-sub { font-size: 12.5px; font-weight: 700; color: #52329E; }
+/* Thẻ chủ đề bên trong (nhạt → đậm, mỗi thẻ chuyển sang sắc kế tiếp) */
+.vh-topic { position: relative; text-align: left; border-radius: 20px; padding: 20px 20px 18px; min-height: 168px; overflow: hidden;
+  display: flex; flex-direction: column; gap: 6px; border: 1px solid rgba(82,50,158,.12); cursor: pointer;
+  opacity: 0; animation: fadeUp .4s ease both; transition: transform .15s ease, box-shadow .15s ease; }
+.vh-topic:hover { transform: translateY(-3px); box-shadow: 0 14px 28px -14px rgba(46,23,96,.45); }
+.vh-topic .ico { position: absolute; right: 14px; top: 10px; font-size: 40px; opacity: .22; }
+.vh-topic .zh { font-size: 24px; font-weight: 700; line-height: 1.2; }
+.vh-topic .vi { font-size: 13.5px; font-weight: 600; opacity: .85; }
+.vh-topic .items { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+.vh-topic .items span { font-size: 12.5px; padding: 3px 9px; border-radius: 9999px; background: rgba(255,255,255,.55); }
+.vh-topic.dark .items span { background: rgba(255,255,255,.16); }
+.vh-topic .go { margin-top: auto; font-size: 12.5px; font-weight: 700; opacity: .9; }
+.vh-head { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border-radius: 18px; padding: 14px 18px; }
+.vh-head .zh { font-size: 22px; font-weight: 700; } .vh-head .vi { font-size: 13px; font-weight: 600; opacity: .85; }
+.vh-back { font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 9999px; background: rgba(255,255,255,.85); color: #2E1760; }
+.vh-back:hover { background: #fff; }
+.baidoc-card .baidoc-badge.vh { background: #EEE6FF; color: #52329E; }
+</style>
 <!-- LIST VIEW -->
 <div class="grid sm:grid-cols-2 gap-4" id="baidoc-list"></div>
 <p class="hidden text-sm text-slate italic" id="baidoc-empty">Chưa có bài đọc nào ở cấp độ này.</p>
@@ -3522,7 +3543,7 @@ Trang quản trị
 })();
 </script>
 <script>try { localStorage.removeItem("tn_ai_chat_history_v1"); } catch (e) {}</script>
-<script src="bai-doc.js?v=4" defer></script>
+<script src="bai-doc.js?v=5" defer></script>
 <script src="bo-thu.js?v=1" defer></script>
 <script src="tu-vung-gt1.js?v=1" defer></script>
 <script src="hoc-tieng-trung.js?v=7" defer></script>

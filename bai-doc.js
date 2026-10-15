@@ -29,7 +29,7 @@
 
   let currentFilter = 'all';
   const cultureLessons = [];                 // bài đọc văn hoá VIP
-  const CS = { status: 'idle', groups: [], err: '', uid: null };   // idle | loading | ready | error
+  const CS = { status: 'idle', groups: [], err: '', uid: null, openGroup: null };   // idle | loading | ready | error
 
   function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -78,18 +78,52 @@
     }
     listEl.innerHTML = '';
     if (!cultureLessons.length) { msg(`<p class="text-sm text-slate italic" style="grid-column:1/-1">Chưa có bài đọc văn hoá nào.</p>`); return; }
-    const groups = CS.groups.length ? CS.groups : [...new Set(cultureLessons.map(l => l.group))].map(id => ({ id, zh: id, vi: '' }));
-    let n = 0;
-    groups.forEach(g => {
-      const items = cultureLessons.filter(l => l.group === g.id);
-      if (!items.length) return;
-      const h = document.createElement('div');
-      h.className = 'baidoc-vh-group';
-      h.innerHTML = `<b class="font-hanzi">${escapeHtml(g.zh)}</b><span>${escapeHtml(g.vi || '')} · ${items.length} bài</span>`;
-      listEl.appendChild(h);
-      items.forEach(l => listEl.appendChild(lessonCard(l, n++, `<span class="baidoc-badge vh font-hanzi">${escapeHtml(g.zh)}</span>`)));
-    });
+    const groups = (CS.groups.length ? CS.groups : [...new Set(cultureLessons.map(l => l.group))].map(id => ({ id, zh: id, vi: '' })))
+      .filter(g => cultureLessons.some(l => l.group === g.id));
+    const shade = i => vhShade(i, groups.length);
+    const open = groups.findIndex(g => g.id === CS.openGroup);
+    if (open < 0) {
+      // Màn 1: các thẻ chủ đề, tím nhạt → tím đậm
+      groups.forEach((g, i) => {
+        const items = cultureLessons.filter(l => l.group === g.id);
+        const c = shade(i);
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'vh-topic focus-ring' + (c.dark ? ' dark' : '');
+        card.style.cssText = `background:linear-gradient(135deg, ${c.from}, ${c.to});color:${c.ink};animation-delay:${i * 0.06}s`;
+        card.innerHTML = `<span class="ico">${VH_ICON[g.id] || '📖'}</span>
+          <span class="zh font-hanzi">${escapeHtml(g.zh)}</span>
+          <span class="vi">${escapeHtml(g.vi || '')} · ${items.length} bài</span>
+          <span class="items font-hanzi">${items.slice(0, 8).map(l => `<span>${escapeHtml(shortTitle(l.title))}</span>`).join('')}</span>
+          <span class="go">Xem bài đọc →</span>`;
+        card.addEventListener('click', () => { CS.openGroup = g.id; renderList(); document.getElementById('baidoc-section').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+        listEl.appendChild(card);
+      });
+      return;
+    }
+    // Màn 2: các bài đọc trong chủ đề đã chọn
+    const g = groups[open]; const c = shade(open);
+    const head = document.createElement('div');
+    head.className = 'vh-head';
+    head.style.cssText = `background:linear-gradient(90deg, ${c.from}, ${c.to});color:${c.ink}`;
+    head.innerHTML = `<button type="button" class="vh-back focus-ring">← Các chủ đề</button>
+      <span class="zh font-hanzi">${VH_ICON[g.id] || ''} ${escapeHtml(g.zh)}</span><span class="vi">${escapeHtml(g.vi || '')}</span>`;
+    head.querySelector('.vh-back').addEventListener('click', () => { CS.openGroup = null; renderList(); });
+    listEl.appendChild(head);
+    cultureLessons.filter(l => l.group === g.id).forEach((l, i) =>
+      listEl.appendChild(lessonCard(l, i, `<span class="baidoc-badge vh font-hanzi" style="background:${c.from};color:${c.badgeInk}">${escapeHtml(g.zh)}</span>`)));
   }
+
+  // Thang tím của các nút HSK — chia đều cho số chủ đề, mỗi thẻ chuyển từ sắc này sang sắc kế tiếp
+  const VH_SCALE = ['#F5F0FF', '#E6DAFD', '#CDB8FA', '#A98BF0', '#7C5CD6', '#52329E', '#2E1760'];
+  const VH_ICON = { jieqi: '🌾', mingren: '🧑‍🏫', sixiang: '☯️', mingzhu: '📚', jieri: '🏮', mingsheng: '🏯' };
+  function vhShade(i, n) {
+    const pos = n <= 1 ? 0 : i * (VH_SCALE.length - 2) / (n - 1);
+    const k = Math.min(VH_SCALE.length - 2, Math.round(pos));
+    const dark = k >= 3;
+    return { from: VH_SCALE[k], to: VH_SCALE[k + 1], dark, ink: dark ? '#FFFFFF' : '#2E1760', badgeInk: k >= 4 ? '#FFFFFF' : '#2E1760' };
+  }
+  const shortTitle = t => String(t).split(/[：:]/)[0].replace(/[《》]/g, '');
 
   function renderList() {
     if (currentFilter === 'vh') { renderCulture(); return; }
@@ -362,6 +396,7 @@
       pillsWrap.querySelectorAll('.baidoc-level').forEach(p => p.classList.remove('active'));
       pill.classList.add('active');
       currentFilter = pill.dataset.baidocFilter;
+      if (currentFilter === 'vh') CS.openGroup = null;   // vào lại mục văn hoá → về màn các chủ đề
       renderList();
     });
   });
