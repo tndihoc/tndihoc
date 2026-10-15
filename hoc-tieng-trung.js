@@ -77,7 +77,7 @@ window.tnVoice = (function () {
   const PANELS = [
     { id: "tongquan", icon: "📊", title: "Tổng quan", desc: "Chuỗi ngày học, lịch học và số từ đã ghi nhớ.", bg: "#E8F6EE", ink: "#1E7A46", line: "#BFE5CD",
       parts: [{ el: "streak-widget", label: "📊 Tổng quan" }] },
-    { id: "trochoi", icon: "🎮", title: "Trò chơi", desc: "Flashcard, nối cặp, trắc nghiệm, đấu trường, bảng xếp hạng, tương tác bằng camera.", bg: "#F0EAFE", ink: "#52329E", line: "#D9CCFA",
+    { id: "trochoi", icon: "🎮", title: "Trò chơi", desc: "Flashcard, nối cặp, trắc nghiệm, đấu trường, xếp chữ 消消乐, bảng xếp hạng, tương tác bằng camera.", bg: "#F0EAFE", ink: "#52329E", line: "#D9CCFA",
       parts: [{ el: "vocab-games", label: "🎮 Trò chơi" }, { el: "notebook-section", label: "📓 Sổ tay từ vựng" }] },
     { id: "chinhta", icon: "✍️", title: "Chép chính tả", desc: "Nghe – gõ lại, đo tốc độ chữ/phút; hoặc chép tay rồi đăng ảnh.", bg: "#E6F4F1", ink: "#1F6F62", line: "#BCE3DA",
       parts: [{ el: "tt-dictation", label: "✍️ Chép chính tả" }] },
