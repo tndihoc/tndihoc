@@ -760,6 +760,90 @@ Trang quản trị
 </div>
 </div>
 </header>
+<!-- ===== TUYỂN SINH (banner quảng cáo lớp) — xoá cả khối này + 2 khối "TUYỂN SINH" khác khi hết tuyển ===== -->
+<style>
+  /* Tông màu lấy theo poster: xanh dương tươi trên nền trắng – xanh rất nhạt */
+  .ts-bar { background: #EAF3FF; border-bottom: 1px solid #CFE1FB; color: #1B3F7A; font-size: 14px; }
+  .ts-bar-in { max-width: 72rem; margin: 0 auto; padding: 9px 48px 9px 20px; position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 12px; text-align: center; }
+  .ts-bar-tag { display: inline-block; background: #2F6FD6; color: #fff; font-weight: 700; font-size: 12px; padding: 2px 10px; border-radius: 999px; letter-spacing: .02em; }
+  .ts-bar b { color: #1E56B8; }
+  .ts-bar-slot { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: #1E56B8; background: #fff; border: 1px solid #BCD6FA; border-radius: 999px; padding: 1px 10px; font-size: 13px; }
+  .ts-bar-sep { color: #9DBCEB; }
+  .ts-bar-link { font-weight: 700; color: #1E56B8; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: #7FAEF0; background: none; border: 0; cursor: pointer; font-size: 14px; padding: 0; }
+  .ts-bar-link:hover { color: #123C8C; }
+  .ts-bar-x { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 999px; border: 0; background: transparent; color: #5F6F8A; font-size: 18px; line-height: 1; cursor: pointer; }
+  .ts-bar-x:hover { background: rgba(47,111,214,.1); color: #1E56B8; }
+  .ts-only-wide { display: inline; }
+  @media (max-width: 640px) { .ts-only-wide { display: none; } .ts-bar { font-size: 13px; } }
+
+  .ts-pulse { width: 7px; height: 7px; border-radius: 99px; background: #2F6FD6; box-shadow: 0 0 0 0 rgba(47,111,214,.5); animation: tsPulse 1.8s infinite; }
+  @keyframes tsPulse { 0% { box-shadow: 0 0 0 0 rgba(47,111,214,.45); } 70% { box-shadow: 0 0 0 7px rgba(47,111,214,0); } 100% { box-shadow: 0 0 0 0 rgba(47,111,214,0); } }
+  @media (prefers-reduced-motion: reduce) { .ts-pulse { animation: none; } }
+
+  .ts-card { position: relative; overflow: hidden; border-radius: 20px; margin: 0 0 40px; color: #1B3F7A;
+    background:
+      radial-gradient(42% 60% at 100% 0%, #D3E6FF 0%, rgba(211,230,255,0) 70%),
+      radial-gradient(40% 55% at 0% 100%, #DDEBFF 0%, rgba(221,235,255,0) 70%),
+      linear-gradient(160deg, #F6FAFF 0%, #EAF3FF 100%);
+    border: 1px solid #CFE1FB; box-shadow: 0 22px 44px -30px rgba(30,86,184,.45); scroll-margin-top: 90px; }
+  .ts-water { position: absolute; right: -10px; bottom: -40px; font-family: "KaiTi","STKaiti","Noto Serif SC",serif; font-size: 210px; line-height: 1; color: rgba(47,111,214,.07); pointer-events: none; user-select: none; }
+  .ts-grid { position: relative; display: grid; grid-template-columns: 1.05fr 1fr; gap: 28px 44px; padding: 34px 40px 30px; }
+  .ts-kicker { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 14px; font-size: 13px; font-weight: 600; color: #2F6FD6; letter-spacing: .02em; }
+  .ts-title-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 16px; }
+  .ts-title { margin: 0; font-family: "Fraunces", Georgia, serif; font-weight: 700; font-size: clamp(2.1rem, 4.2vw, 3rem); line-height: 1.05; letter-spacing: -0.02em; color: #173C80; }
+  .ts-title span { color: #2F6FD6; }
+  .ts-slot { display: inline-flex; align-items: center; gap: 8px; background: #2F6FD6; color: #fff; font-weight: 700; font-size: 14px; padding: 7px 14px 7px 12px; border-radius: 999px; box-shadow: 0 8px 18px -10px rgba(47,111,214,.9); }
+  .ts-slot .ts-pulse { background: #fff; animation-name: tsPulseW; }
+  @keyframes tsPulseW { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,.7); } 70% { box-shadow: 0 0 0 7px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
+  .ts-sub { margin: 10px 0 0; color: #4A5E80; font-size: 15px; line-height: 1.6; }
+  .ts-sub .ts-han { font-family: "KaiTi","STKaiti","Noto Serif SC",serif; color: #173C80; font-size: 17px; }
+  .ts-path { display: flex; align-items: stretch; gap: 10px; margin: 22px 0 0; }
+  .ts-step { flex: 1; border-radius: 14px; padding: 14px 16px; background: rgba(255,255,255,.7); border: 1px solid #CFE1FB; }
+  .ts-step small { display: block; font-size: 12px; color: #6A7FA3; margin-bottom: 4px; }
+  .ts-step b { display: block; font-family: "Fraunces", Georgia, serif; font-weight: 700; font-size: 26px; line-height: 1.1; color: #173C80; }
+  .ts-step em { display: block; font-style: normal; font-size: 13px; color: #4A5E80; margin-top: 4px; line-height: 1.45; }
+  .ts-step.is-goal { background: #2F6FD6; border-color: #2F6FD6; box-shadow: 0 12px 22px -14px rgba(47,111,214,.9); }
+  .ts-step.is-goal small { color: #D6E6FF; } .ts-step.is-goal b { color: #fff; } .ts-step.is-goal em { color: #EAF3FF; }
+  .ts-arrow { align-self: center; color: #2F6FD6; font-size: 22px; flex: none; }
+  .ts-start { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+  .ts-start small { font-size: 13px; color: #6A7FA3; }
+  .ts-start b { font-family: "Fraunces", Georgia, serif; font-weight: 700; font-size: 30px; color: #173C80; position: relative; line-height: 1; }
+  .ts-start b::after { content: ""; position: absolute; left: -2px; right: -2px; bottom: -6px; height: 4px; border-radius: 4px; background: #7FAEF0; transform: rotate(-1.2deg); }
+  .ts-start i { font-style: normal; font-size: 13px; color: #4A5E80; }
+  .ts-info { margin: 0; display: grid; align-content: start; align-self: start; background: rgba(255,255,255,.75); border: 1px solid #CFE1FB; border-radius: 16px; padding: 6px 20px; }
+  .ts-info div { display: grid; grid-template-columns: 96px 1fr; gap: 12px; padding: 11px 0; border-bottom: 1px dashed #CFE1FB; }
+  .ts-info div:last-child { border-bottom: 0; }
+  .ts-info dt { font-size: 13px; color: #6A7FA3; padding-top: 2px; }
+  .ts-info dd { margin: 0; font-size: 15px; font-weight: 700; line-height: 1.5; color: #173C80; }
+  .ts-info dd span { font-weight: 400; color: #4A5E80; }
+  .ts-foot { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; padding: 16px 40px 18px; background: rgba(255,255,255,.65); border-top: 1px solid #CFE1FB; }
+  .ts-cta { display: inline-flex; align-items: center; gap: 10px; background: #2F6FD6; color: #fff; font-weight: 700; font-size: 15px; padding: 12px 20px; border-radius: 999px; text-decoration: none; box-shadow: 0 10px 22px -12px rgba(47,111,214,.95); transition: transform .15s, background .15s; }
+  .ts-cta:hover { background: #2259BC; transform: translateY(-1px); }
+  .ts-cta-num { font-family: "Fraunces", Georgia, serif; font-size: 17px; letter-spacing: .01em; }
+  .ts-ghost { color: #1E56B8; font-weight: 600; font-size: 14px; text-decoration: none; border-bottom: 1px solid #9DBCEB; padding-bottom: 1px; }
+  .ts-ghost:hover { color: #123C8C; border-color: #1E56B8; }
+  .ts-teacher { margin: 0 0 0 auto; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #4A5E80; }
+  .ts-teacher img { width: 38px; height: 38px; border-radius: 999px; object-fit: cover; border: 2px solid #fff; box-shadow: 0 0 0 1px #BCD6FA; }
+  .ts-teacher b { color: #173C80; font-weight: 700; }
+  .ts-seal { flex: none; width: 40px; height: 54px; border-radius: 6px; background: #fff; color: #2F6FD6; border: 1.5px solid #2F6FD6; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: "KaiTi","STKaiti","Noto Serif SC",serif; font-size: 18px; line-height: 1.1; transform: rotate(-6deg); }
+  @media (max-width: 860px) {
+    .ts-grid { grid-template-columns: 1fr; padding: 26px 20px 22px; }
+    .ts-foot { padding: 16px 20px; } .ts-teacher { margin-left: 0; width: 100%; }
+    .ts-seal { width: 34px; height: 46px; font-size: 15px; }
+    .ts-info { padding: 4px 16px; } .ts-info div { grid-template-columns: 82px 1fr; }
+    .ts-step b { font-size: 22px; } .ts-start b { font-size: 26px; }
+  }
+</style>
+<div class="ts-bar" id="ts-bar" hidden>
+<div class="ts-bar-in">
+<span class="ts-bar-tag">Tuyển sinh</span>
+<span>Lớp <b>HSK 0–2</b> cho người mới bắt đầu<span class="ts-only-wide"> · giáo trình 贯通中文</span> <span class="ts-bar-sep">·</span> khai giảng <b>24/10</b></span>
+<span class="ts-bar-slot"><span class="ts-pulse"></span>Còn 2 slot</span>
+<button class="ts-bar-link" id="ts-bar-more" type="button">Xem chi tiết →</button>
+<button aria-label="Ẩn thông báo" class="ts-bar-x" id="ts-bar-x" type="button">✕</button>
+</div>
+</div>
+<!-- ===== /TUYỂN SINH (dải thông báo) ===== -->
 <!-- Mobile drawer overlay + panel (chỉ dùng cho màn hình nhỏ, khi navbar ngang không đủ chỗ hiện hết tab) -->
 <div class="lg:hidden fixed inset-0 bg-ink/40 z-40 opacity-0 pointer-events-none" id="drawer-overlay"></div>
 <aside class="lg:hidden fixed top-0 left-0 h-screen w-[78%] max-w-[300px] bg-white z-50 px-5 py-6 -translate-x-full flex flex-col" id="mobile-drawer">
@@ -812,6 +896,36 @@ Trang quản trị
   Lượt truy cập hôm nay: <span id="visit-counter-num">—</span>
 </span>
 </div>
+<!-- ===== TUYỂN SINH (thẻ trên Trang chủ) ===== -->
+<article aria-label="Tuyển sinh lớp HSK 0–2" class="ts-card" id="ts-card" hidden>
+<span aria-hidden="true" class="ts-water">零</span>
+<div class="ts-grid">
+<div>
+<p class="ts-kicker"><span class="ts-pulse"></span>Thông báo tuyển sinh · Học trực tuyến qua Zoom</p>
+<div class="ts-title-row"><h2 class="ts-title">Lớp HSK <span>0–2</span></h2><span aria-hidden="true" class="ts-seal"><span>开</span><span>班</span></span><span class="ts-slot"><span class="ts-pulse"></span>Chỉ còn 2 slot</span></div>
+<p class="ts-sub">Dành cho người mới bắt đầu, theo chuẩn HSK 3.0 mới · giáo trình <span class="ts-han">贯通中文</span></p>
+<div class="ts-path">
+<div class="ts-step"><small>Đầu vào</small><b>Từ số 0</b><em>Chưa cần biết gì</em></div>
+<span aria-hidden="true" class="ts-arrow">→</span>
+<div class="ts-step is-goal"><small>Đầu ra</small><b>HSK 2</b><em>1.200 từ vựng + 30 chủ đề thông dụng</em></div>
+</div>
+<p class="ts-start"><small>Khai giảng</small><b>24/10</b><i>Thứ 7 · 19h30</i></p>
+</div>
+<dl class="ts-info">
+<div><dt>Thời lượng</dt><dd>50 buổi <span>· 90 phút/buổi</span></dd></div>
+<div><dt>Lịch học</dt><dd>Thứ 3 + Thứ 7 <span>· 19h30 – 21h00</span></dd></div>
+<div><dt>Sĩ số</dt><dd>6 – 8 học viên <span>· còn 2 slot</span></dd></div>
+<div><dt>Hình thức</dt><dd>Trực tuyến qua Zoom</dd></div>
+<div><dt>Đặc biệt</dt><dd>Có video xem lại <span>sau mỗi buổi học</span></dd></div>
+</dl>
+</div>
+<div class="ts-foot">
+<a class="ts-cta" href="https://zalo.me/0348356315" rel="noopener" target="_blank">Đăng ký qua Zalo <span class="ts-cta-num">0348356315</span></a>
+<a class="ts-ghost" href="poster-hsk02.jpg" rel="noopener" target="_blank">Xem poster đầy đủ</a>
+<p class="ts-teacher"><img alt="Cô Thuý Ngô" loading="lazy" src="anh-eb1634f1f1.jpg"/><span>Giáo viên: <b>Cô Thuý Ngô</b> – NCS Tiến sĩ Trường Đại học Tứ Xuyên</span></p>
+</div>
+</article>
+<!-- ===== /TUYỂN SINH (thẻ) ===== -->
 <div class="grid md:grid-cols-3 gap-5">
 <button class="nav-jump home-block focus-ring" data-target="about" style="background:linear-gradient(135deg,#4F8DF0 0%,#2F62D6 100%);--hb-ink:#2F62D6;--hb-shadow:rgba(47,98,214,.55);" type="button">
 <span class="hb-title">Giới thiệu về TN</span>
@@ -3462,5 +3576,26 @@ Tiếp tục với Google
 <script src="phong-van.js?v=3" type="module"></script>
 <script src="hskk.js?v=1" type="module"></script>
 <script src="game-cu-chi.js?v=2" type="module"></script>
+<!-- ===== TUYỂN SINH (điều khiển) — đổi ngày ở TS_END để banner tự ẩn ===== -->
+<script>
+(function () {
+  var TS_ID  = "hsk02-2026-10";            // đổi mã này khi tuyển lớp mới → dải thông báo hiện lại với mọi người
+  var TS_END = "2026-10-24T23:59:00+07:00"; // sau thời điểm này banner tự ẩn (đang đặt: hết ngày khai giảng 24/10)
+  if (Date.now() > new Date(TS_END).getTime()) return;
+  var card = document.getElementById("ts-card"), bar = document.getElementById("ts-bar");
+  if (card) card.hidden = false;
+  var KEY = "tn_ts_hide_" + TS_ID, hidden = false;
+  try { hidden = localStorage.getItem(KEY) === "1"; } catch (e) {}
+  if (bar && !hidden) bar.hidden = false;
+  var x = document.getElementById("ts-bar-x");
+  if (x) x.addEventListener("click", function () { bar.hidden = true; try { localStorage.setItem(KEY, "1"); } catch (e) {} });
+  var more = document.getElementById("ts-bar-more");
+  if (more) more.addEventListener("click", function () {
+    var home = document.querySelector('[data-nav-btn][data-target="home"]');
+    if (home) home.click();
+    setTimeout(function () { if (card) card.scrollIntoView({ behavior: "smooth", block: "start" }); }, 120);
+  });
+})();
+</script>
 </body>
 </html>
