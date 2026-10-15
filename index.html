@@ -1127,6 +1127,7 @@ Trang quản trị
 <button class="game-tab" data-game-tab="flashcard">🎴 Flashcard</button>
 <button class="game-tab" data-game-tab="camera">📷 Tương tác camera</button>
 <button class="game-tab" data-game-tab="match3">🍬 Xếp chữ 消消乐</button>
+<button class="game-tab" data-game-tab="pikachu">🀄 Pikachu lượng từ</button>
 <button class="game-tab game-tab--lb" data-game-tab="leaderboard">🏆 Bảng xếp hạng</button>
 </div>
 <!-- ---------- GAME 1: MATCH UP (NỐI CẶP) ---------- -->
@@ -1415,6 +1416,8 @@ Trang quản trị
 </div>
 <!-- ---------- GAME 7: XẾP CHỮ 消消乐 kiểu Candy Crush (giao diện + logic ở game-xep-chu.js) ---------- -->
 <div class="game-panel" id="game-match3"></div>
+<!-- ---------- GAME 8: PIKACHU LƯỢNG TỪ 连连看 (giao diện + logic ở game-pikachu.js, dữ liệu ở luong-tu-data.js) ---------- -->
+<div class="game-panel" id="game-pikachu"></div>
 <!-- ---------- BẢNG XẾP HẠNG (top 10 tuần / tháng) ---------- -->
 <div class="game-panel" id="game-leaderboard">
 <div class="lb-card">
@@ -2100,6 +2103,7 @@ Trang quản trị
     flashcard: document.getElementById('game-flashcard'),
     camera: document.getElementById('game-camera'),
     match3: document.getElementById('game-match3'),
+    pikachu: document.getElementById('game-pikachu'),
     leaderboard: document.getElementById('game-leaderboard'),
   };
   gameTabs.forEach(tab => {
@@ -3581,6 +3585,7 @@ Tiếp tục với Google
 <script src="hskk.js?v=1" type="module"></script>
 <script src="game-cu-chi.js?v=2" type="module"></script>
 <script src="game-xep-chu.js?v=2" type="module"></script>
+<script src="game-pikachu.js?v=1" type="module"></script>
 <!-- ===== TUYỂN SINH (điều khiển) — đổi ngày ở TS_END để banner tự ẩn ===== -->
 <script>
 (function () {
