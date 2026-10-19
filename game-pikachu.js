@@ -16,7 +16,7 @@
    File này tự chèn giao diện + CSS vào <div id="game-pikachu">.
    ===================================================================== */
 
-import { CLASSIFIERS, NOUNS } from './luong-tu-data.js?v=2';
+import { CLASSIFIERS, NOUNS, PHRASE_VI } from './luong-tu-data.js?v=3';
 
 const LS_BEST = 'tn_pk_best_v2';
 const LS_BEST_OLD = 'tn_pk_best_v1';
@@ -60,6 +60,8 @@ const clPy = c => CLASSIFIERS[c][0];
 // 一 đọc yí trước thanh 4, yì trước thanh 1/2/3
 const yiPy = c => /[àèìòùǜ]/.test(clPy(c)) ? 'yí' : 'yì';
 const phrasePy = (c, n) => `${yiPy(c)} ${clPy(c)} ${n.p}`;
+// Nghĩa cụ thể của cụm (一粒米饭 → một hạt cơm); thiếu trong bảng thì ghép tạm từ nghĩa lượng từ + danh từ
+const phraseVi = (c, n) => PHRASE_VI[c + n.h] || `một ${CLASSIFIERS[c][1].split(/[,;(]/)[0].trim()} ${n.v}`;
 
 const panel = $('game-pikachu');
 
@@ -283,8 +285,9 @@ function init() {
       <span class="pk-ok">✓ Chính xác</span>
       <span class="pk-card-h font-hanzi">一${esc(c)}${esc(n.h)}</span>
       <span class="pk-card-p">${esc(phrasePy(c, n))}</span>
-      <span class="pk-card-m">${esc(n.v)}</span>
-      ${others.length ? `<span class="pk-also">Cũng nói được: ${others.map(x => `<b class="font-hanzi">一${esc(x)}${esc(n.h)}</b>`).join(' · ')}</span>` : ''}</div>`;
+      <span class="pk-card-vi">${esc(phraseVi(c, n))}</span>
+      <span class="pk-card-m"><b class="font-hanzi">${esc(c)}</b> ${esc(clPy(c))}: ${esc(CLASSIFIERS[c][1])} · <b class="font-hanzi">${esc(n.h)}</b>: ${esc(n.v)}</span>
+      ${others.length ? `<span class="pk-also">Cũng nói được: ${others.map(x => `<b class="font-hanzi">一${esc(x)}${esc(n.h)}</b> <small>(${esc(phraseVi(x, n))})</small>`).join(' · ')}</span>` : ''}</div>`;
   }
   function infoWrong(c, n) {
     el.info.innerHTML = `<div class="pk-card pk-card-bad">
@@ -297,7 +300,7 @@ function init() {
   function pushLog(c, n) {
     const i = S.done.length - 1;
     const b = document.createElement('button'); b.type = 'button'; b.className = 'pk-chip font-hanzi'; b.dataset.pkSay = i;
-    b.textContent = '一' + c + n.h; b.title = phrasePy(c, n) + ' · ' + n.v;
+    b.textContent = '一' + c + n.h; b.title = phrasePy(c, n) + ' · ' + phraseVi(c, n);
     el.log.prepend(b);
   }
   el.log.addEventListener('click', e => {
@@ -512,7 +515,7 @@ function init() {
       <div class="pk-rw">
         <button type="button" class="pk-rw-say" data-pk-rsay="${i}" title="Nghe đọc">🔊</button>
         <span class="pk-rw-h font-hanzi">一${esc(d.c)}${esc(d.n.h)}</span>
-        <span class="pk-rw-t"><b>${esc(phrasePy(d.c, d.n))}</b> · ${esc(d.n.v)}</span>
+        <span class="pk-rw-t"><b>${esc(phrasePy(d.c, d.n))}</b> · ${esc(phraseVi(d.c, d.n))}</span>
       </div>`).join('') || '<p class="text-sm text-ink/70">Chưa nối được cặp nào.</p>';
     const next = $('pk-next');
     next.textContent = win ? `Màn ${S.L + 1} →` : 'Chơi lại màn này';
@@ -720,9 +723,10 @@ function injectCss() {
   @keyframes pkIn { from{transform:scale(.94); opacity:.4} to{transform:scale(1); opacity:1} }
   .pk-card-h { font-size:38px; line-height:1.15; color:#1E2A5A; }
   .pk-card-p { font-size:15px; font-weight:700; color:#2E3440; }
+  .pk-card-vi { font-size:16px; font-weight:700; color:#B35900; }
   .pk-card-m { font-size:13.5px; color:#2E3440; line-height:1.5; } .pk-card-m small { color:#5B6472; }
   .pk-ok { font-size:12px; font-weight:800; color:#1F6B43; } .pk-bad { font-size:12px; font-weight:800; color:#C0392B; }
-  .pk-also { font-size:12.5px; color:#5B6472; margin-top:2px; } .pk-also b { color:#B35900; font-weight:400; font-size:15px; }
+  .pk-also { font-size:12.5px; color:#5B6472; margin-top:2px; } .pk-also b { color:#B35900; font-weight:400; font-size:15px; } .pk-also small { font-size:12px; }
   .pk-side-h { font-size:13px; font-weight:700; color:#2E3440; } .pk-side-h small { font-weight:500; color:#5B6472; }
   .pk-log { display:flex; flex-wrap:wrap; gap:6px; max-height:220px; overflow:auto; }
   .pk-chip { font-size:16px; line-height:1; padding:7px 10px; border-radius:9999px; background:#fff; color:#1E2A5A; box-shadow: inset 0 -2px 0 #FFC796; }
