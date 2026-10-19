@@ -138,6 +138,8 @@
   let flushing = false;
   async function flush(noteEl, roundPts) {
     const user = window.tnAuth && window.tnAuth.user;
+    const role = window.tnAuth && window.tnAuth.profile && window.tnAuth.profile.role;
+    if (role === 'admin' || role === 'teacher') { S.pending = 0; save(); return; }   // giáo viên không tham gia xếp hạng
     if (!user || typeof window.tnSubmitScore !== 'function') {
       if (noteEl && roundPts) { noteEl.textContent = `+${roundPts} điểm thưởng ván này. Đăng nhập để điểm được tính vào bảng xếp hạng tuần & tháng.`; noteEl.className = 'lb-note is-guest'; }
       return;
