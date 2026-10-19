@@ -184,12 +184,6 @@
   .tn-pts-pop.is-show { opacity:1; transform:translateY(0); }
   .lb-today { display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:12px; padding:12px 16px; border-radius:14px; background:#FFF6EC; border:1px solid #FFE8D1; font-size:13px; color:#7A3D00; }
   .lb-today-h { width:100%; font-size:13.5px; } .lb-today b { color:#B35900; }
-  .lb-rules { margin-top:14px; border-radius:14px; border:1px solid rgba(46,52,64,.1); background:#fff; font-size:13px; color:#2E3440; }
-  .lb-rules summary { cursor:pointer; padding:11px 16px; font-weight:700; color:#B35900; }
-  .lb-rules-body { padding:0 16px 14px; display:grid; gap:10px; }
-  .lb-rules-body h4 { font-weight:700; font-size:13px; margin-bottom:2px; }
-  .lb-rules-body ul { list-style:disc; padding-left:18px; line-height:1.6; color:#4B5563; }
-  .lb-rules-body p { color:#6B7280; font-size:12.5px; }
   @media (prefers-reduced-motion: reduce) { .tn-pts-pop { transition:none; } }`;
   document.head.appendChild(css);
 
