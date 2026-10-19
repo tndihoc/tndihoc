@@ -3,11 +3,14 @@
    ---------------------------------------------------------------------
    Phần thưởng: "Bài mẫu HSKK (VIP)" + "Bổ túc văn hoá Trung Quốc (VIP)" trong 30 ngày.
 
-   Trao / thu hồi TỰ ĐỘNG, không cần bấm gì: mỗi khi tài khoản QUẢN TRỊ (cô Thúy) mở web,
+   Trao / thu hồi TỰ ĐỘNG theo 2 đường (cùng 1 logic, chạy lại nhiều lần cũng không trao trùng):
+     • GitHub Actions chạy scripts/phan-thuong-thang.mjs mỗi ngày lúc 00:10 giờ VN (cần secret
+       FIREBASE_SERVICE_ACCOUNT — xem .github/workflows/phan-thuong-thang.yml);
+     • dự phòng: mỗi khi tài khoản QUẢN TRỊ (cô Thúy) mở web,
    trang tự làm trong nền (chỉ quản trị mới có quyền sửa hồ sơ người khác theo luật Firestore):
      1) Thu hồi phần thưởng đã quá 30 ngày (trả quyền về như trước khi được thưởng).
      2) Nếu tháng trước chưa trao: lấy top 10 bảng tháng trước, bỏ tài khoản giáo viên/quản trị,
-        chọn 3 người điểm cao nhất → bật quyền + ghi users/{uid}.monthReward
+        chọn 3 HỌC VIÊN điểm cao nhất (quản trị vẫn hiện trên bảng nhưng không nhận / bị thu hồi thưởng) → bật quyền + ghi users/{uid}.monthReward
           { month: "m-2026-10", rank, until: <ms>, granted: [quyền do phần thưởng bật] }.
      3) Ghi danh sách vinh danh vào settings/defaults.rewards để mọi người cùng xem.
    tinh-nang-moi.js → can(): quyền do phần thưởng bật tự hết hiệu lực khi qua "until",
@@ -41,7 +44,7 @@
       // 1) Thu hồi phần thưởng hết hạn
       for (const u of users) {
         const r = u.monthReward;
-        if (!r || r.revoked || !(r.until <= now)) continue;
+        if (!r || r.revoked || !(r.until <= now) || isStaffRole(u.role)) continue;   // không đụng quyền của quản trị / giáo viên
         const perms = { ...(u.permissions || {}) };
         (r.granted || []).forEach(p => { const v = (r.prev || {})[p]; if (typeof v === 'boolean') perms[p] = v; else delete perms[p]; });
         await D.updateDoc(D.doc(db, 'users', u.id), { permissions: perms, 'monthReward.revoked': true });

@@ -1,0 +1,30 @@
+# Phần thưởng tháng: tự trao thưởng cho top 3 bảng xếp hạng tháng và tự thu hồi khi hết 30 ngày.
+# Chạy mỗi ngày lúc 00:10 giờ Việt Nam (17:10 UTC). Bấm "Run workflow" ở tab Actions để chạy ngay.
+name: Phần thưởng tháng
+
+on:
+  schedule:
+    - cron: "10 17 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Chạy thử (chỉ xem sẽ làm gì, không ghi vào Firebase)"
+        type: boolean
+        default: false
+
+jobs:
+  reward:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scripts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - run: node phan-thuong-thang.mjs
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
