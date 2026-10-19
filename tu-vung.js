@@ -10792,7 +10792,7 @@
   function fcMarkKnown() {
     const word = fcDeck[fcIndex];
     if (window.removeFromNotebook) window.removeFromNotebook(word.hanzi, word.pinyin);
-    if (window.trackWordMemorized) window.trackWordMemorized(word);
+    if (window.trackWordMemorized) window.trackWordMemorized(word, 'flashcard');
     fcNext();
   }
 

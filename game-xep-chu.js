@@ -553,6 +553,7 @@ function init() {
     if (S.score > (best.score || 0)) { best.score = S.score; newRec = true; }
     saveBest(best);
     call('trackStudyActivity');
+    if (window.tnPoints) window.tnPoints.round({ done: win, challenge: win && S.L >= 6 });
     (win ? sndWinFx : sndLoseFx)();
 
     $('xc-r-emoji').textContent = win ? '🏆' : '🍬';

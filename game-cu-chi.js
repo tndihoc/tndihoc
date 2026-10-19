@@ -208,7 +208,7 @@ function init() {
     if (correct) {
       S.ok++; el.correct.textContent = String(S.ok);
       call('sndCorrect');
-      if (mode === 'tilt') call('trackWordMemorized', S.q.word);
+      if (mode === 'tilt') call('trackWordMemorized', S.q.word); else if (window.tnPoints) window.tnPoints.correct();
     } else {
       call('sndWrong');
       if (mode === 'tilt') call('addToNotebook', S.q.word);
@@ -296,6 +296,7 @@ function init() {
     $('cam-result-emoji').textContent = score >= 15 ? '👑' : score >= 8 ? '🔥' : '💪';
     el.play.classList.add('hidden'); el.result.classList.remove('hidden');
     Board.submit(mode, score, $('cam-lb-note'));
+    if (window.tnPoints) window.tnPoints.round({ done: S.total >= 5, perfect: S.total >= 10 && S.ok === S.total });
   }
 
   el.start.addEventListener('click', start);
