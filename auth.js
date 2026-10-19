@@ -333,7 +333,9 @@ function bind() {
 }
 
 /* ---------- BẢNG XẾP HẠNG (top 10 tuần / tháng) ----------
-   - Điểm cộng dồn từ 2 trò chơi có điểm: "Trắc nghiệm" và "Đấu trường sinh tồn".
+   - Điểm học tập cộng dồn từ MỌI hoạt động học (cách tính ở diem-hoc-tap.js): từ vựng mới nhớ được,
+     thời gian ôn tập liên tục, điểm thưởng làm đúng / vượt màn. diem-hoc-tap.js gom điểm rồi gọi
+     tnSubmitScore('study', điểm) mỗi 2 phút / khi hết ván (mỗi lần gửi tăng "games" lên 1).
    - Chỉ tính cho người đã đăng nhập. Tuần bắt đầu thứ Hai, tháng bắt đầu ngày 1 (giờ Việt Nam).
    - Dữ liệu lưu ở Firestore: leaderboard/{kỳ}/scores/{uid}  (kỳ ví dụ: w-2026-09-21, m-2026-09)
 ------------------------------------------------------------------ */
@@ -372,7 +374,7 @@ function lbName() {
   return String((p && p.name) || (u && (u.displayName || (u.email || "").split("@")[0])) || "Học viên").trim().slice(0, 60) || "Học viên";
 }
 
-/* Gọi từ trò chơi khi kết thúc 1 ván: window.tnSubmitScore('quiz' | 'arena', điểm, phầnTửHiểnThịThôngBáo) */
+/* Gọi từ diem-hoc-tap.js: window.tnSubmitScore('study', điểm, phầnTửHiểnThịThôngBáo) */
 async function submitScore(game, points, noteEl) {
   const note = (text, cls) => { if (noteEl) { noteEl.textContent = text; noteEl.className = "lb-note " + (cls || ""); } };
   points = Math.min(LB_MAX_PER_GAME, Math.floor(Number(points) || 0));
@@ -453,19 +455,19 @@ function drawLeaderboard(me) {
     <div class="lb-row${i < 3 ? " lb-top lb-top-" + (i + 1) : ""}${r.id === uid ? " is-me" : ""}">
       <span class="lb-rank">${i < 3 ? medals[i] : i + 1}</span>
       <span class="auth-avatar sm">${esc(initialOf(r.name))}</span>
-      <span class="lb-name">${esc(r.name || "Học viên")}${r.id === uid ? ' <span class="lb-you">bạn</span>' : ""}<span class="lb-games">${r.games || 0} ván</span></span>
+      <span class="lb-name">${esc(r.name || "Học viên")}${r.id === uid ? ' <span class="lb-you">bạn</span>' : ""}<span class="lb-games">${r.updatedAt && r.updatedAt.toDate ? "học gần nhất " + r.updatedAt.toDate().toLocaleDateString("vi-VN") : ""}</span></span>
       <span class="lb-points">${lbFmtNum(r.points)}<small>điểm</small></span>
       ${isAdmin ? `<button class="lb-del" data-lb-del="${esc(r.id)}" title="Xoá khỏi bảng xếp hạng kỳ này" type="button">✕</button>` : ""}
     </div>`).join("")
-    : `<p class="lb-empty">Chưa có ai ghi điểm trong ${lbState.kind === "week" ? "tuần" : "tháng"} này. Chơi 1 ván Trắc nghiệm hoặc Đấu trường sinh tồn để giành vị trí số 1! 🚀</p>`;
+    : `<p class="lb-empty">Chưa có ai ghi điểm trong ${lbState.kind === "week" ? "tuần" : "tháng"} này. Học bất kỳ mục nào (trò chơi, flashcard, bài đọc…) để giành vị trí số 1! 🚀</p>`;
 
   const meEl = $("lb-me"), guestEl = $("lb-guest");
   guestEl.style.display = state.user ? "none" : "";
   if (!me) { meEl.style.display = "none"; return; }
   meEl.style.display = "";
   meEl.innerHTML = me.rank
-    ? `<span>Hạng của bạn: <strong>#${me.rank}</strong></span><span><strong>${lbFmtNum(me.points)}</strong> điểm · ${me.games || 0} ván</span>`
-    : `<span>Bạn chưa có điểm trong ${lbState.kind === "week" ? "tuần" : "tháng"} này — chơi ngay để lên bảng!</span>`;
+    ? `<span>Hạng của bạn: <strong>#${me.rank}</strong></span><span><strong>${lbFmtNum(me.points)}</strong> điểm</span>`
+    : `<span>Bạn chưa có điểm trong ${lbState.kind === "week" ? "tuần" : "tháng"} này — học ngay để lên bảng!</span>`;
 }
 
 async function lbDelete(id) {

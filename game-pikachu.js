@@ -426,6 +426,7 @@ function init() {
     drawPath(path);
     [a, b].forEach(([r, c]) => { const d = nodes.get(S.grid[r][c].id); if (d) d.classList.add('pk-hit'); });
     call('sndCorrect'); speak('一' + cl.c + no.n.h);
+    if (window.tnPoints) window.tnPoints.correct();
     const now = Date.now(); S.streak = now - S.lastMatch < 5000 ? S.streak + 1 : 1; S.lastMatch = now;
     const gain = 100 + (S.streak - 1) * 20; S.score += gain;
     S.done.push({ c: cl.c, n: no.n }); infoMatch(cl.c, no.n); pushLog(cl.c, no.n);
@@ -502,6 +503,7 @@ function init() {
     if (S.score > (best.score || 0)) { best.score = S.score; newRec = true; }
     saveBest(best, S.tr);
     call('trackStudyActivity');
+    if (window.tnPoints) window.tnPoints.round({ done: win, challenge: win && S.L >= 6 });
     call(win ? (typeof window.sndWin === 'function' ? 'sndWin' : 'sndCorrect') : (typeof window.sndLose === 'function' ? 'sndLose' : 'sndWrong'));
 
     $('pk-r-emoji').textContent = win ? '🏆' : '⏰';
