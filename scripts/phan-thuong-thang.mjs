@@ -15,6 +15,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 const TZ = 7, DAYS = 30;
 const PERMS = ['can_access_hskk', 'can_access_culture'];
 const DRY = !!process.env.DRY_RUN;
+const FIRST_MONTH = 'm-2026-10';   // phần thưởng bắt đầu áp dụng từ bảng tháng 10/2026 (công bố 19/10/2026)
 const pad = n => String(n).padStart(2, '0');
 const isStaffRole = r => r === 'admin' || r === 'teacher';
 function monthId(offset = 0) {
@@ -45,7 +46,9 @@ for (const u of users) {
 
 // 2) Trao thưởng tháng trước
 const prev = monthId(-1);
-if (users.some(u => u.monthReward && u.monthReward.month === prev.id)) {
+if (prev.id < FIRST_MONTH) {
+  console.log(`Phần thưởng áp dụng từ ${FIRST_MONTH} — chưa trao cho ${prev.label}.`);
+} else if (users.some(u => u.monthReward && u.monthReward.month === prev.id)) {
   console.log(`Đã trao thưởng ${prev.label} rồi — bỏ qua.`);
 } else {
   const top = await db.collection('leaderboard').doc(prev.id).collection('scores').orderBy('points', 'desc').limit(10).get();

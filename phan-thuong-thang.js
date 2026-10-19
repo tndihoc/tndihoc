@@ -20,6 +20,7 @@
   const TZ = 7;                                   // giờ Việt Nam
   const DAYS = 30;
   const PERMS = ['can_access_hskk', 'can_access_culture'];
+  const FIRST_MONTH = 'm-2026-10';               // phần thưởng bắt đầu áp dụng từ bảng tháng 10/2026
   const pad = n => String(n).padStart(2, '0');
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -53,7 +54,7 @@
 
       // 2) Trao thưởng tháng trước (mỗi tháng 1 lần)
       const prev = monthId(-1);
-      if (users.some(u => u.monthReward && u.monthReward.month === prev.id)) return;
+      if (prev.id < FIRST_MONTH || users.some(u => u.monthReward && u.monthReward.month === prev.id)) return;
       const top = await D.getDocs(D.query(D.collection(db, 'leaderboard', prev.id, 'scores'), D.orderBy('points', 'desc'), D.limit(10)));
       const byId = new Map(users.map(u => [u.id, u]));
       const winners = top.docs.map(d => ({ id: d.id, ...d.data() }))
