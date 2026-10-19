@@ -103,7 +103,12 @@ const myName = () => (T.profile && T.profile.name) || (T.user && (T.user.display
 function can(feat) {
   if (isStaff()) return true;
   const f = flagOf(feat);
-  const o = T.profile && T.profile.permissions ? T.profile.permissions[f.perm] : undefined;
+  let o = T.profile && T.profile.permissions ? T.profile.permissions[f.perm] : undefined;
+  // Quyền do phần thưởng tháng bật (phan-thuong-thang.js) hết hiệu lực khi qua hạn, kể cả khi chưa được thu hồi
+  const rw = T.profile && T.profile.monthReward;
+  if (o === true && rw && !rw.revoked && (rw.granted || []).includes(f.perm) && !(rw.until > Date.now())) {
+    const pv = (rw.prev || {})[f.perm]; o = typeof pv === "boolean" ? pv : undefined;
+  }
   if (o === true) return true;
   if (o === false) return false;
   if (T.defaults[feat]) return true;
@@ -1772,6 +1777,7 @@ function lmsDefaults() {
   lmsBody().querySelectorAll("[data-def]").forEach(i => i.addEventListener("change", async () => {
     const next = { ...T.defaults, [i.dataset.def]: i.checked };
     const clean = {}; FLAGS.forEach(f => clean[f.feat] = !!next[f.feat]);
+    if (next.rewards) clean.rewards = next.rewards;   // danh sách vinh danh phần thưởng tháng (phan-thuong-thang.js)
     try { await D().setDoc(D().doc(db(), "settings", "defaults"), clean); T.defaults = clean; toast("Đã lưu cài đặt mặc định"); emit(); }
     catch (e) { toast(errText(e)); i.checked = !i.checked; }
   }));
