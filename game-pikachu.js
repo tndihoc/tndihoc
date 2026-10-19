@@ -33,6 +33,10 @@ const okNoun = (n, tr) => inLevel(n.hsk, tr);
 const LS_PY = 'tn_pk_pinyin';
 const LS_VOICE = 'tn_pk_voice';
 const PENALTY = 5;                       // giây bị trừ khi ghép sai
+const IDLE_NUDGE = 20;                   // giây không thao tác → làm nổi bật nút Gợi ý / Xáo
+const TIME_WARN = 30;                    // còn ≤ 30 giây → thanh thời gian nhấp nháy cảnh báo
+const PRAISE = ['太牛了！', '你很棒！', '干得漂亮！', '很好！', '太棒了！', '真厉害！', '好样的！', '非常好！', '加油！'];
+const PRAISE_STREAK = ['连连看高手！', '越来越厉害了！', '一口气连对！'];
 const SHIFTS = ['down', 'left', 'up', 'right', 'none'];
 const SHIFT_TXT = { none: '', down: 'các ô dồn xuống dưới', up: 'các ô dồn lên trên', left: 'các ô dồn sang trái', right: 'các ô dồn sang phải' };
 
@@ -70,6 +74,7 @@ function init() {
     board: $('pk-board'), svg: $('pk-svg'), lv: $('pk-lv'), left: $('pk-left'), score: $('pk-score'),
     time: $('pk-time'), bar: $('pk-bar'), info: $('pk-info'), log: $('pk-log'), shiftNote: $('pk-shift'),
     hint: $('pk-hint'), hintN: $('pk-hint-n'), shuf: $('pk-shuf'), shufN: $('pk-shuf-n'), quit: $('pk-quit'),
+    wrap: $('pk-board-wrap'), timePill: $('pk-time-pill'),
   };
 
   /* ---------------- Kỷ lục + tuỳ chọn ---------------- */
@@ -159,7 +164,8 @@ function init() {
     const pairs = makePairs(rows * cols / 2, tr);
     if (S) { S.dead = true; clearInterval(S.timer); }
     S = { tr, L, R: rows, C: cols, shift, total: cfg.time, timeLeft: cfg.time, score: 0, sel: null, busy: false, dead: false,
-          hints: 3, shufs: 2, grid: [], done: [], timer: null, last: Date.now(), streak: 0, lastMatch: 0 };
+          hints: 3, shufs: 2, grid: [], done: [], timer: null, last: Date.now(), streak: 0, lastMatch: 0,
+          lastAct: Date.now(), nudged: false, warned: false };
     nodes.clear(); el.board.querySelectorAll('.pk-tile').forEach(d => d.remove());
     const tiles = [];
     pairs.forEach(([c, noun]) => { tiles.push({ id: uid++, k: 'c', c }); tiles.push({ id: uid++, k: 'n', n: noun }); });
@@ -172,6 +178,7 @@ function init() {
     // Viền ngoài (đường nối được đi vòng) chỉ rộng nửa ô → bảng rộng (cols + 1) ô, cao (rows + 1) ô
     el.board.style.setProperty('--c2', cols + 1); el.board.style.setProperty('--r2', rows + 1);
     el.board.style.aspectRatio = `${(cols + 1) * 4} / ${(rows + 1) * 5}`;
+    S.ar = ((cols + 1) * 4) / ((rows + 1) * 5);
     el.svg.setAttribute('viewBox', `0 0 ${(cols + 1) * 4} ${(rows + 1) * 5}`);
     el.svg.innerHTML = '';
     el.shiftNote.textContent = shift === 'none' ? '' : `Màn này: sau mỗi lần nối, ${SHIFT_TXT[shift]}.`;
@@ -179,10 +186,42 @@ function init() {
     el.log.innerHTML = '';
     el.trPill.textContent = `${TRINH[tr].name} · ${TRINH[tr].sub}`;
     show('play');
-    render(); renderHud();
+    fitBoard();
+    render(); renderHud(); setNudge(false);
+    // Đưa khu chơi lên ngay dưới thanh menu để thấy trọn bảng + thanh công cụ
+    const hdr = document.querySelector('.site-header');
+    requestAnimationFrame(() => {
+      const top = el.play.getBoundingClientRect().top + window.scrollY - (hdr ? hdr.offsetHeight : 0) - 10;
+      if (Math.abs(window.scrollY - top) > 4) window.scrollTo({ top, behavior: 'smooth' });
+    });
     S.timer = setInterval(tick, 250);
     call('trackStudyActivity');
   }
+
+  /* ---------------- Vừa khít màn hình ----------------
+     Bảng giữ đúng tỉ lệ ô; chiều rộng tối đa được tính sao cho cả thanh công cụ + thanh thời gian + bảng
+     nằm gọn trong chiều cao cửa sổ (trừ thanh menu cố định) → không phải cuộn lên/xuống khi chơi. */
+  function fitBoard() {
+    if (!S || el.play.classList.contains('hidden')) return;
+    const hdr = document.querySelector('.site-header');
+    const vh = (window.visualViewport ? window.visualViewport.height : window.innerHeight) - (hdr ? hdr.offsetHeight : 0);
+    const above = el.wrap.getBoundingClientRect().top - el.play.getBoundingClientRect().top;
+    const avail = Math.max(220, vh - above - 22);
+    el.wrap.style.maxWidth = Math.min(760, avail * S.ar) + 'px';
+  }
+  let fitT = 0;
+  const onResize = () => { clearTimeout(fitT); fitT = setTimeout(fitBoard, 120); };
+  window.addEventListener('resize', onResize);
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', onResize);
+
+  /* ---------------- Nhắc trợ giúp khi suy nghĩ lâu ---------------- */
+  function setNudge(on) {
+    if (!S) return;
+    S.nudged = on;
+    el.hint.classList.toggle('pk-nudge', on && S.hints > 0);
+    el.shuf.classList.toggle('pk-nudge', on && S.shufs > 0);
+  }
+  function active() { if (!S) return; S.lastAct = Date.now(); if (S.nudged) setNudge(false); }
 
   /* ---------------- Vẽ ---------------- */
   function faceHtml(t) {
@@ -215,7 +254,8 @@ function init() {
     const s = Math.max(0, Math.ceil(S.timeLeft));
     el.time.textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
     el.bar.style.width = Math.max(0, S.timeLeft / S.total * 100) + '%';
-    el.bar.classList.toggle('pk-bar-low', S.timeLeft <= 20);
+    const low = S.timeLeft <= TIME_WARN && S.timeLeft > 0;
+    el.bar.classList.toggle('pk-bar-low', low); el.timePill.classList.toggle('pk-time-low', low);
     el.hintN.textContent = S.hints; el.shufN.textContent = S.shufs;
     el.hint.disabled = S.hints <= 0; el.shuf.disabled = S.shufs <= 0;
   }
@@ -223,6 +263,10 @@ function init() {
     if (!S || S.dead) return;
     const now = Date.now(); S.timeLeft -= (now - S.last) / 1000; S.last = now;
     if (S.timeLeft <= 0) { S.timeLeft = 0; renderHud(); finish(false); return; }
+    if (!S.warned && S.timeLeft <= TIME_WARN) { S.warned = true; toast(`⏰ Còn ${TIME_WARN} giây — nhanh lên nào!`, 'pk-toast-warn'); call('sndWrong'); }
+    if (!S.busy && !S.nudged && now - S.lastAct > IDLE_NUDGE * 1000 && (S.hints > 0 || S.shufs > 0)) {
+      setNudge(true); toast('Bí quá? Thử 💡 Gợi ý hoặc 🔀 Xáo nhé!');
+    }
     renderHud();
   }
 
@@ -349,7 +393,7 @@ function init() {
     const d = e.target.closest('.pk-tile'); if (!d || !S || S.busy) return;
     const found = tileAt(+d.dataset.id); if (!found) return;
     const [t, r, c] = found;
-    clearHint();
+    clearHint(); active();
     if (!S.sel) { S.sel = { id: t.id }; infoTile(t); speakTile(t); render(); return; }
     if (S.sel.id === t.id) { S.sel = null; render(); return; }
     const prev = tileAt(S.sel.id); if (!prev) { S.sel = { id: t.id }; render(); return; }
@@ -382,6 +426,7 @@ function init() {
     const now = Date.now(); S.streak = now - S.lastMatch < 5000 ? S.streak + 1 : 1; S.lastMatch = now;
     const gain = 100 + (S.streak - 1) * 20; S.score += gain;
     S.done.push({ c: cl.c, n: no.n }); infoMatch(cl.c, no.n); pushLog(cl.c, no.n);
+    praise(S.streak >= 3 ? pick(PRAISE_STREAK) : pick(PRAISE), S.streak);
     await new Promise(res => setTimeout(res, 280)); if (me.dead) return;
     S.grid[a[0]][a[1]] = null; S.grid[b[0]][b[1]] = null;
     applyShift(a, b);
@@ -393,7 +438,7 @@ function init() {
       await new Promise(res => setTimeout(res, 500)); if (me.dead) return;
       reshuffle();
     }
-    S.busy = false;
+    S.busy = false; S.lastAct = Date.now();
   }
 
   function applyShift(a, b) {
@@ -418,9 +463,16 @@ function init() {
     const P = pts.map(([r, c]) => `${mid(c, S.C) * 4},${mid(r, S.R) * 5}`).join(' ');
     el.svg.innerHTML = `<polyline points="${P}" class="pk-line-bg"/><polyline points="${P}" class="pk-line"/>`;
   }
-  function toast(text) {
-    const d = document.createElement('div'); d.className = 'pk-toast'; d.textContent = text;
-    el.board.parentElement.appendChild(d); setTimeout(() => d.remove(), 1600);
+  function toast(text, cls = '') {
+    el.wrap.querySelectorAll('.pk-toast').forEach(x => x.remove());
+    const d = document.createElement('div'); d.className = 'pk-toast ' + cls; d.textContent = text;
+    el.wrap.appendChild(d); setTimeout(() => d.remove(), 1800);
+  }
+  function praise(text, streak) {
+    el.wrap.querySelectorAll('.pk-praise').forEach(x => x.remove());
+    const d = document.createElement('div'); d.className = 'pk-praise font-hanzi';
+    d.innerHTML = esc(text) + (streak >= 2 ? `<small>连对 ×${streak}</small>` : '');
+    el.wrap.appendChild(d); setTimeout(() => d.remove(), 1300);
   }
 
   /* ---------------- Gợi ý / xáo bảng ---------------- */
@@ -429,17 +481,17 @@ function init() {
     if (!S || S.busy || S.hints <= 0) return;
     const moves = allMoves(); if (!moves.length) return;
     const m = moves.find(x => perfectWithout(x.x, x.y)) || moves[0];
-    S.hints--; renderHud(); clearHint();
+    S.hints--; active(); renderHud(); clearHint();
     [m.x, m.y].forEach(t => { const d = nodes.get(t.id); if (d) d.classList.add('pk-hinted'); });
   });
   el.shuf.addEventListener('click', () => {
     if (!S || S.busy || S.shufs <= 0) return;
-    S.shufs--; S.sel = null; clearHint(); reshuffle(); renderHud();
+    S.shufs--; S.sel = null; active(); clearHint(); reshuffle(); renderHud();
   });
 
   /* ---------------- Kết thúc ---------------- */
   function finish(win) {
-    const me = S; S.busy = true; clearInterval(S.timer);
+    const me = S; S.busy = true; clearInterval(S.timer); setNudge(false);
     let bonus = 0;
     if (win) { bonus = Math.ceil(S.timeLeft) * 10; S.score += bonus; }
     const best = loadBest(S.tr); let newRec = false;
@@ -522,13 +574,13 @@ const TEMPLATE = `
   </div>
 
   <div class="hidden" id="pk-play">
-    <div class="jn-topbar">
-      <span class="jn-progress-pill" id="pk-tr-pill"></span>
+    <div class="jn-topbar pk-topbar">
+      <span class="jn-progress-pill pk-tr-pill" id="pk-tr-pill"></span>
       <span class="jn-progress-pill">Màn <span class="text-mint" id="pk-lv">1</span></span>
-      <span class="jn-progress-pill">⏱ <span id="pk-time">0:00</span></span>
+      <span class="jn-progress-pill" id="pk-time-pill">⏱ <span id="pk-time">0:00</span></span>
       <span class="jn-progress-pill">Còn <span class="text-mint" id="pk-left">0</span> cặp</span>
       <span class="jn-progress-pill">Điểm: <span class="text-mint" id="pk-score">0</span></span>
-      <span class="flex flex-wrap items-center gap-2">
+      <span class="pk-tools">
         <button class="pk-tool" id="pk-hint" type="button">💡 Gợi ý (<span id="pk-hint-n">3</span>)</button>
         <button class="pk-tool" id="pk-shuf" type="button">🔀 Xáo (<span id="pk-shuf-n">2</span>)</button>
         <button class="pk-tool underline" id="pk-quit" type="button">Dừng lại</button>
@@ -537,7 +589,7 @@ const TEMPLATE = `
     <div class="jn-timebar-track"><div class="jn-timebar-fill pk-bar" id="pk-bar" style="width:100%"></div></div>
     <p class="pk-shift" id="pk-shift"></p>
     <div class="pk-stage">
-      <div class="pk-board-wrap">
+      <div class="pk-board-wrap" id="pk-board-wrap">
         <div class="pk-board" id="pk-board"><svg class="pk-svg" id="pk-svg" preserveAspectRatio="none"></svg></div>
       </div>
       <div class="pk-side">
@@ -596,12 +648,32 @@ function injectCss() {
   .pk-tg input { width:16px; height:16px; accent-color:#000080; }
   .pk-tool { font-size:12px; font-weight:600; color:rgba(46,52,64,.8); background:rgba(255,255,255,.75); border-radius:9999px; padding:6px 12px; }
   .pk-tool:hover { color:#2E3440; } .pk-tool:disabled { opacity:.45; cursor:not-allowed; }
-  .pk-bar { background:#FF7D00; transition: width .25s linear; } .pk-bar-low { background:#D6524F; }
-  .pk-shift { min-height:18px; font-size:12px; font-weight:600; color:#B35900; margin:6px 0 2px; position:relative; z-index:2; }
+  .pk-bar { background:#FF7D00; transition: width .25s linear; }
+  .pk-bar-low { background:#D6524F; animation: pkBarWarn .8s ease-in-out infinite; }
+  @keyframes pkBarWarn { 0%,100%{ opacity:1; box-shadow:0 0 0 rgba(214,82,79,0); } 50%{ opacity:.55; box-shadow:0 0 10px rgba(214,82,79,.8); } }
+  .pk-time-low { color:#C0392B; background:#FFE1E1; animation: pkPulse .8s ease-in-out infinite; }
+  @keyframes pkPulse { 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.08); } }
+  .pk-shift { min-height:0; font-size:12px; font-weight:600; color:#B35900; margin:0 0 4px; position:relative; z-index:2; }
+  .pk-shift:empty { display:none; }
+
+  /* Thanh công cụ gọn: 1 hàng trên máy tính, tự xuống hàng gọn gàng trên điện thoại */
+  #pk-play .pk-topbar { gap:8px; margin-bottom:8px; justify-content:flex-start; }
+  #pk-play .jn-timebar-track { margin-bottom:8px; }
+  .pk-topbar .jn-progress-pill { padding:5px 12px; }
+  .pk-tools { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-left:auto; }
+  .pk-nudge { color:#fff !important; background:#FF7D00 !important; animation: pkNudge 1s ease-in-out infinite; }
+  @keyframes pkNudge { 0%,100%{ transform:scale(1); box-shadow:0 0 0 0 rgba(255,125,0,.55); } 50%{ transform:scale(1.1); box-shadow:0 0 0 7px rgba(255,125,0,0); } }
+  @media (max-width:640px){
+    #pk-play .pk-topbar { gap:5px; }
+    .pk-topbar .jn-progress-pill { padding:4px 9px; font-size:12px; }
+    .pk-tr-pill { display:none; }
+    .pk-tools { width:100%; margin-left:0; justify-content:space-between; }
+    .pk-tool { padding:6px 10px; }
+  }
 
   .pk-stage { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:16px; align-items:start; position:relative; z-index:2; }
   @media (max-width:860px){ .pk-stage { grid-template-columns:1fr; } }
-  .pk-board-wrap { position:relative; width:100%; max-width:640px; margin:0 auto; }
+  .pk-board-wrap { position:relative; width:100%; max-width:640px; margin:0 auto; transition:max-width .2s ease; }
   .pk-board { position:relative; width:100%; background:rgba(255,255,255,.5); border:3px solid #fff; border-radius:18px; box-shadow:0 10px 24px rgba(0,60,120,.16); container-type:inline-size; user-select:none; -webkit-user-select:none; --tw: calc(100cqw / var(--c2, 8)); }
   .pk-svg { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:4; overflow:visible; }
   .pk-line-bg { fill:none; stroke:#fff; stroke-width:1.3; stroke-linejoin:round; stroke-linecap:round; opacity:.9; }
@@ -628,8 +700,14 @@ function injectCss() {
   @keyframes pkHint { 0%,100%{ box-shadow: inset 0 0 0 3px #FF7D00; } 50%{ box-shadow: inset 0 0 0 3px #FF7D00, 0 0 12px #FF7D00; } }
   @keyframes pkShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
   @keyframes pkMorph { 0%{transform:rotateY(0)} 50%{transform:rotateY(90deg)} 100%{transform:rotateY(0)} }
-  .pk-toast { position:absolute; left:50%; top:45%; transform:translate(-50%,-50%); background:rgba(255,255,255,.95); color:#000080; font-weight:700; font-size:14px; border-radius:14px; padding:8px 16px; box-shadow:0 8px 20px rgba(0,0,128,.2); z-index:6; animation: pkToast 1.6s ease forwards; white-space:nowrap; }
+  .pk-toast { position:absolute; left:50%; top:45%; transform:translate(-50%,-50%); background:rgba(255,255,255,.95); color:#000080; font-weight:700; font-size:14px; border-radius:14px; padding:8px 16px; box-shadow:0 8px 20px rgba(0,0,128,.2); z-index:6; animation: pkToast 1.8s ease forwards; width:max-content; max-width:92%; text-align:center; }
   @keyframes pkToast { 0%{opacity:0} 15%{opacity:1} 80%{opacity:1} 100%{opacity:0} }
+  .pk-toast-warn { color:#C0392B; box-shadow:0 8px 20px rgba(214,82,79,.3); }
+  .pk-praise { position:absolute; left:50%; top:38%; z-index:7; pointer-events:none; display:flex; flex-direction:column; align-items:center;
+    font-size:clamp(26px, 7vw, 46px); font-weight:700; color:#FF7D00; white-space:nowrap;
+    text-shadow:0 2px 0 #fff, 0 0 12px #fff, 0 0 4px #fff; animation: pkPraise 1.3s ease forwards; }
+  .pk-praise small { font-family:'Noto Sans',sans-serif; font-size:14px; color:#1F6B43; background:#EFFAF3; border-radius:9999px; padding:2px 10px; margin-top:4px; text-shadow:none; }
+  @keyframes pkPraise { 0%{ opacity:0; transform:translate(-50%,-30%) scale(.6); } 18%{ opacity:1; transform:translate(-50%,-50%) scale(1.12); } 30%{ transform:translate(-50%,-50%) scale(1); } 75%{ opacity:1; } 100%{ opacity:0; transform:translate(-50%,-90%) scale(1); } }
 
   .pk-side { display:flex; flex-direction:column; gap:10px; }
   .pk-info { min-height:140px; background:rgba(255,255,255,.72); border-radius:18px; padding:12px; display:flex; align-items:center; justify-content:center; }
@@ -655,7 +733,7 @@ function injectCss() {
   .pk-rw-h { font-size:20px; color:#1E2A5A; min-width:72px; }
   .pk-rw-t { flex:1; min-width:0; font-size:13px; color:#2E3440; }
   .pk-rw-say { font-size:15px; }
-  @media (prefers-reduced-motion: reduce) { .pk-tile { transition:none; } .pk-hinted::before, .pk-morph { animation:none; } }
+  @media (prefers-reduced-motion: reduce) { .pk-tile { transition:none; } .pk-hinted::before, .pk-morph, .pk-nudge, .pk-time-low { animation:none; } }
   `;
   document.head.appendChild(st);
 }
