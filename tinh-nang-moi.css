@@ -257,3 +257,45 @@
 .rad-opt.right { background: var(--tt-green-l); border-color: #8FD3A9; }
 .rad-opt.wrong { background: var(--tt-seal-l); border-color: #F4A7A4; }
 .rad-opt-ch { font-family: "Kaiti SC","STKaiti","KaiTi","Noto Serif SC",serif; font-size: 40px; color: #4B3C8C; }
+
+/* ===== Ngữ pháp 贯通 ===== */
+.gram-card { padding:1.1rem 1.2rem; }
+.gram-top { display:flex; gap:.7rem; align-items:center; margin-bottom:.6rem; }
+.gram-no { flex:none; width:28px; height:28px; border-radius:50%; display:grid; place-items:center; background:var(--tt-peach-l); color:#B35600; font-weight:700; font-size:13px; }
+.gram-name { font-size:19px; color:var(--tt-navy); font-weight:700; }
+.gram-struct { display:inline-block; background:#FFF6EC; border:1px dashed var(--tt-peach-b); color:#7A3A00; border-radius:10px; padding:.4rem .75rem; font-weight:600; font-size:14.5px; margin-bottom:.55rem; }
+.gram-expl { font-size:14px; color:var(--tt-ink); line-height:1.65; margin:0 0 .6rem; }
+.gram-ex { border-left:3px solid var(--tt-peach-b); padding:.35rem .8rem; background:#FAFAFB; border-radius:0 10px 10px 0; }
+.gram-ex .cn { font-size:19px; }
+.gram-ex .py { font-size:13px; color:#6B7280; }
+.gram-ex .vi { font-size:13.5px; color:var(--tt-ink); }
+
+/* ===== Bài tập của lớp ===== */
+.hw-title { font-weight:700; font-size:15px; color:var(--tt-ink); }
+.hw-list { display:flex; flex-direction:column; gap:.6rem; margin-top:.7rem; }
+.hw-item { border:1px solid var(--tt-line); border-left:4px solid var(--tt-peach-b); border-radius:12px; padding:.75rem .9rem; background:#fff; }
+.hw-item.done { border-left-color:#9CCFB0; background:#FBFDFC; }
+.hw-cd { font-size:12.5px; font-weight:700; color:var(--tt-navy); background:var(--tt-navy-l); padding:2px 9px; border-radius:999px; }
+.hw-cd.soon { color:#A65400; background:var(--tt-peach-l); }
+.hw-cd.urgent { color:#A93C39; background:var(--tt-seal-l); }
+.hw-cd.over { color:#6B7280; background:#F1F2F4; }
+.hw-info { background:#FFF9F2; border:1px solid #FFE3C2; border-radius:12px; padding:.75rem .9rem; }
+.hw-text { white-space:pre-wrap; font-size:14px; line-height:1.65; color:var(--tt-ink); }
+.hw-sub-h { font-weight:700; font-size:14px; margin:1rem 0 .4rem; color:var(--tt-ink); }
+.hw-lbl { display:block; font-size:12.5px; font-weight:700; color:var(--tt-slate); margin:.7rem 0 .25rem; }
+.hw-imgs { display:flex; flex-wrap:wrap; gap:.5rem; margin:.4rem 0; }
+.hw-imgs img { width:110px; height:110px; object-fit:cover; border-radius:10px; border:1px solid var(--tt-line); display:block; }
+.hw-img { position:relative; }
+.hw-img .tt-x { position:absolute; top:3px; right:3px; background:#fff; }
+.hw-linked { display:flex; flex-direction:column; gap:.3rem; max-height:180px; overflow:auto; }
+.hw-cheer { text-align:center; padding:.5rem 0 .3rem; }
+.hw-cheer-emoji { font-size:52px; line-height:1; margin-bottom:.6rem; animation:hwPop .45s cubic-bezier(.2,.8,.3,1.3) both; }
+.hw-cheer-t { font-size:16px; font-weight:600; color:var(--tt-ink); line-height:1.6; margin-bottom:1rem; }
+@keyframes hwPop { from { transform:scale(.4); opacity:0; } to { transform:scale(1); opacity:1; } }
+.hw-nudge { position:fixed; right:16px; bottom:16px; z-index:60; max-width:340px; display:flex; gap:.7rem; background:#fff; border:1px solid var(--tt-peach-b); border-radius:16px; padding:.9rem 1rem; box-shadow:0 14px 34px rgba(46,52,64,.16); font-size:14px; color:var(--tt-ink); animation:hwIn .3s ease both; }
+.hw-nudge.out { animation:hwOut .25s ease both; }
+.hw-nudge-ico { font-size:26px; line-height:1; }
+@keyframes hwIn { from { transform:translateY(16px); opacity:0; } to { transform:none; opacity:1; } }
+@keyframes hwOut { to { transform:translateY(16px); opacity:0; } }
+@media (max-width:480px) { .hw-nudge { left:16px; right:16px; max-width:none; } }
+@media (prefers-reduced-motion: reduce) { .hw-cheer-emoji, .hw-nudge, .hw-nudge.out { animation:none; } }

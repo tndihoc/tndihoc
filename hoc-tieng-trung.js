@@ -87,7 +87,7 @@ window.tnVoice = (function () {
     { id: "khaungu", scale: ["#F1F4FD", "#DCE4FA", "#B9CAF4", "#8BA7EA", "#5A7ADB", "#2E48C4", "#1B2D85"], icon: "🎙️", title: "Khẩu ngữ", desc: "Luyện nói theo chủ đề và theo đề thi HSKK (sơ – trung – cao cấp), ghi âm và nộp cho giáo viên.", bg: "#EEF2FC", ink: "#2E48C4", line: "#D6E0F7",
       parts: [{ el: "tt-speaking", label: "🗣️ Theo chủ đề" }, { el: "tt-hskk", label: "📝 Luyện HSKK" }] },
     { id: "lophoc", scale: ["#FFF6EC", "#FFE6CC", "#FFCB94", "#FFA95A", "#F08A24", "#B35600", "#7A3A00"], icon: "🏫", title: "Lớp học của tôi", desc: "Vào lớp bằng mã, ôn từ vựng theo bài, góc luyện chữ và hội thoại 贯通中文.", bg: "#FFE8D1", ink: "#B35600", line: "#FFC98A",
-      parts: [{ el: "tt-myclass", label: "🏫 Lớp của tôi" }, { el: "tt-review", label: "📚 Ôn từ vựng" }, { el: "tt-gallery", label: "🖼️ Luyện chữ" }, { el: "tt-vip", label: "⭐ Hội thoại 贯通" }] },
+      parts: [{ el: "tt-myclass", label: "🏫 Lớp của tôi" }, { el: "tt-review", label: "📚 Ôn từ vựng" }, { el: "tt-grammar", label: "📐 Ngữ pháp" }, { el: "tt-gallery", label: "🖼️ Luyện chữ" }, { el: "tt-vip", label: "⭐ Hội thoại 贯通" }] },
     { id: "bothu", scale: ["#F6F3FC", "#E8E2F7", "#D1C6EF", "#AE9FDF", "#8875C8", "#4B3C8C", "#2F255C"], icon: "部", title: "Bộ thủ", desc: "214 bộ thủ Khang Hy: nghĩa, âm Hán Việt, ví dụ và luyện tập.", bg: "#F3F0FA", ink: "#4B3C8C", line: "#DCD3F2",
       parts: [{ el: "tt-radicals", label: "部 Bộ thủ" }] },
   ];
@@ -140,6 +140,7 @@ window.tnVoice = (function () {
       bar.dataset.panel = p.id;
       if (part.el === "tt-review") renderReview();
       if (part.el === "tt-radicals") renderRadicals();
+      if (part.el === "tt-grammar") renderGrammar();
     }
     if (push) history.pushState({ hoc: p ? p.id : null, part: partIdx || 0 }, "", "#chinese");
     window.scrollTo({ top: 0, behavior: "auto" });
@@ -262,6 +263,51 @@ window.tnVoice = (function () {
     top.querySelectorAll("[data-unit]").forEach(b => b.onclick = () => startUnit(b.dataset.unit));
   }
   document.getElementById("tt-review")?.addEventListener("click", e => { const b = e.target.closest("[data-say]"); if (b) say(b.dataset.say); });
+
+  /* ---------- Ngữ pháp 《贯通中文 1》 theo bài (dữ liệu: ngu-phap-gt1.js) ---------- */
+  const GRAM = { no: null };
+  function renderGrammar() {
+    const box = document.getElementById("tt-grammar"); if (!box) return;
+    const data = window.tnGrammarGt1 || { units: [] };
+    const head = `<div class="tt-head"><span class="tt-stamp">语</span><h3>Ngữ pháp 《贯通中文 1》</h3></div>
+      <p class="tt-desc">Các điểm ngữ pháp <b>语言点</b> của từng bài: cấu trúc, cách dùng và câu ví dụ trong bài khoá — bấm 🔊 để nghe câu mẫu.</p>`;
+    if (!(window.tnCan ? window.tnCan("vipDialogue") : false)) {
+      const logged = window.tnAuth && window.tnAuth.user;
+      box.innerHTML = head + `<div class="tt-lock"><div class="ico">🔒</div><b>Dành cho học viên lớp 《贯通中文》</b><p>${logged ? "Hãy nhập <b>mã lớp</b> ở mục “Lớp của tôi” để mở phần ngữ pháp theo bài." : "Đăng nhập và vào lớp bằng mã giáo viên gửi để dùng phần này."}</p>${logged ? '<a class="tt-btn peach" href="#tt-myclass">🏫 Nhập mã lớp</a>' : '<button class="tt-btn" data-tt-login>Đăng nhập</button>'}</div>`;
+      return;
+    }
+    const u = data.units.find(x => x.no === GRAM.no);
+    if (!u) {
+      box.innerHTML = head + `<div class="tt-grid">${data.units.map(x => `
+        <button class="tt-pick" data-gno="${x.no}"><span class="tt-small">Bài ${x.no} · Lesson ${x.no}</span>
+          <span class="cn tt-hz">${esc(x.title)}</span><span class="t">${esc(x.vi)}</span>
+          <span class="tt-row"><span class="tt-badge peach">${x.points.length} điểm ngữ pháp</span></span></button>`).join("")}</div>`;
+      box.querySelectorAll("[data-gno]").forEach(b => b.onclick = () => { GRAM.no = Number(b.dataset.gno); renderGrammar(); box.scrollIntoView({ behavior: "smooth", block: "start" }); });
+      return;
+    }
+    const i = data.units.indexOf(u), prev = data.units[i - 1], next = data.units[i + 1];
+    box.innerHTML = head + `<div class="tt-fade">
+      <button class="tt-link" data-gback>‹ Danh sách bài</button>
+      <div style="margin:.5rem 0 .9rem"><span class="tt-small">Bài ${u.no} · ${esc(u.vi)}</span><div class="tt-hz" style="font-size:22px;color:#000080">${esc(u.title)}</div></div>
+      ${u.points.map((g, k) => `<div class="tt-card gram-card">
+        <div class="gram-top"><span class="gram-no">${k + 1}</span><div><div class="gram-name tt-hz">${esc(g.name)}</div><div class="tt-small">${esc(g.vi)}</div></div></div>
+        <div class="gram-struct">${esc(g.struct)}</div>
+        <p class="gram-expl">${esc(g.expl)}</p>
+        <div class="gram-ex"><div class="cn tt-hz">${esc(g.ex)} <button class="tt-link" data-say="${esc(g.ex)}" title="Nghe câu mẫu">🔊</button></div><div class="py">${esc(g.py)}</div><div class="vi">→ ${esc(g.mean)}</div></div>
+      </div>`).join("")}
+      <div class="tt-row between" style="margin-top:1rem">
+        ${prev ? `<button class="tt-btn ghost sm" data-gno="${prev.no}">◀ Bài ${prev.no}</button>` : "<span></span>"}
+        ${next ? `<button class="tt-btn ghost sm" data-gno="${next.no}">Bài ${next.no} ▶</button>` : ""}</div></div>`;
+    box.querySelector("[data-gback]").onclick = () => { GRAM.no = null; renderGrammar(); };
+    box.querySelectorAll("[data-gno]").forEach(b => b.onclick = () => { GRAM.no = Number(b.dataset.gno); renderGrammar(); box.scrollIntoView({ behavior: "smooth", block: "start" }); });
+  }
+  document.getElementById("tt-grammar")?.addEventListener("click", e => {
+    const b = e.target.closest("[data-say]"); if (!b) return;
+    say(b.dataset.say);
+    if (window.trackStudyActivity) window.trackStudyActivity();
+  });
+  /** Mở thẳng ngữ pháp của 1 bài (dùng từ phần Hội thoại 贯通) */
+  window.tnOpenGrammar = (no) => { GRAM.no = no; if (window.tnHocOpen) window.tnHocOpen("tt-grammar"); renderGrammar(); };
 
   /* ================== 4) BỘ THỦ — 214 bộ thủ Khang Hy (bo-thu.js) ================== */
   const RADS = window.tnRadicals || [];
@@ -393,6 +439,7 @@ window.tnVoice = (function () {
   document.addEventListener("tt-state", () => {
     const v = page.dataset.view;
     if (v === "lophoc" && document.getElementById("tt-review").classList.contains("hub-show")) renderReview();
+    if (v === "lophoc" && document.getElementById("tt-grammar").classList.contains("hub-show")) renderGrammar();
   });
 
   show(history.state && history.state.hoc, (history.state && history.state.part) || 0, false);

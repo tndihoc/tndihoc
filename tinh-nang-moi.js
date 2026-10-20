@@ -1170,7 +1170,7 @@ function renderVipPractice(box, head) {
   const recorded = need.filter(i => takes[i]).length;
   const done = (getProg().vip || {})[text.id];
   box.innerHTML = head + `<div class="tt-card tt-fade">
-    <button class="tt-link" id="vp-back">‹ Danh sách bài</button>
+    <div class="tt-row between"><button class="tt-link" id="vp-back">‹ Danh sách bài</button>${window.tnOpenGrammar ? `<button class="tt-btn soft sm" id="vp-gram">📐 Ngữ pháp bài ${lesson.no}</button>` : ""}</div>
     <div class="tt-row between" style="margin:.5rem 0 .3rem"><div><span class="tt-small">Bài ${lesson.no} · ${esc(lesson.vi)}</span><div class="tt-hz" style="font-size:22px;color:#000080">${esc(lesson.title)}</div></div>
       ${done ? '<span class="tt-badge green">✓ Đã hoàn thành đoạn này</span>' : ""}</div>
     <div class="tt-tabs">${lesson.texts.map((t, i) => `<button class="tt-tab ${i === VIP.textIdx ? "active" : ""}" data-txt="${i}">${(getProg().vip || {})[t.id] ? "✓ " : ""}${i + 1}. <span class="tt-hz">${esc(t.title)}</span></button>`).join("")}</div>
@@ -1199,6 +1199,7 @@ function renderVipPractice(box, head) {
   $("vp-back").addEventListener("click", () => { stopVipAudio(); cancelVipRec(); VIP.lessonNo = null; renderVip(); });
   box.querySelectorAll("[data-txt]").forEach(b => b.addEventListener("click", () => { stopVipAudio(); cancelVipRec(); VIP.textIdx = Number(b.dataset.txt); VIP.roleFilter = "all"; renderVip(); }));
   $("vp-next")?.addEventListener("click", () => { stopVipAudio(); cancelVipRec(); VIP.textIdx++; VIP.roleFilter = "all"; renderVip(); });
+  $("vp-gram")?.addEventListener("click", () => { stopVipAudio(); cancelVipRec(); window.tnOpenGrammar(lesson.no); });
   $("vp-all").addEventListener("click", () => playAll(text));
   $("vp-stop").addEventListener("click", () => { VIP.allRun = null; stopVipAudio(); });
   $("vp-py").addEventListener("change", e => { VIP.showPy = e.target.checked; box.querySelector(".tt-lines").classList.toggle("tt-hide-py", !VIP.showPy); });
@@ -1241,6 +1242,7 @@ async function submitVip(lesson, text, need) {
     if (window.trackStudyActivity) window.trackStudyActivity();
     VIP.takes[text.id] = {}; SPK.mySubs = null;
     toast("🎉 Đã nộp bài — hoàn thành nhiệm vụ đoạn này!");
+    if (window.tnHomework) window.tnHomework.onVip(lesson.no, ref.id, `贯通中文 Bài ${lesson.no} · ${text.title}`);
     renderVip(); renderSpeaking();
   } catch (e) { toast(errText(e)); b.disabled = false; b.textContent = "📤 Nộp bài"; }
 }
@@ -1255,7 +1257,7 @@ function renderMyClass() {
     <p class="tt-desc">Nhập <b>mã lớp</b> giáo viên gửi để vào lớp — các tính năng của lớp (VD: hội thoại 贯通中文) sẽ tự mở cho bạn.</p>`;
   if (!T.user) { box.innerHTML = head + needLoginHtml("tham gia lớp học"); return; }
   const mine = T.myClasses;
-  box.innerHTML = head + `<div class="tt-card">
+  box.innerHTML = head + `<div id="mc-hw" style="margin-bottom:1rem"></div><div class="tt-card">
     <div class="tt-row"><input class="tt-input" id="mc-code" maxlength="12" placeholder="Mã lớp (VD: K7M2QX)" style="text-transform:uppercase;letter-spacing:.1em;font-weight:700;width:190px">
       <button class="tt-btn peach" id="mc-join">Vào lớp</button></div>
     <div id="mc-msg" style="margin-top:.6rem"></div>
@@ -1270,6 +1272,7 @@ function renderMyClass() {
   $("mc-join").addEventListener("click", joinClass);
   $("mc-code").addEventListener("keydown", e => { if (e.key === "Enter") joinClass(); });
   box.querySelectorAll("[data-leave]").forEach(b => b.addEventListener("click", () => leaveClass(b.dataset.leave)));
+  if (window.tnHomework) window.tnHomework.student();
 }
 async function joinClass() {
   const code = ($("mc-code").value || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
@@ -1395,6 +1398,7 @@ function lmsClassDetail(c) {
     <h5 style="font-weight:700;margin:1.1rem 0 .5rem">Tính năng bật cho cả lớp</h5>
     <div class="tt-switch-list">${FLAGS.map(f => `<label class="tt-switch"><input type="checkbox" data-feat="${f.feat}" ${c.enabledFeatures && c.enabledFeatures[f.feat] ? "checked" : ""}><span class="knob"></span> ${f.icon} ${esc(f.label)}</label>`).join("")}</div>
     <p class="tt-small" style="margin-top:.5rem">Quyền riêng từng người (tab “Phân quyền từng người”) được ưu tiên hơn quyền của lớp.</p>
+    <div id="cd-hw"></div>
     <h5 style="font-weight:700;margin:1.2rem 0 .5rem">Thành viên (${ids.length})</h5>
     <div class="tt-row" style="margin-bottom:.6rem"><input class="tt-input" id="cd-email" type="email" placeholder="Thêm học viên bằng email đăng ký" style="flex:1;min-width:220px"><button class="tt-btn" id="cd-add">＋ Thêm</button></div>
     ${ids.length ? `<div class="tt-table-wrap"><table class="tt-table"><thead><tr><th>#</th><th>Họ tên</th><th>Email</th><th></th></tr></thead><tbody>
@@ -1402,6 +1406,7 @@ function lmsClassDetail(c) {
       : `<div class="tt-empty">Lớp chưa có học viên. Gửi mã mời <b>${esc(c.id)}</b> cho học viên nhé.</div>`}
     <div class="tt-row" style="justify-content:flex-end;margin-top:1.2rem"><button class="tt-btn danger" id="cd-del">Xoá lớp</button></div></div>`;
   const ref = D().doc(db(), "classes", c.id);
+  if (window.tnHomework) window.tnHomework.teacher(c);
   const save = async (patch, msg) => { try { await D().updateDoc(ref, patch); Object.assign(c, patch); toast(msg || "Đã lưu"); } catch (e) { toast(errText(e)); } };
   $("cd-back").addEventListener("click", () => { LMS.openClass = null; lmsClasses(); });
   $("cd-rename").addEventListener("click", () => save({ name: $("cd-name").value.trim() || c.name }, "Đã đổi tên lớp"));
@@ -1827,7 +1832,7 @@ onState(() => { LMS.classes = null; LMS.users = null; LMS.subs = null; renderLms
 
 /* ---------------- Cho các file khác dùng chung (phong-van.js) ---------------- */
 window.tnApi = { T, can, isStaff, isAdmin, myName, fbReady, db, D, REC, TTS, toast, errText, esc, modal, fmtClock, fmtTime, blobToDataURL,
-  lockedHtml, needLoginHtml, onState, showSubAudio, toWav, invalidateMySubs: () => { SPK.mySubs = null; renderSpeaking(); } };
+  lockedHtml, needLoginHtml, onState, showSubAudio, toWav, subAudioTag, mountAudios, compressImage, safeMedia, invalidateMySubs: () => { SPK.mySubs = null; renderSpeaking(); } };
 document.dispatchEvent(new CustomEvent("tn-api-ready"));
 
 /* ---------------- Khởi động ---------------- */

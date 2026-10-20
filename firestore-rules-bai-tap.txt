@@ -1,0 +1,33 @@
+// =====================================================================
+// LUẬT FIRESTORE CHO TÍNH NĂNG "BÀI TẬP CỦA LỚP" (bai-tap.js)
+// Cách thêm: Firebase Console → Firestore Database → tab "Rules" →
+// dán đoạn bên dưới vào BÊN TRONG khối  match /databases/{database}/documents { ... }
+// (đặt cạnh các khối match khác, KHÔNG xoá luật cũ) → bấm "Publish".
+// =====================================================================
+
+    function hwIsStaff() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'teacher'];
+    }
+    function hwIsMember(classId) {
+      return request.auth != null &&
+        request.auth.uid in get(/databases/$(database)/documents/classes/$(classId)).data.studentIds;
+    }
+
+    match /classes/{classId}/assignments/{aid} {
+      // Học viên trong lớp xem được bài tập; chỉ giáo viên / quản trị được giao, sửa, xoá.
+      allow read: if hwIsStaff() || hwIsMember(classId);
+      allow write: if hwIsStaff();
+
+      match /subs/{uid} {
+        // Mỗi học viên chỉ xem / nộp bài của chính mình; giáo viên xem và chữa tất cả.
+        allow read: if hwIsStaff() || (request.auth != null && request.auth.uid == uid);
+        allow create, update: if hwIsStaff() || (
+          request.auth != null && request.auth.uid == uid && hwIsMember(classId)
+          && request.resource.data.uid == uid
+          && request.resource.data.status == 'submitted'
+          && !('feedback' in request.resource.data)
+          && (resource == null || resource.data.status != 'reviewed'));
+        allow delete: if hwIsStaff();
+      }
+    }

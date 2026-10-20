@@ -571,6 +571,7 @@ async function pushProgress() {
   const { db, D } = state.fb;
   const run = (async () => {
     try {
+      await mergeAdditiveFromCloud(uid);
       await D.setDoc(D.doc(db, "progress", uid), { data: localSnapshot(), updatedAt: D.serverTimestamp() });
       if (state.user && state.user.uid === uid) {
         writeMeta({ uid, dirty: false });
@@ -585,6 +586,27 @@ async function pushProgress() {
   })();
   syncState.pushing = run;
   return run;
+}
+
+/* Ngày học (streak) và từ đã ghi nhớ chỉ có cộng thêm, không bao giờ bị xoá. Khi học trên 2 máy cùng lúc
+   (VD điện thoại + máy tính), máy mở từ trước chưa có ngày học vừa ghi ở máy kia → nếu đẩy thẳng bản trên máy
+   lên sẽ ghi đè mất ngày học đó (mất chuỗi). Vì vậy trước khi lưu, gộp 2 mục này với bản trên tài khoản. */
+const ADDITIVE_KEYS = ["tn_streak_v1", "tn_vocab_mastery_v1"];
+async function mergeAdditiveFromCloud(uid) {
+  const { db, D } = state.fb;
+  const snap = await D.getDoc(D.doc(db, "progress", uid));
+  const cloud = (snap.exists() && snap.data().data) || {};
+  let changed = false;
+  syncState.applying = true;
+  try {
+    ADDITIVE_KEYS.forEach(k => {
+      if (cloud[k] == null) return;
+      const local = rawGet.call(localStorage, k);
+      const merged = mergeValue(k, local, cloud[k]);
+      if (merged !== local) { rawSet.call(localStorage, k, merged); changed = true; }
+    });
+  } finally { syncState.applying = false; }
+  if (changed) refreshProgressUI();
 }
 
 /* ---- Gộp 2 bản tiến độ (dùng khi lần đầu đăng nhập trên máy, hoặc máy có thay đổi chưa kịp lưu) ---- */
