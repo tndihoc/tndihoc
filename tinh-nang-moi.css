@@ -299,3 +299,9 @@
 @keyframes hwOut { to { transform:translateY(16px); opacity:0; } }
 @media (max-width:480px) { .hw-nudge { left:16px; right:16px; max-width:none; } }
 @media (prefers-reduced-motion: reduce) { .hw-cheer-emoji, .hw-nudge, .hw-nudge.out { animation:none; } }
+
+/* ===== Hội thoại 贯通: chọn Luyện nói / Chép chính tả ===== */
+.vp-modes { display:inline-flex; gap:4px; padding:4px; background:var(--tt-soft); border:1px solid var(--tt-line); border-radius:999px; margin:.2rem 0 .8rem; }
+.vp-mode { border:0; background:none; padding:.4rem .95rem; border-radius:999px; font-size:13.5px; font-weight:600; color:var(--tt-slate); cursor:pointer; transition:background .15s, color .15s; }
+.vp-mode:hover { color:var(--tt-ink); }
+.vp-mode.active { background:#fff; color:#B35600; box-shadow:0 2px 8px rgba(46,52,64,.1); }
