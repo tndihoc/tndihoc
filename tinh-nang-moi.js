@@ -1070,7 +1070,7 @@ onState(() => { SPK.mySubs = null; SPK.topics = null; renderSpeaking(); });
    Nội dung + âm thanh nằm trong Firestore (vip/gt1, vipAudio/*), luật Firestore
    chỉ cho tài khoản có quyền can_access_vip_dialogue đọc → người ngoài không tải được.
    ===================================================================== */
-const VIP = { data: null, loading: false, err: "", lessonNo: null, textIdx: 0, showPy: true, showVi: true, roleFilter: "all", heard: {}, takes: {}, rec: null, recIdx: -1 };
+const VIP = { data: null, loading: false, err: "", lessonNo: null, textIdx: 0, mode: "speak", dict: null, showPy: true, showVi: true, roleFilter: "all", heard: {}, takes: {}, rec: null, recIdx: -1 };
 const VA = { el: new Audio(), urls: {}, stopAt: null, raf: 0, playingIdx: -1 };
 VA.el.preload = "auto";
 
@@ -1136,7 +1136,7 @@ async function playAll(text) {
 async function renderVip() {
   const box = $("tt-vip"); if (!box) return;
   const head = `<div class="tt-head"><span class="tt-stamp">贯</span><h3>Hội thoại 《贯通中文》</h3><span class="tt-badge vip">VIP</span></div>
-    <p class="tt-desc">Luyện nói theo bài khoá giáo trình <b>贯通中文 综合教程 1</b>: đọc câu → nghe <b>file gốc</b> → bấm <b>Ghi âm</b> → nộp bài để hoàn thành nhiệm vụ.</p>`;
+    <p class="tt-desc">Luyện theo bài khoá giáo trình <b>贯通中文 综合教程 1</b>: <b>🎙️ Luyện nói</b> (nghe file gốc → ghi âm → nộp bài) hoặc <b>✍️ Chép chính tả</b> (nghe file gốc từng câu → gõ lại chữ Hán / pinyin).</p>`;
   if (!can("vipDialogue")) { box.innerHTML = head + lockedHtml("vipDialogue"); return; }
   if (!VIP.data) {
     box.innerHTML = head + `<div class="tt-empty"><span class="tt-spin"></span> Đang tải giáo trình…</div>`;
@@ -1161,21 +1161,94 @@ function renderVipLessons(box, head) {
   box.querySelectorAll("[data-les]").forEach(b => b.addEventListener("click", () => { VIP.lessonNo = Number(b.dataset.les); VIP.textIdx = 0; VIP.roleFilter = "all"; renderVip(); box.scrollIntoView({ behavior: "smooth" }); }));
 }
 function roleClass(r, roles) { if (!r) return "narr"; const k = roles.indexOf(r); return k === 0 ? "r1" : k === 1 ? "r2" : ""; }
+/** Phần đầu chung của 1 bài: quay lại, ngữ pháp, các đoạn hội thoại, chọn Luyện nói / Chép chính tả */
+function vipTop(lesson, text) {
+  const prog = getProg(); const done = (prog.vip || {})[text.id]; const dd = (prog.vipDict || {})[text.id];
+  return `<div class="tt-row between"><button class="tt-link" id="vp-back">‹ Danh sách bài</button>${window.tnOpenGrammar ? `<button class="tt-btn soft sm" id="vp-gram">📐 Ngữ pháp bài ${lesson.no}</button>` : ""}</div>
+    <div class="tt-row between" style="margin:.5rem 0 .3rem"><div><span class="tt-small">Bài ${lesson.no} · ${esc(lesson.vi)}</span><div class="tt-hz" style="font-size:22px;color:#000080">${esc(lesson.title)}</div></div>
+      <div class="tt-row">${done ? '<span class="tt-badge green">✓ Đã nộp ghi âm</span>' : ""}${dd ? `<span class="tt-badge peach">✍️ Chính tả ${dd.bestAcc}%</span>` : ""}</div></div>
+    <div class="tt-tabs">${lesson.texts.map((t, i) => `<button class="tt-tab ${i === VIP.textIdx ? "active" : ""}" data-txt="${i}">${(prog.vip || {})[t.id] ? "✓ " : ""}${i + 1}. <span class="tt-hz">${esc(t.title)}</span></button>`).join("")}</div>
+    <div class="vp-modes"><button class="vp-mode ${VIP.mode === "speak" ? "active" : ""}" data-vmode="speak">🎙️ Luyện nói</button><button class="vp-mode ${VIP.mode === "dict" ? "active" : ""}" data-vmode="dict">✍️ Chép chính tả</button></div>
+    <div class="tt-note" style="margin-bottom:.8rem">🎧 Track ${esc(text.track)} · ${esc(text.vi)}</div>`;
+}
+function bindVipTop(box, lesson) {
+  const leave = () => { stopVipAudio(); cancelVipRec(); VIP.dict = null; };
+  $("vp-back").addEventListener("click", () => { leave(); VIP.lessonNo = null; renderVip(); });
+  box.querySelectorAll("[data-txt]").forEach(b => b.addEventListener("click", () => { leave(); VIP.textIdx = Number(b.dataset.txt); VIP.roleFilter = "all"; renderVip(); }));
+  box.querySelectorAll("[data-vmode]").forEach(b => b.addEventListener("click", () => { leave(); VIP.mode = b.dataset.vmode; renderVip(); }));
+  $("vp-gram")?.addEventListener("click", () => { leave(); window.tnOpenGrammar(lesson.no); });
+}
+
+/* ---- Chép chính tả theo đoạn hội thoại: nghe file gốc từng câu → gõ chữ Hán / pinyin → so với đáp án ---- */
+function renderVipDict(box, head, lesson, text) {
+  const lines = text.lines.map((x, i) => ({ ...x, i })).filter(x => hzOnly(x.cn).length);
+  const st = VIP.dict && VIP.dict.id === text.id ? VIP.dict : (VIP.dict = { id: text.id, idx: 0, res: [], checked: false, input: (VIP.dict && VIP.dict.input) || "hz" });
+  const finished = st.idx >= lines.length;
+  let body;
+  if (finished) {
+    const ok = st.res.reduce((a, r) => a + r.ok, 0), total = st.res.reduce((a, r) => a + r.total, 0), acc = total ? Math.round(ok / total * 100) : 0;
+    if (!st.saved) {
+      st.saved = true;
+      setProg(p => { p.vipDict = p.vipDict || {}; const o = p.vipDict[text.id] || { bestAcc: 0, times: 0 }; st.rec = acc > o.bestAcc; p.vipDict[text.id] = { bestAcc: Math.max(o.bestAcc, acc), times: (o.times || 0) + 1, last: Date.now() }; });
+      if (window.trackExerciseCompleted) window.trackExerciseCompleted();
+    }
+    body = `<div class="tt-fade"><h4 style="font-weight:700;font-size:1.1rem;margin-bottom:.7rem">🏁 Hoàn thành chép chính tả đoạn này ${st.rec ? '<span class="tt-badge vip">kỷ lục mới!</span>' : ""}</h4>
+      <div class="tt-stats"><div class="tt-stat peach"><div class="k">Độ chính xác</div><div class="v">${acc}%</div><div class="tt-small">${ok}/${total} ${st.input === "hz" ? "chữ" : "chữ cái"}</div></div>
+        <div class="tt-stat"><div class="k">Số câu</div><div class="v">${lines.length}</div><div class="tt-small">${st.res.filter(r => r.total && r.ok === r.total).length} câu đúng hoàn toàn</div></div></div>
+      <div class="tt-row" style="margin-top:1rem"><button class="tt-btn peach" id="vd-again">↻ Làm lại</button><button class="tt-btn ghost" id="vd-speak">🎙️ Sang luyện nói đoạn này</button></div></div>`;
+  } else {
+    const line = lines[st.idx];
+    body = `<div class="tt-row" style="margin-bottom:.6rem">
+        <label class="tt-radio"><input type="radio" name="vd-in" value="hz" ${st.input === "hz" ? "checked" : ""}> Gõ chữ Hán</label>
+        <label class="tt-radio"><input type="radio" name="vd-in" value="py" ${st.input === "py" ? "checked" : ""}> Gõ pinyin</label></div>
+      <div class="tt-dict-bar"><b style="color:#2E3440">Câu ${st.idx + 1}/${lines.length}</b>${line.role ? `<span class="tt-small">Vai: <b>${esc(line.role)}</b></span>` : ""}</div>
+      <div class="tt-progress"><i style="width:${st.idx / lines.length * 100}%"></i></div>
+      <div class="tt-row" style="margin-bottom:.7rem"><button class="tt-btn peach" id="vd-play">🔊 Nghe câu (file gốc)</button>
+        <span class="tt-small">Phím tắt: <b>Ctrl + Space</b> nghe lại · <b>Enter</b> kiểm tra</span></div>
+      <input class="tt-input big ${st.input === "py" ? "" : "tt-hz"}" id="vd-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${st.input === "hz" ? "Gõ chữ Hán bạn nghe được…" : "Gõ pinyin (có hoặc không dấu đều được)…"}">
+      <div id="vd-result"></div>
+      <div class="tt-row" style="margin-top:.8rem;justify-content:space-between"><button class="tt-link" id="vd-skip">Bỏ qua câu này</button><button class="tt-btn" id="vd-check">Kiểm tra</button></div>`;
+  }
+  box.innerHTML = head + `<div class="tt-card tt-fade">${vipTop(lesson, text)}<div id="vd-body">${body}</div></div>`;
+  bindVipTop(box, lesson);
+  if (finished) {
+    $("vd-again").addEventListener("click", () => { VIP.dict = { id: text.id, idx: 0, res: [], checked: false, input: st.input }; renderVip(); });
+    $("vd-speak").addEventListener("click", () => { VIP.dict = null; VIP.mode = "speak"; renderVip(); });
+    return;
+  }
+  const line = lines[st.idx]; const input = $("vd-input");
+  const play = () => { input.focus(); VIP.allRun = null; playLine(text, line.i); };
+  const check = () => {
+    const exp = st.input === "hz" ? hzOnly(line.cn) : pyLetters(line.py);
+    const d = diffSeq(exp, st.input === "hz" ? hzOnly(input.value) : pyLetters(input.value));
+    st.res[st.idx] = { ok: d.ok, total: d.total }; st.checked = true;
+    const pct = d.total ? Math.round(d.ok / d.total * 100) : 0;
+    $("vd-result").innerHTML = `<div class="tt-diff ${st.input === "py" ? "py" : "tt-hz"} tt-fade">${d.parts.map(p => `<span class="${p.t}">${esc(p.c)}</span>`).join("")}</div>
+      <div class="tt-answer">${pct === 100 ? "🎉 <b>Chính xác 100%!</b>" : `Đúng <b>${pct}%</b>${d.extra ? ` · thừa ${d.extra} ký tự` : ""}`}<br>Đáp án: <b class="tt-hz" style="font-size:16px">${esc(line.cn)}</b> · ${esc(line.py || "")}<br><span>${esc(line.vi || "")}</span></div>`;
+    $("vd-check").textContent = st.idx + 1 < lines.length ? "Câu tiếp ▶" : "Xem kết quả";
+    if (window.trackStudyActivity) window.trackStudyActivity();
+  };
+  const next = () => { stopVipAudio(); st.idx++; st.checked = false; renderVip(); setTimeout(() => $("vd-play")?.click(), 120); };
+  box.querySelectorAll("[name=vd-in]").forEach(r => r.addEventListener("change", e => { stopVipAudio(); VIP.dict = { id: text.id, idx: 0, res: [], checked: false, input: e.target.value }; renderVip(); }));
+  $("vd-play").addEventListener("click", play);
+  $("vd-check").addEventListener("click", () => st.checked ? next() : check());
+  $("vd-skip").addEventListener("click", () => { st.res[st.idx] = { ok: 0, total: (st.input === "hz" ? hzOnly(line.cn) : pyLetters(line.py)).length }; next(); });
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); st.checked ? next() : check(); }
+    if (e.key === " " && e.ctrlKey) { e.preventDefault(); play(); }
+  });
+}
+
 function renderVipPractice(box, head) {
   const lesson = VIP.data.lessons.find(l => l.no === VIP.lessonNo);
   const text = lesson.texts[VIP.textIdx];
+  if (VIP.mode === "dict") return renderVipDict(box, head, lesson, text);
   const roles = [...new Set(text.lines.map(x => x.role).filter(r => r && !/[、,]/.test(r)))];
   const active = (x) => VIP.roleFilter === "all" || x.role === VIP.roleFilter || (x.role || "").includes(VIP.roleFilter);
   const takes = VIP.takes[text.id] || (VIP.takes[text.id] = {});
   const need = text.lines.map((x, i) => i).filter(i => active(text.lines[i]));
   const recorded = need.filter(i => takes[i]).length;
-  const done = (getProg().vip || {})[text.id];
-  box.innerHTML = head + `<div class="tt-card tt-fade">
-    <div class="tt-row between"><button class="tt-link" id="vp-back">‹ Danh sách bài</button>${window.tnOpenGrammar ? `<button class="tt-btn soft sm" id="vp-gram">📐 Ngữ pháp bài ${lesson.no}</button>` : ""}</div>
-    <div class="tt-row between" style="margin:.5rem 0 .3rem"><div><span class="tt-small">Bài ${lesson.no} · ${esc(lesson.vi)}</span><div class="tt-hz" style="font-size:22px;color:#000080">${esc(lesson.title)}</div></div>
-      ${done ? '<span class="tt-badge green">✓ Đã hoàn thành đoạn này</span>' : ""}</div>
-    <div class="tt-tabs">${lesson.texts.map((t, i) => `<button class="tt-tab ${i === VIP.textIdx ? "active" : ""}" data-txt="${i}">${(getProg().vip || {})[t.id] ? "✓ " : ""}${i + 1}. <span class="tt-hz">${esc(t.title)}</span></button>`).join("")}</div>
-    <div class="tt-note" style="margin-bottom:.8rem">🎧 Track ${esc(text.track)} · ${esc(text.vi)}</div>
+  box.innerHTML = head + `<div class="tt-card tt-fade">${vipTop(lesson, text)}
     <div class="tt-row" style="margin-bottom:.8rem">
       <button class="tt-btn peach" id="vp-all">▶ Nghe cả đoạn</button>
       <button class="tt-btn ghost sm" id="vp-stop">■ Dừng</button>
@@ -1197,10 +1270,8 @@ function renderVipPractice(box, head) {
       <div class="tt-row">${VIP.textIdx + 1 < lesson.texts.length ? `<button class="tt-btn ghost" id="vp-next">Đoạn tiếp ▶</button>` : ""}
       <button class="tt-btn peach" id="vp-submit" ${recorded === need.length && need.length ? "" : "disabled"}>📤 Nộp bài</button></div></div>
     </div>`;
-  $("vp-back").addEventListener("click", () => { stopVipAudio(); cancelVipRec(); VIP.lessonNo = null; renderVip(); });
-  box.querySelectorAll("[data-txt]").forEach(b => b.addEventListener("click", () => { stopVipAudio(); cancelVipRec(); VIP.textIdx = Number(b.dataset.txt); VIP.roleFilter = "all"; renderVip(); }));
+  bindVipTop(box, lesson);
   $("vp-next")?.addEventListener("click", () => { stopVipAudio(); cancelVipRec(); VIP.textIdx++; VIP.roleFilter = "all"; renderVip(); });
-  $("vp-gram")?.addEventListener("click", () => { stopVipAudio(); cancelVipRec(); window.tnOpenGrammar(lesson.no); });
   $("vp-all").addEventListener("click", () => playAll(text));
   $("vp-stop").addEventListener("click", () => { VIP.allRun = null; stopVipAudio(); });
   $("vp-py").addEventListener("change", e => { VIP.showPy = e.target.checked; box.querySelector(".tt-lines").classList.toggle("tt-hide-py", !VIP.showPy); });
