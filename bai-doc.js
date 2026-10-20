@@ -56,7 +56,7 @@
     const msg = html => { listEl.innerHTML = html; };
     if (RS.status === 'guest') {
       msg(`<div class="tt-lock" style="grid-column:1/-1"><div class="ico">🏮</div><b>中国文化补习 – Bổ túc văn hoá Trung Quốc</b>
-        <p>Mục bài đọc VIP về văn hoá Trung Quốc: tiết khí, danh nhân, tư tưởng, tứ đại danh tác, lễ tết, danh thắng. Đăng nhập để xem.</p>
+        <p>Mục bài đọc VIP về văn hoá Trung Quốc: tiết khí, danh nhân, tư tưởng, tứ đại danh tác, lễ tết, danh thắng, văn hoá đặc sắc từng tỉnh. Đăng nhập để xem.</p>
         <button class="tt-btn" data-tt-login>Đăng nhập / Đăng ký</button></div>`); return;
     }
     const can = window.tnCan;
@@ -110,14 +110,25 @@
       <span class="zh font-hanzi">${VH_ICON[g.id] || ''} ${escapeHtml(g.zh)}</span><span class="vi">${escapeHtml(g.vi || '')}</span>`;
     head.querySelector('.vh-back').addEventListener('click', () => { CS.openGroup = null; renderList(); });
     listEl.appendChild(head);
-    cultureLessons.filter(l => l.group === g.id).forEach((l, i) =>
-      listEl.appendChild(lessonCard(l, i, `<span class="baidoc-badge vh font-hanzi" style="background:${c.from};color:${c.badgeInk}">${escapeHtml(g.zh)}</span>`)));
+    // Bài có trường region (VD mục 地方特色文化: mỗi bài là 1 tỉnh) → chèn tiêu đề vùng trước bài đầu tiên của vùng đó
+    let lastRegion = null;
+    cultureLessons.filter(l => l.group === g.id).forEach((l, i) => {
+      if (l.region && l.region !== lastRegion) {
+        lastRegion = l.region;
+        const rh = document.createElement('div');
+        rh.className = 'vh-region font-hanzi';
+        rh.style.cssText = `border-color:${c.to};color:${VH_SCALE[6]}`;
+        rh.textContent = l.region;
+        listEl.appendChild(rh);
+      }
+      listEl.appendChild(lessonCard(l, i, `<span class="baidoc-badge vh font-hanzi" style="background:${c.from};color:${c.badgeInk}">${escapeHtml(l.badge || g.zh)}</span>`));
+    });
   }
 
   // Thang màu của mục Bài đọc (--t0 … --t6 do hoc-tieng-trung.js gắn, nền hồng) — chia đều cho số chủ đề,
   // mỗi thẻ chuyển từ sắc này sang sắc kế tiếp. Giá trị sau dấu phẩy là màu dự phòng.
   const VH_SCALE = ['#FDF0F6', '#FADCEA', '#F5BBD5', '#EB8DB7', '#D65C95', '#B0306A', '#7A1A47'].map((c, i) => `var(--t${i}, ${c})`);
-  const VH_ICON = { jieqi: '🌾', mingren: '🧑‍🏫', sixiang: '☯️', mingzhu: '📚', jieri: '🏮', mingsheng: '🏯' };
+  const VH_ICON = { jieqi: '🌾', mingren: '🧑‍🏫', sixiang: '☯️', mingzhu: '📚', jieri: '🏮', mingsheng: '🏯', difang: '🗺️' };
   function vhShade(i, n) {
     const pos = n <= 1 ? 0 : i * (VH_SCALE.length - 2) / (n - 1);
     const k = Math.min(VH_SCALE.length - 2, Math.round(pos));
@@ -325,7 +336,7 @@
     stopAudio();
 
     const grp = lesson.group ? CS.groups.find(g => g.id === lesson.group) : null;
-    document.getElementById('baidoc-detail-badge').textContent = lesson.group ? '中国文化补习 · ' + (grp ? grp.zh : lesson.group) : 'hsk ' + lesson.hsk;
+    document.getElementById('baidoc-detail-badge').textContent = lesson.group ? '中国文化补习 · ' + (grp ? grp.zh : lesson.group) + (lesson.badge ? ' · ' + lesson.badge : '') : 'hsk ' + lesson.hsk;
     document.getElementById('baidoc-detail-title').textContent = lesson.title;
     document.getElementById('baidoc-detail-summary').textContent = lesson.summary || '';
 
