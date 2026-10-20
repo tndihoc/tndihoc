@@ -3327,12 +3327,12 @@ Trang quản trị
 
     Cách hoạt động: mỗi khi có 1 tương tác học tập, gọi window.trackStudyActivity().
     Hệ thống coi đó là still đang trong "phiên học liên tục" nếu khoảng cách với lượt
-    tương tác trước đó không quá ACTIVITY_IDLE_GAP_MS (2 phút) — nếu nghỉ lâu hơn thì
+    tương tác trước đó không quá ACTIVITY_IDLE_GAP_MS (5 phút) — nếu nghỉ lâu hơn thì
     phiên liên tục được tính lại từ đầu. Khi tổng thời gian của phiên liên tục hiện tại
     đạt CONTINUOUS_ACTIVITY_MS (10 phút), ngày hôm đó tự động được tính là đã học (streak).
   */
   const CONTINUOUS_ACTIVITY_MS = 10 * 60 * 1000; // 10 phút hoạt động liên tục -> tính streak
-  const ACTIVITY_IDLE_GAP_MS = 2 * 60 * 1000;    // nghỉ quá 2 phút giữa 2 lượt tương tác -> tính là ngắt quãng, phiên liên tục bắt đầu lại
+  const ACTIVITY_IDLE_GAP_MS = 5 * 60 * 1000;    // nghỉ quá 5 phút giữa 2 lượt tương tác -> tính là ngắt quãng, phiên liên tục bắt đầu lại
 
   // Phiên học liên tục được lưu trên máy (không đồng bộ lên tài khoản) để tải lại trang / chuyển mục
   // không làm mất số phút đã học trong phiên.
@@ -3365,7 +3365,7 @@ Trang quản trị
   window.trackStudyActivity = function () { noteStudyActivity(); };
 
   // Nhiều mục chỉ báo hoạt động lúc bắt đầu / kết thúc (1 màn trò chơi, đọc bài, luyện HSKK...),
-  // nên khoảng giữa thường dài hơn 2 phút và phiên liên tục bị tính lại từ đầu → không bao giờ đủ 10 phút.
+  // nên khoảng giữa thường dài hơn 5 phút và phiên liên tục bị tính lại từ đầu → không bao giờ đủ 10 phút.
   // Vì vậy mọi thao tác (bấm, gõ, chạm, cuộn) trong trang Học tiếng Trung cũng được tính là đang học.
   // Gọi thẳng noteStudyActivity (không qua window.trackStudyActivity) để không ảnh hưởng điểm xếp hạng.
   let lastPassiveAt = 0;
