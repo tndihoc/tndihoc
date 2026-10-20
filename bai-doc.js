@@ -29,7 +29,7 @@
 
   let currentFilter = 'all';
   const cultureLessons = [];                 // bài đọc văn hoá VIP
-  const CS = { status: 'idle', groups: [], err: '', uid: null, openGroup: null };   // idle | loading | ready | error
+  const CS = { status: 'idle', groups: [], err: '', uid: null, openGroup: null, openProv: null };   // idle | loading | ready | error
 
   function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -96,7 +96,7 @@
           <span class="vi">${escapeHtml(g.vi || '')} · ${items.length} bài</span>
           <span class="items font-hanzi">${items.slice(0, 8).map(l => `<span>${escapeHtml(shortTitle(l.title))}</span>`).join('')}</span>
           <span class="go">Xem bài đọc →</span>`;
-        card.addEventListener('click', () => { CS.openGroup = g.id; renderList(); document.getElementById('baidoc-section').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+        card.addEventListener('click', () => { CS.openGroup = g.id; CS.openProv = null; renderList(); document.getElementById('baidoc-section').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
         listEl.appendChild(card);
       });
       return;
@@ -108,20 +108,51 @@
     head.style.cssText = `background:linear-gradient(90deg, ${c.from}, ${c.to});color:${c.ink}`;
     head.innerHTML = `<button type="button" class="vh-back focus-ring">← Các chủ đề</button>
       <span class="zh font-hanzi">${VH_ICON[g.id] || ''} ${escapeHtml(g.zh)}</span><span class="vi">${escapeHtml(g.vi || '')}</span>`;
-    head.querySelector('.vh-back').addEventListener('click', () => { CS.openGroup = null; renderList(); });
+    head.querySelector('.vh-back').addEventListener('click', () => { if (CS.openProv) CS.openProv = null; else CS.openGroup = null; renderList(); });
     listEl.appendChild(head);
-    // Bài có trường region (VD mục 地方特色文化: mỗi bài là 1 tỉnh) → chèn tiêu đề vùng trước bài đầu tiên của vùng đó
-    let lastRegion = null;
-    cultureLessons.filter(l => l.group === g.id).forEach((l, i) => {
-      if (l.region && l.region !== lastRegion) {
-        lastRegion = l.region;
-        const rh = document.createElement('div');
-        rh.className = 'vh-region font-hanzi';
-        rh.style.cssText = `border-color:${c.to};color:${VH_SCALE[6]}`;
-        rh.textContent = l.region;
-        listEl.appendChild(rh);
+    const inGroup = cultureLessons.filter(l => l.group === g.id);
+    const regionHead = (text) => {
+      const rh = document.createElement('div');
+      rh.className = 'vh-region font-hanzi';
+      rh.style.cssText = `border-color:${c.to};color:${VH_SCALE[6]}`;
+      rh.textContent = text;
+      listEl.appendChild(rh);
+    };
+    const badge = l => `<span class="baidoc-badge vh font-hanzi" style="background:${c.from};color:${c.badgeInk}">${escapeHtml(l.badge || g.zh)}</span>`;
+    // Chủ đề có trường province (地方特色文化) → thêm 1 tầng: thẻ các tỉnh (xếp theo vùng) → các bài của tỉnh đó
+    if (inGroup.some(l => l.province)) {
+      const provs = [...new Set(inGroup.map(l => l.province))];
+      if (!CS.openProv || !provs.includes(CS.openProv)) {
+        let lastRegion = null;
+        provs.forEach((pv, i) => {
+          const items = inGroup.filter(l => l.province === pv);
+          const f = items[0];
+          if (f.region && f.region !== lastRegion) { lastRegion = f.region; regionHead(f.region); }
+          const card = document.createElement('button');
+          card.type = 'button';
+          card.className = 'baidoc-card vh-prov focus-ring';
+          card.style.animationDelay = (i * 0.03) + 's';
+          card.innerHTML = `<span class="baidoc-badge vh font-hanzi" style="background:${c.from};color:${c.badgeInk}">${escapeHtml(f.provinceAbbr || '')} · ${items.length} bài</span>
+            <h4 class="font-hanzi font-semibold text-ink mb-1" style="font-size:20px">${escapeHtml(pv)}</h4>
+            <p class="text-sm text-slate mb-1">${escapeHtml(f.provinceVi || '')}</p>
+            <p class="text-sm text-slate leading-relaxed font-hanzi">${items.map(l => escapeHtml(shortTitle(l.title))).join(' · ')}</p>`;
+          card.addEventListener('click', () => { CS.openProv = pv; renderList(); document.getElementById('baidoc-section').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+          listEl.appendChild(card);
+        });
+        return;
       }
-      listEl.appendChild(lessonCard(l, i, `<span class="baidoc-badge vh font-hanzi" style="background:${c.from};color:${c.badgeInk}">${escapeHtml(l.badge || g.zh)}</span>`));
+      head.querySelector('.vh-back').textContent = '← Các tỉnh';
+      const items = inGroup.filter(l => l.province === CS.openProv);
+      head.querySelector('.zh').textContent = `${VH_ICON[g.id] || ''} ${g.zh} · ${CS.openProv}`;
+      head.querySelector('.vi').textContent = items[0].provinceVi || '';
+      items.forEach((l, i) => listEl.appendChild(lessonCard(l, i, badge(l))));
+      return;
+    }
+    // Bài có trường region → chèn tiêu đề vùng trước bài đầu tiên của vùng đó
+    let lastRegion = null;
+    inGroup.forEach((l, i) => {
+      if (l.region && l.region !== lastRegion) { lastRegion = l.region; regionHead(l.region); }
+      listEl.appendChild(lessonCard(l, i, badge(l)));
     });
   }
 
@@ -340,6 +371,12 @@
     document.getElementById('baidoc-detail-title').textContent = lesson.title;
     document.getElementById('baidoc-detail-summary').textContent = lesson.summary || '';
 
+    const refsEl = document.getElementById('baidoc-detail-refs');
+    if (refsEl) {
+      const refs = Array.isArray(lesson.refs) ? lesson.refs.filter(r => /^https?:\/\//.test(r.url || '')) : [];
+      refsEl.classList.toggle('hidden', !refs.length);
+      refsEl.innerHTML = refs.length ? '📚 Nguồn tham khảo: ' + refs.map(r => `<a href="${escapeHtml(r.url)}" target="_blank" rel="noopener noreferrer" class="text-peach hover:opacity-80">${escapeHtml(r.name || r.url)}</a>`).join(' · ') : '';
+    }
     const sourceWrap = document.getElementById('baidoc-detail-sourcewrap');
     const sourceLink = document.getElementById('baidoc-detail-source');
 
@@ -408,7 +445,7 @@
       pillsWrap.querySelectorAll('.baidoc-level').forEach(p => p.classList.remove('active'));
       pill.classList.add('active');
       currentFilter = pill.dataset.baidocFilter;
-      if (currentFilter === 'vh') CS.openGroup = null;   // vào lại mục văn hoá → về màn các chủ đề
+      if (currentFilter === 'vh') CS.openGroup = CS.openProv = null;   // vào lại mục văn hoá → về màn các chủ đề
       renderList();
     });
   });

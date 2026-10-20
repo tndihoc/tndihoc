@@ -1715,11 +1715,15 @@ async function lmsCultureData() {
         const d = await D().getDoc(D().doc(db(), "culture", id));
         if (d.exists()) cur.push(...JSON.parse(d.data().json || "[]"));
       }
+      // File có replaceGroups (VD ["difang"]) → bỏ hết bài cũ của các chủ đề đó trước khi gộp (thay bản soạn lại, không để bài cũ lẫn vào)
+      const rg = Array.isArray(pkg.replaceGroups) ? pkg.replaceGroups : [];
+      const dropped = rg.length ? cur.filter(l => rg.includes(l.group)).length : 0;
+      if (dropped) cur.splice(0, cur.length, ...cur.filter(l => !rg.includes(l.group)));
       const byId = new Map(cur.map((l, i) => [l.id, i]));
       let added = 0, updated = 0;
       pkg.lessons.forEach(l => { if (byId.has(l.id)) { cur[byId.get(l.id)] = l; updated++; } else { cur.push(l); added++; } });
       (pkg.groups || []).forEach(g => { const k = groups.findIndex(x => x.id === g.id); if (k >= 0) groups[k] = g; else groups.push(g); });
-      if (!confirm(`Mục văn hoá hiện có ${cur.length - added} bài. Thêm ${added} bài mới${updated ? `, cập nhật ${updated} bài trùng mã` : ""} → tổng ${cur.length} bài?`)) { cdLock(false); $("cd-log").innerHTML = ""; return; }
+      if (!confirm(`Mục văn hoá hiện có ${cur.length - added + dropped} bài.${dropped ? ` Bỏ ${dropped} bài cũ của chủ đề được soạn lại.` : ""} Thêm ${added} bài mới${updated ? `, cập nhật ${updated} bài trùng mã` : ""} → tổng ${cur.length} bài?`)) { cdLock(false); $("cd-log").innerHTML = ""; return; }
       await publishReadings(cur, cdProgress, "culture", { groups });
       $("cd-log").innerHTML = `<div class="tt-note ok">🎉 Xong! Đã thêm ${added} bài${updated ? `, cập nhật ${updated} bài` : ""}. Mục văn hoá có ${cur.length} bài. Tải lại trang để xem.</div>`;
     } catch (e) { $("cd-log").innerHTML = `<div class="tt-note err">${esc(errText(e))}</div>`; cdLock(false); }
