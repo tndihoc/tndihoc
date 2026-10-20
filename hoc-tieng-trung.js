@@ -87,7 +87,7 @@ window.tnVoice = (function () {
     { id: "khaungu", scale: ["#F1F4FD", "#DCE4FA", "#B9CAF4", "#8BA7EA", "#5A7ADB", "#2E48C4", "#1B2D85"], icon: "🎙️", title: "Khẩu ngữ", desc: "Luyện nói theo chủ đề và theo đề thi HSKK (sơ – trung – cao cấp), ghi âm và nộp cho giáo viên.", bg: "#EEF2FC", ink: "#2E48C4", line: "#D6E0F7",
       parts: [{ el: "tt-speaking", label: "🗣️ Theo chủ đề" }, { el: "tt-hskk", label: "📝 Luyện HSKK" }] },
     { id: "lophoc", scale: ["#FFF6EC", "#FFE6CC", "#FFCB94", "#FFA95A", "#F08A24", "#B35600", "#7A3A00"], icon: "🏫", title: "Lớp học của tôi", desc: "Vào lớp bằng mã, ôn từ vựng theo bài, góc luyện chữ và hội thoại 贯通中文.", bg: "#FFE8D1", ink: "#B35600", line: "#FFC98A",
-      parts: [{ el: "tt-myclass", label: "🏫 Lớp của tôi" }, { el: "tt-review", label: "📚 Ôn từ vựng" }, { el: "tt-grammar", label: "📐 Ngữ pháp" }, { el: "tt-gallery", label: "🖼️ Luyện chữ" }, { el: "tt-vip", label: "⭐ Hội thoại 贯通" }] },
+      parts: [{ el: "tt-myclass", label: "🏫 Lớp của tôi" }, { el: "tt-review", label: "📚 Ôn từ vựng" }, { el: "tt-grammar", label: "📐 Ngữ pháp (VIP)" }, { el: "tt-gallery", label: "🖼️ Luyện chữ" }, { el: "tt-vip", label: "⭐ Hội thoại 贯通" }] },
     { id: "bothu", scale: ["#F6F3FC", "#E8E2F7", "#D1C6EF", "#AE9FDF", "#8875C8", "#4B3C8C", "#2F255C"], icon: "部", title: "Bộ thủ", desc: "214 bộ thủ Khang Hy: nghĩa, âm Hán Việt, ví dụ và luyện tập.", bg: "#F3F0FA", ink: "#4B3C8C", line: "#DCD3F2",
       parts: [{ el: "tt-radicals", label: "部 Bộ thủ" }] },
   ];
@@ -269,11 +269,11 @@ window.tnVoice = (function () {
   function renderGrammar() {
     const box = document.getElementById("tt-grammar"); if (!box) return;
     const data = window.tnGrammarGt1 || { units: [] };
-    const head = `<div class="tt-head"><span class="tt-stamp">语</span><h3>Ngữ pháp 《贯通中文 1》</h3></div>
+    const head = `<div class="tt-head"><span class="tt-stamp">语</span><h3>Ngữ pháp 《贯通中文 1》</h3><span class="tt-badge vip">VIP</span></div>
       <p class="tt-desc">Các điểm ngữ pháp <b>语言点</b> của từng bài: cấu trúc, cách dùng và câu ví dụ trong bài khoá — bấm 🔊 để nghe câu mẫu.</p>`;
-    if (!(window.tnCan ? window.tnCan("vipDialogue") : false)) {
-      const logged = window.tnAuth && window.tnAuth.user;
-      box.innerHTML = head + `<div class="tt-lock"><div class="ico">🔒</div><b>Dành cho học viên lớp 《贯通中文》</b><p>${logged ? "Hãy nhập <b>mã lớp</b> ở mục “Lớp của tôi” để mở phần ngữ pháp theo bài." : "Đăng nhập và vào lớp bằng mã giáo viên gửi để dùng phần này."}</p>${logged ? '<a class="tt-btn peach" href="#tt-myclass">🏫 Nhập mã lớp</a>' : '<button class="tt-btn" data-tt-login>Đăng nhập</button>'}</div>`;
+    if (!(window.tnCan ? window.tnCan("grammar") : false)) {
+      const api = window.tnApi;
+      box.innerHTML = head + (api ? api.lockedHtml("grammar") : `<div class="tt-empty"><span class="tt-spin"></span></div>`);
       return;
     }
     const u = data.units.find(x => x.no === GRAM.no);
