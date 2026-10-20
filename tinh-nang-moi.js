@@ -81,7 +81,7 @@ function dataURLToBlob(url) {
 /* ---------------- Trạng thái đăng nhập + Firebase ---------------- */
 const T = {
   user: null, profile: null, fb: null,
-  defaults: { dictation: true, speakingTasks: true, contributeEdits: true, vipDialogue: false, interview: false, hskk: false, culture: false },
+  defaults: { dictation: true, speakingTasks: true, contributeEdits: true, vipDialogue: false, interview: false, hskk: false, culture: false, grammar: false },
   myClasses: [], ready: false,
 };
 const FLAGS = [
@@ -92,6 +92,7 @@ const FLAGS = [
   { perm: "can_access_interview", feat: "interview", label: "Training phỏng vấn (VIP)", icon: "🎤" },
   { perm: "can_access_hskk", feat: "hskk", label: "Bài mẫu HSKK (VIP)", icon: "📝" },
   { perm: "can_access_culture", feat: "culture", label: "Bổ túc văn hoá Trung Quốc (VIP)", icon: "🏮" },
+  { perm: "can_access_grammar", feat: "grammar", label: "Ngữ pháp 贯通中文 (VIP)", icon: "📐" },
 ];
 const flagOf = (feat) => FLAGS.find(f => f.feat === feat);
 const role = () => (T.profile && T.profile.role) || "user";
@@ -134,7 +135,7 @@ function needLoginHtml(what) {
 function lockedHtml(feat) {
   const f = flagOf(feat);
   if (!T.user) return `<div class="tt-lock"><div class="ico">${f.icon}</div><b>${esc(f.label)}</b><p>Tính năng này dành cho học viên đã đăng nhập và được giáo viên mở quyền.</p><button class="tt-btn" data-tt-login>Đăng nhập</button></div>`;
-  return `<div class="tt-lock"><div class="ico">🔒</div><b>${esc(f.label)} chưa được mở cho tài khoản của bạn</b><p>${feat === "vipDialogue" ? "Đây là tính năng VIP dành cho học viên lớp giáo trình 《贯通中文》. " : feat === "interview" ? "Đây là tính năng VIP dành cho học viên được cô Thúy cấp quyền luyện phỏng vấn du học. " : feat === "hskk" ? "Đây là phần bài mẫu VIP của mục Luyện HSKK. " : feat === "culture" ? "Đây là mục bài đọc VIP “中国文化补习 – Bổ túc văn hoá Trung Quốc”. " : ""}Hãy nhập <b>mã lớp</b> giáo viên gửi ở mục “Lớp của tôi”, hoặc liên hệ cô Thúy để được mở quyền.</p><button type="button" class="tt-btn peach" data-go-myclass>🏫 Nhập mã lớp</button></div>`;
+  return `<div class="tt-lock"><div class="ico">🔒</div><b>${esc(f.label)} chưa được mở cho tài khoản của bạn</b><p>${feat === "vipDialogue" ? "Đây là tính năng VIP dành cho học viên lớp giáo trình 《贯通中文》. " : feat === "interview" ? "Đây là tính năng VIP dành cho học viên được cô Thúy cấp quyền luyện phỏng vấn du học. " : feat === "hskk" ? "Đây là phần bài mẫu VIP của mục Luyện HSKK. " : feat === "culture" ? "Đây là mục bài đọc VIP “中国文化补习 – Bổ túc văn hoá Trung Quốc”. " : feat === "grammar" ? "Đây là phần ngữ pháp VIP theo từng bài của giáo trình 《贯通中文》. " : ""}Hãy nhập <b>mã lớp</b> giáo viên gửi ở mục “Lớp của tôi”, hoặc liên hệ cô Thúy để được mở quyền.</p><button type="button" class="tt-btn peach" data-go-myclass>🏫 Nhập mã lớp</button></div>`;
 }
 document.addEventListener("click", e => {
   if (e.target.closest("[data-tt-login]")) { e.preventDefault(); window.tnOpenLogin ? window.tnOpenLogin("login") : alert("Đang tải chức năng đăng nhập, thử lại sau giây lát."); }
