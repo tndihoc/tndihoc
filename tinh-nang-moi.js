@@ -1170,7 +1170,7 @@ function renderVipPractice(box, head) {
   const recorded = need.filter(i => takes[i]).length;
   const done = (getProg().vip || {})[text.id];
   box.innerHTML = head + `<div class="tt-card tt-fade">
-    <button class="tt-link" id="vp-back">‹ Danh sách bài</button>
+    <div class="tt-row between"><button class="tt-link" id="vp-back">‹ Danh sách bài</button>${window.tnOpenGrammar ? `<button class="tt-btn soft sm" id="vp-gram">📐 Ngữ pháp bài ${lesson.no}</button>` : ""}</div>
     <div class="tt-row between" style="margin:.5rem 0 .3rem"><div><span class="tt-small">Bài ${lesson.no} · ${esc(lesson.vi)}</span><div class="tt-hz" style="font-size:22px;color:#000080">${esc(lesson.title)}</div></div>
       ${done ? '<span class="tt-badge green">✓ Đã hoàn thành đoạn này</span>' : ""}</div>
     <div class="tt-tabs">${lesson.texts.map((t, i) => `<button class="tt-tab ${i === VIP.textIdx ? "active" : ""}" data-txt="${i}">${(getProg().vip || {})[t.id] ? "✓ " : ""}${i + 1}. <span class="tt-hz">${esc(t.title)}</span></button>`).join("")}</div>
@@ -1199,6 +1199,7 @@ function renderVipPractice(box, head) {
   $("vp-back").addEventListener("click", () => { stopVipAudio(); cancelVipRec(); VIP.lessonNo = null; renderVip(); });
   box.querySelectorAll("[data-txt]").forEach(b => b.addEventListener("click", () => { stopVipAudio(); cancelVipRec(); VIP.textIdx = Number(b.dataset.txt); VIP.roleFilter = "all"; renderVip(); }));
   $("vp-next")?.addEventListener("click", () => { stopVipAudio(); cancelVipRec(); VIP.textIdx++; VIP.roleFilter = "all"; renderVip(); });
+  $("vp-gram")?.addEventListener("click", () => { stopVipAudio(); cancelVipRec(); window.tnOpenGrammar(lesson.no); });
   $("vp-all").addEventListener("click", () => playAll(text));
   $("vp-stop").addEventListener("click", () => { VIP.allRun = null; stopVipAudio(); });
   $("vp-py").addEventListener("change", e => { VIP.showPy = e.target.checked; box.querySelector(".tt-lines").classList.toggle("tt-hide-py", !VIP.showPy); });
