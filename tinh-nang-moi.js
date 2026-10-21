@@ -1682,10 +1682,10 @@ async function publishReadings(arr, onStep, col = "readings", extraMeta = {}) {
 async function lmsCultureData() {
   lmsBody().innerHTML = `<div class="tt-card"><b>🏮 中国文化补习 – Bổ túc văn hoá Trung Quốc (VIP)</b>
     <p class="tt-small" style="margin:.4rem 0 .8rem;line-height:1.7">Bài đọc văn hoá nằm riêng trên máy chủ (collection <code>culture</code>), chỉ người được mở quyền
-      <b>🏮 Bổ túc văn hoá Trung Quốc (VIP)</b> mới tải được. Nạp file <b>bo-tuc-van-hoa.json</b> để thay toàn bộ mục này (không ảnh hưởng kho bài đọc HSK).</p>
+      <b>🏮 Bổ túc văn hoá Trung Quốc (VIP)</b> mới tải được. Nạp file <b>bo-tuc-van-hoa.json</b> rồi chọn: <b>＋ Thêm vào mục</b> (giữ bài cũ, bài/chủ đề trùng mã được cập nhật) hoặc <b>Thay toàn bộ mục</b> (không ảnh hưởng kho bài đọc HSK).</p>
     <div id="cd-now" class="tt-small" style="margin-bottom:.6rem"><span class="tt-spin"></span></div>
     <input type="file" accept=".json,application/json" id="cd-file" class="tt-input" style="width:100%">
-    <div class="tt-row" style="justify-content:flex-end;margin-top:.6rem"><button class="tt-btn peach" id="cd-go" disabled>⤒ Nạp lên máy chủ</button></div>
+    <div class="tt-row" style="justify-content:flex-end;margin-top:.6rem"><button class="tt-btn peach" id="cd-add" disabled>＋ Thêm vào mục (giữ bài cũ)</button><button class="tt-btn ghost" id="cd-go" disabled>⤒ Thay toàn bộ mục</button></div>
     <div id="cd-log" style="margin-top:.7rem"></div></div>`;
   (async () => {
     try { const m = await D().getDoc(D().doc(db(), "culture", "_meta"));
@@ -1700,16 +1700,42 @@ async function lmsCultureData() {
       if (pkg.kind !== "tndihoc-culture" || !Array.isArray(pkg.lessons)) throw new Error("File không đúng định dạng bo-tuc-van-hoa.json");
       const n = {}; pkg.lessons.forEach(l => n[l.group] = (n[l.group] || 0) + 1);
       $("cd-log").innerHTML = `<div class="tt-note ok">Đã đọc ${pkg.lessons.length} bài: ${(pkg.groups || []).map(g => `${esc(g.zh)} ${n[g.id] || 0}`).join(" · ")}</div>`;
-      $("cd-go").disabled = false;
+      $("cd-go").disabled = $("cd-add").disabled = false;
     } catch (err) { pkg = null; $("cd-log").innerHTML = `<div class="tt-note err">${esc(err.message)}</div>`; }
   });
-  $("cd-go").addEventListener("click", async () => {
-    if (!pkg) return; const b = $("cd-go"); b.disabled = true;
+  const cdProgress = (i, n) => { $("cd-log").innerHTML = `<div class="tt-note">Đang nạp phần ${i}/${n}…</div><div class="tt-progress"><i style="width:${i / n * 100}%"></i></div>`; };
+  const cdLock = v => { $("cd-go").disabled = $("cd-add").disabled = v; };
+  $("cd-add").addEventListener("click", async () => {
+    if (!pkg) return; cdLock(true);
     try {
-      await publishReadings(pkg.lessons, (i, n) => { $("cd-log").innerHTML = `<div class="tt-note">Đang nạp phần ${i}/${n}…</div><div class="tt-progress"><i style="width:${i / n * 100}%"></i></div>`; },
-        "culture", { groups: pkg.groups || [] });
+      // Gộp với mục hiện có trên máy chủ theo mã: bài trùng id / chủ đề trùng id → thay bản mới, khác mã → thêm vào cuối
+      const m = await D().getDoc(D().doc(db(), "culture", "_meta"));
+      const cur = [], groups = m.exists() ? [...(m.data().groups || [])] : [];
+      if (m.exists()) for (const id of m.data().parts || []) {
+        const d = await D().getDoc(D().doc(db(), "culture", id));
+        if (d.exists()) cur.push(...JSON.parse(d.data().json || "[]"));
+      }
+      // File có replaceGroups (VD ["difang"]) → bỏ hết bài cũ của các chủ đề đó trước khi gộp (thay bản soạn lại, không để bài cũ lẫn vào)
+      const rg = Array.isArray(pkg.replaceGroups) ? pkg.replaceGroups : [];
+      const dropped = rg.length ? cur.filter(l => rg.includes(l.group)).length : 0;
+      if (dropped) cur.splice(0, cur.length, ...cur.filter(l => !rg.includes(l.group)));
+      const byId = new Map(cur.map((l, i) => [l.id, i]));
+      let added = 0, updated = 0;
+      pkg.lessons.forEach(l => { if (byId.has(l.id)) { cur[byId.get(l.id)] = l; updated++; } else { cur.push(l); added++; } });
+      (pkg.groups || []).forEach(g => { const k = groups.findIndex(x => x.id === g.id); if (k >= 0) groups[k] = g; else groups.push(g); });
+      if (!confirm(`Mục văn hoá hiện có ${cur.length - added + dropped} bài.${dropped ? ` Bỏ ${dropped} bài cũ của chủ đề được soạn lại.` : ""} Thêm ${added} bài mới${updated ? `, cập nhật ${updated} bài trùng mã` : ""} → tổng ${cur.length} bài?`)) { cdLock(false); $("cd-log").innerHTML = ""; return; }
+      await publishReadings(cur, cdProgress, "culture", { groups });
+      $("cd-log").innerHTML = `<div class="tt-note ok">🎉 Xong! Đã thêm ${added} bài${updated ? `, cập nhật ${updated} bài` : ""}. Mục văn hoá có ${cur.length} bài. Tải lại trang để xem.</div>`;
+    } catch (e) { $("cd-log").innerHTML = `<div class="tt-note err">${esc(errText(e))}</div>`; cdLock(false); }
+  });
+  $("cd-go").addEventListener("click", async () => {
+    if (!pkg) return;
+    if (!confirm(`Thay TOÀN BỘ mục văn hoá bằng ${pkg.lessons.length} bài trong file? Các bài hiện có không nằm trong file sẽ bị xoá.`)) return;
+    cdLock(true);
+    try {
+      await publishReadings(pkg.lessons, cdProgress, "culture", { groups: pkg.groups || [] });
       $("cd-log").innerHTML = `<div class="tt-note ok">🎉 Xong! Đã nạp ${pkg.lessons.length} bài văn hoá. Tải lại trang để xem.</div>`;
-    } catch (e) { $("cd-log").innerHTML = `<div class="tt-note err">${esc(errText(e))}</div>`; b.disabled = false; }
+    } catch (e) { $("cd-log").innerHTML = `<div class="tt-note err">${esc(errText(e))}</div>`; cdLock(false); }
   });
 }
 async function lmsReadData() {
