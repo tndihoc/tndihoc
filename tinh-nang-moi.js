@@ -1408,6 +1408,7 @@ const LMS_TABS = [
   { id: "culturedata", label: "🏮 Dữ liệu văn hoá", admin: true },
   { id: "idiomsdata", label: "📜 Dữ liệu thành ngữ", admin: true },
   { id: "guhandata", label: "🏺 Dữ liệu cổ Hán ngữ", admin: true },
+  { id: "gt1data", label: "📚 Dữ liệu 贯通 (từ vựng + ngữ pháp)", admin: true },
 ];
 function renderLms() {
   const box = $("tt-lms"); if (!box) return;
@@ -1419,7 +1420,7 @@ function renderLms() {
   if (!tabs.some(t => t.id === LMS.tab)) LMS.tab = "classes";
   box.innerHTML = `<div class="tt-tabs">${tabs.map(t => `<button class="tt-tab ${t.id === LMS.tab ? "active" : ""}" data-lt="${t.id}">${t.label}</button>`).join("")}</div><div id="lms-body" class="tt-fade"></div>`;
   box.querySelectorAll("[data-lt]").forEach(b => b.addEventListener("click", () => { LMS.tab = b.dataset.lt; renderLms(); }));
-  ({ classes: lmsClasses, users: lmsUsers, subs: lmsSubs, contrib: lmsContrib, topics: lmsTopics, defaults: lmsDefaults, vipdata: lmsVipData, readdata: lmsReadData, culturedata: lmsCultureData, idiomsdata: lmsIdiomsData, guhandata: lmsGuhanData,
+  ({ classes: lmsClasses, users: lmsUsers, subs: lmsSubs, contrib: lmsContrib, topics: lmsTopics, defaults: lmsDefaults, vipdata: lmsVipData, readdata: lmsReadData, culturedata: lmsCultureData, idiomsdata: lmsIdiomsData, guhandata: lmsGuhanData, gt1data: lmsGt1Data,
     pvdata: () => window.tnInterviewAdmin ? window.tnInterviewAdmin(lmsBody()) : (lmsBody().innerHTML = `<div class="tt-note warn">Chưa tải được phong-van.js — hãy kiểm tra file này đã có trên GitHub.</div>`),
     hskkdata: () => window.tnHskkAdmin ? window.tnHskkAdmin(lmsBody()) : (lmsBody().innerHTML = `<div class="tt-note warn">Chưa tải được hskk.js — hãy kiểm tra file này đã có trên GitHub.</div>`) })[LMS.tab]();
 }
@@ -1816,6 +1817,55 @@ async function lmsGuhanData() {
         "guhan", { disclaimer: pkg.disclaimer || "", book: pkg.book || "" });
       $("gh-log").innerHTML = `<div class="tt-note ok">🎉 Xong! Đã nạp ${pkg.lessons.length} bài. Tải lại trang để xem.</div>`;
     } catch (e) { $("gh-log").innerHTML = `<div class="tt-note err">${esc(errText(e))}</div>`; $("gh-go").disabled = false; }
+  });
+}
+/* ---------- Từ vựng + ngữ pháp 《贯通中文 1》 (collection gt1/vocab, gt1/grammar) ----------
+   Luật Firestore: vocab chỉ cho người có quyền can_access_vip_dialogue đọc, grammar cho can_access_grammar.
+   File nạp: gt1-tu-vung.json = { kind: "tndihoc-gt1-vocab", book, units: [{key,no,title,vi,words}] }
+             gt1-ngu-phap.json = { kind: "tndihoc-gt1-grammar", book, units: [{no,title,vi,points}] } */
+async function lmsGt1Data() {
+  const KINDS = [
+    { doc: "vocab", kind: "tndihoc-gt1-vocab", id: "v", name: "Từ vựng", file: "gt1-tu-vung.json", unit: u => u.words.length, noun: "từ" },
+    { doc: "grammar", kind: "tndihoc-gt1-grammar", id: "g", name: "Ngữ pháp", file: "gt1-ngu-phap.json", unit: u => u.points.length, noun: "điểm" },
+  ];
+  lmsBody().innerHTML = `<div class="tt-card"><b>📚 Dữ liệu 《贯通中文 1》 — từ vựng & ngữ pháp</b>
+    <p class="tt-small" style="margin:.4rem 0 .8rem;line-height:1.7">Dữ liệu nằm riêng trên máy chủ (collection <code>gt1</code>), không còn nằm trên GitHub. Từ vựng chỉ tải được với quyền
+      <b>⭐ Hội thoại 贯通中文 (VIP)</b>, ngữ pháp với quyền <b>📐 Ngữ pháp 贯通中文 (VIP)</b>. Nạp lại file sẽ thay toàn bộ phần đó.</p>
+    ${KINDS.map(k => `<div style="border-top:1px solid #E5EAF5;padding-top:.8rem;margin-top:.8rem">
+      <b>${k.name}</b> <span class="tt-small">(${k.file})</span>
+      <div id="gt-${k.id}-now" class="tt-small" style="margin:.4rem 0"><span class="tt-spin"></span></div>
+      <input type="file" accept=".json,application/json" id="gt-${k.id}-file" class="tt-input" style="width:100%">
+      <div class="tt-row" style="justify-content:flex-end;margin-top:.5rem"><button class="tt-btn peach" id="gt-${k.id}-go" disabled>⤒ Nạp ${k.name.toLowerCase()} lên máy chủ</button></div>
+      <div id="gt-${k.id}-log" style="margin-top:.5rem"></div></div>`).join("")}</div>`;
+  KINDS.forEach(k => {
+    (async () => {
+      try { const m = await D().getDoc(D().doc(db(), "gt1", k.doc));
+        $(`gt-${k.id}-now`) && ($(`gt-${k.id}-now`).innerHTML = m.exists() ? `✓ Đang có <b>${m.data().count}</b> ${k.noun} · cập nhật ${esc(fmtTime(m.data().updatedAt))}` : "✗ Chưa nạp.");
+      } catch (e) { $(`gt-${k.id}-now`) && ($(`gt-${k.id}-now`).innerHTML = `<span style="color:#B91C1C">${esc(errText(e))}</span> — cần thêm luật Firestore cho <code>gt1</code>.`); }
+    })();
+    let pkg = null;
+    $(`gt-${k.id}-file`).addEventListener("change", async e => {
+      const f = e.target.files[0]; if (!f) return;
+      try {
+        pkg = JSON.parse(await f.text());
+        if (pkg.kind !== k.kind || !Array.isArray(pkg.units)) throw new Error("File không đúng định dạng " + k.file);
+        const n = pkg.units.reduce((a, u) => a + k.unit(u), 0);
+        $(`gt-${k.id}-log`).innerHTML = `<div class="tt-note ok">Đã đọc ${pkg.units.length} bài · ${n} ${k.noun}</div>`;
+        $(`gt-${k.id}-go`).disabled = false;
+      } catch (err) { pkg = null; $(`gt-${k.id}-go`).disabled = true; $(`gt-${k.id}-log`).innerHTML = `<div class="tt-note err">${esc(err.message)}</div>`; }
+    });
+    $(`gt-${k.id}-go`).addEventListener("click", async () => {
+      if (!pkg) return;
+      if (!confirm(`Thay TOÀN BỘ ${k.name.toLowerCase()} 贯通中文 bằng nội dung trong file?`)) return;
+      $(`gt-${k.id}-go`).disabled = true;
+      try {
+        const json = JSON.stringify(pkg);
+        if (new TextEncoder().encode(json).length > 900000) throw new Error("File quá lớn (> 900 KB) để lưu trong 1 tài liệu Firestore.");
+        const n = pkg.units.reduce((a, u) => a + k.unit(u), 0);
+        await D().setDoc(D().doc(db(), "gt1", k.doc), { json, count: n, version: Date.now(), updatedAt: D().serverTimestamp() });
+        $(`gt-${k.id}-log`).innerHTML = `<div class="tt-note ok">🎉 Xong! Đã nạp ${n} ${k.noun}. Tải lại trang để xem.</div>`;
+      } catch (e) { $(`gt-${k.id}-log`).innerHTML = `<div class="tt-note err">${esc(errText(e))}</div>`; $(`gt-${k.id}-go`).disabled = false; }
+    });
   });
 }
 async function lmsReadData() {

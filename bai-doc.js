@@ -178,12 +178,31 @@
   }
   const shortTitle = t => String(t).split(/[：:]/)[0].replace(/[《》]/g, '');
 
+  // Nút cấp độ HSK nào chưa có bài đọc → làm mờ + ghi "Sắp có" (tự cập nhật khi thêm bài)
+  function markEmptyLevels() {
+    const have = new Set(readingLessons.map(l => String(l.hsk)));
+    pillsWrap.querySelectorAll('.baidoc-level').forEach(p => {
+      const f = p.dataset.baidocFilter;
+      if (f === 'all' || f === 'vh' || f === 'tn' || EXT[f]) return;
+      const empty = !have.has(f);
+      p.classList.toggle('bd-soon', empty);
+      let tag = p.querySelector('.bd-soon-tag');
+      if (empty && !tag) {
+        tag = document.createElement('span');
+        tag.className = 'bd-soon-tag';
+        tag.textContent = 'Sắp có';
+        p.appendChild(tag);
+      } else if (!empty && tag) tag.remove();
+    });
+  }
+
   function renderList() {
     if (currentFilter === 'vh') { renderCulture(); return; }
     if (currentFilter === 'tn') { renderIdioms(); return; }
     if (EXT[currentFilter]) { pillsWrap.classList.remove('hidden'); emptyEl.classList.add('hidden'); EXT[currentFilter].render(extCtx()); return; }
     if (RS.status !== 'ready' || !readingLessons.length) { renderGate(); return; }
     pillsWrap.classList.remove('hidden');
+    markEmptyLevels();
     const filtered = readingLessons.filter(l => currentFilter === 'all' || l.hsk === currentFilter);
     listEl.innerHTML = '';
     emptyEl.classList.toggle('hidden', filtered.length > 0);

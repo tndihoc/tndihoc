@@ -192,11 +192,42 @@ window.tnVoice = (function () {
   const PKEY = "tn_tt_progress_v1";
   const getProg = () => { try { return JSON.parse(localStorage.getItem(PKEY) || "{}") || {}; } catch (e) { return {}; } };
   const setProg = (fn) => { const p = getProg(); fn(p); try { localStorage.setItem(PKEY, JSON.stringify(p)); } catch (e) {} };
-  const UNITS = (window.tnUnitDecks && window.tnUnitDecks.units) || [];
-  try {
+  /* Dữ liệu 贯通中文 1 (từ vựng + ngữ pháp) nằm trên Firestore, collection "gt1" (doc "vocab", "grammar"),
+     chỉ tải sau khi đăng nhập và có quyền. Admin nạp ở "Lớp học & phân quyền" → tab "📚 Dữ liệu 贯通 (từ vựng + ngữ pháp)". */
+  const UNITS = [];
+  const GT1 = { vocab: null, grammar: null, busy: {}, err: {} };
+  function gt1ApplyVocab(data) {
+    UNITS.splice(0, UNITS.length, ...((data && data.units) || []));
     UNITS.forEach(u => { decks[u.key] = u.words; levelLabels[u.key] = "贯通 Bài " + u.no; });
     if (UNITS.length) { decks["gt1-all"] = UNITS.flatMap(u => u.words); levelLabels["gt1-all"] = "贯通 Bài 1–15"; }
-  } catch (e) { console.warn("tndihoc: chưa nạp được bộ từ theo bài", e); }
+  }
+  function gt1Clear() {   // đăng xuất / mất quyền → bỏ dữ liệu khỏi bộ nhớ
+    UNITS.forEach(u => { delete decks[u.key]; delete levelLabels[u.key]; });
+    delete decks["gt1-all"]; delete levelLabels["gt1-all"];
+    UNITS.length = 0; GT1.vocab = GT1.grammar = null; GT1.err = {};
+  }
+  async function gt1Load(kind, rerender) {
+    if (GT1[kind] || GT1.busy[kind]) return;
+    GT1.busy[kind] = true; GT1.err[kind] = "";
+    try {
+      const fb = window.tnEnsureFb ? await window.tnEnsureFb() : null;
+      if (!fb) throw new Error("Không kết nối được máy chủ. Kiểm tra mạng (ở Trung Quốc cần bật VPN) rồi thử lại.");
+      const snap = await fb.D.getDoc(fb.D.doc(fb.db, "gt1", kind));
+      if (!snap.exists()) throw new Error("Dữ liệu này chưa được nạp lên máy chủ. (Admin: “Lớp học & phân quyền” → tab “📚 Dữ liệu 贯通”.)");
+      const data = JSON.parse(snap.data().json);
+      GT1[kind] = data;
+      if (kind === "vocab") gt1ApplyVocab(data);
+    } catch (e) {
+      const code = (e && e.code) || "";
+      GT1.err[kind] = code.includes("permission") ? "Tài khoản chưa có quyền đọc mục này, hoặc luật Firestore cho “gt1” chưa được cập nhật."
+        : (e && e.message) || "Không tải được dữ liệu.";
+    }
+    GT1.busy[kind] = false;
+    rerender();
+  }
+  const gt1Wait = (kind) => GT1.err[kind]
+    ? `<div class="tt-note err" style="margin:.8rem 0">${esc(GT1.err[kind])} <button class="tt-link" data-gt1-retry="${kind}">Thử lại</button></div>`
+    : `<div class="tt-empty"><span class="tt-spin"></span></div>`;
   const games = document.getElementById("vocab-games");
   const gamesHome = document.createComment("vị trí gốc của khu trò chơi");
   if (games) {
@@ -240,6 +271,13 @@ window.tnVoice = (function () {
       top.innerHTML = head + `<div class="tt-lock"><div class="ico">🔒</div><b>Dành cho học viên lớp 《贯通中文》</b><p>${logged ? "Hãy nhập <b>mã lớp</b> ở mục “Lớp của tôi” để mở phần ôn từ vựng theo bài." : "Đăng nhập và vào lớp bằng mã giáo viên gửi để dùng phần này."}</p>${logged ? '<a class="tt-btn peach" href="#tt-myclass">🏫 Nhập mã lớp</a>' : '<button class="tt-btn" data-tt-login>Đăng nhập</button>'}</div>`;
       return;
     }
+    if (!GT1.vocab) {   // chưa tải từ máy chủ → tải rồi vẽ lại
+      top.innerHTML = head + gt1Wait("vocab");
+      const rt = top.querySelector("[data-gt1-retry]");
+      if (rt) rt.onclick = () => { GT1.err.vocab = ""; renderReview(); };
+      gt1Load("vocab", renderReview);
+      return;
+    }
     if (unitActive) {
       const u = unitOf(unitActive);
       if (games) games.classList.add("hub-show");
@@ -268,12 +306,19 @@ window.tnVoice = (function () {
   const GRAM = { no: null };
   function renderGrammar() {
     const box = document.getElementById("tt-grammar"); if (!box) return;
-    const data = window.tnGrammarGt1 || { units: [] };
-    const head = `<div class="tt-head"><span class="tt-stamp">语</span><h3>Ngữ pháp 《贯通中文 1》</h3><span class="tt-badge vip">VIP</span></div>
+    const data = GT1.grammar || { units: [] };
+    const head =`<div class="tt-head"><span class="tt-stamp">语</span><h3>Ngữ pháp 《贯通中文 1》</h3><span class="tt-badge vip">VIP</span></div>
       <p class="tt-desc">Các điểm ngữ pháp <b>语言点</b> của từng bài: cấu trúc, cách dùng và câu ví dụ trong bài khoá — bấm 🔊 để nghe câu mẫu.</p>`;
     if (!(window.tnCan ? window.tnCan("grammar") : false)) {
       const api = window.tnApi;
       box.innerHTML = head + (api ? api.lockedHtml("grammar") : `<div class="tt-empty"><span class="tt-spin"></span></div>`);
+      return;
+    }
+    if (!GT1.grammar) {   // chưa tải từ máy chủ → tải rồi vẽ lại
+      box.innerHTML = head + gt1Wait("grammar");
+      const rt = box.querySelector("[data-gt1-retry]");
+      if (rt) rt.onclick = () => { GT1.err.grammar = ""; renderGrammar(); };
+      gt1Load("grammar", renderGrammar);
       return;
     }
     const u = data.units.find(x => x.no === GRAM.no);
@@ -438,6 +483,9 @@ window.tnVoice = (function () {
   }
   document.addEventListener("tt-state", () => {
     const v = page.dataset.view;
+    // Đăng xuất hoặc mất quyền → xoá dữ liệu 贯通 khỏi bộ nhớ trang
+    if (GT1.vocab && !(window.tnCan && window.tnCan("vipDialogue"))) { reviewLeave(); gt1Clear(); }
+    if (GT1.grammar && !(window.tnCan && window.tnCan("grammar"))) GT1.grammar = null;
     if (v === "lophoc" && document.getElementById("tt-review").classList.contains("hub-show")) renderReview();
     if (v === "lophoc" && document.getElementById("tt-grammar").classList.contains("hub-show")) renderGrammar();
   });

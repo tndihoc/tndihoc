@@ -1586,6 +1586,9 @@ Trang quản trị
 </div>
 </div>
 <style>@media (min-width:640px){ .baidoc-pills-7 { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
+/* Cấp độ chưa có bài: mờ đi + nhãn "Sắp có" */
+.baidoc-level.bd-soon { opacity: .55; }
+.baidoc-level .bd-soon-tag { display: block; font-size: 11px; font-weight: 700; margin-top: 2px; opacity: .9; }
 /* Nút "中国文化补习": dải chuyển màu trải hết thang tím của các nút HSK (nhạt → đậm) */
 .baidoc-level-vh { grid-column: 1 / -1; padding: 14px 8px; }   /* màu (hồng đậm, viền đỏ) ở chu-de-mau.css */
 .baidoc-vh-chip { display: inline-flex; align-items: baseline; flex-wrap: wrap; justify-content: center; gap: 4px 10px; background: rgba(255,255,255,.92);
@@ -3603,12 +3606,10 @@ Trang quản trị
 })();
 </script>
 <script>try { localStorage.removeItem("tn_ai_chat_history_v1"); } catch (e) {}</script>
-<script src="bai-doc.js?v=9" defer></script>
+<script src="bai-doc.js?v=10" defer></script>
 <script src="co-han-ngu.js?v=1" defer></script>
 <script src="bo-thu.js?v=1" defer></script>
-<script src="tu-vung-gt1.js?v=1" defer></script>
-<script src="ngu-phap-gt1.js?v=1" defer></script>
-<script src="hoc-tieng-trung.js?v=11" defer></script>
+<script src="hoc-tieng-trung.js?v=12" defer></script>
 <!-- ===== Bộ đếm lượt truy cập hôm nay (dùng dịch vụ CountAPI miễn phí, không cần backend riêng) ===== -->
 <script>
 (function () {
@@ -3679,7 +3680,7 @@ Tiếp tục với Google
 </div>
 </div>
 <script src="auth.js?v=tt6" type="module"></script>
-<script src="tinh-nang-moi.js?v=16" type="module"></script>
+<script src="tinh-nang-moi.js?v=17" type="module"></script>
 <script src="phong-van.js?v=3" type="module"></script>
 <script src="hskk.js?v=1" type="module"></script>
 <script src="bai-tap.js?v=1" type="module"></script>
