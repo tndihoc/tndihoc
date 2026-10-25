@@ -522,7 +522,7 @@ function lbBind() {
    - Những lần sau: lấy tiến độ trên tài khoản làm chuẩn (kể cả khi đã xoá từ khỏi sổ tay ở máy khác).
    - Đăng xuất: xoá tiến độ khỏi máy (đã lưu an toàn trên tài khoản), để người sau dùng máy không bị lẫn.
 ------------------------------------------------------------------ */
-const SYNC_KEYS = ["tndihoc_notebook_v1", "tn_streak_v1", "tn_vocab_mastery_v1", "tndihoc_qz_best", "tndihoc_ar_best_streak", "tn_tt_progress_v1"];
+const SYNC_KEYS = ["tndihoc_notebook_v1", "tn_streak_v1", "tn_vocab_mastery_v1", "tndihoc_qz_best", "tndihoc_ar_best_streak", "tn_tt_progress_v1", "tn_idiom_weak_v1", "tn_guhan_notes_v1"];
 const SYNC_PREFIXES = ["tndihoc_mu_best_"];
 const SYNC_META = "tn_sync_meta_v1"; // { uid, dirty }
 const syncState = { ready: false, timer: null, pushing: null, lastOk: null, applying: false };
@@ -654,6 +654,12 @@ function mergeValue(k, a, b) {
       dict[id] = !o ? r : { ...o, ...r, bestCpm: Math.max(o.bestCpm || 0, r.bestCpm || 0), bestAcc: Math.max(o.bestAcc || 0, r.bestAcc || 0), times: Math.max(o.times || 0, r.times || 0) };
     });
     return JSON.stringify({ ...y, ...x, dict, vip: { ...(y.vip || {}), ...(x.vip || {}) }, rad: { ...(y.rad || {}), ...(x.rad || {}) }, units: { ...(y.units || {}), ...(x.units || {}) } });
+  }
+  if (k === "tn_guhan_notes_v1") { // ghi chú Cổ Hán ngữ: gộp theo từng bài, bản nào mới hơn thì giữ
+    const x = parseJ(a, {}), y = parseJ(b, {});
+    const out = { ...y };
+    Object.entries(x).forEach(([id, n]) => { if (!out[id] || (n.u || 0) >= (out[id].u || 0)) out[id] = n; });
+    return JSON.stringify(out);
   }
   if (k.startsWith("tndihoc_mu_best_")) return String(Math.min(Number(a) || Infinity, Number(b) || Infinity)); // thời gian: càng nhỏ càng tốt
   return String(Math.max(Number(a) || 0, Number(b) || 0)); // điểm / streak: càng lớn càng tốt

@@ -31,6 +31,16 @@
   const cultureLessons = [];                 // bài đọc văn hoá VIP
   const CS = { status: 'idle', groups: [], err: '', uid: null, openGroup: null, openProv: null };   // idle | loading | ready | error
 
+  // Nhánh mở rộng (viết ở file riêng, ví dụ co-han-ngu.js): đăng ký bằng window.tnBaidocExt.register('gh', { render(ctx), find(id), badge(lesson) })
+  const EXT = {};
+  const extCtx = () => ({ listEl, emptyEl, pillsWrap, escapeHtml, openDetail, renderList, RS, idb, getFb: () => lastFb, active: () => currentFilter });
+  window.tnBaidocExt = {
+    register(key, impl) { EXT[key] = impl; },
+    ctx: extCtx,
+    rerender() { renderList(); },
+    isActive(key) { return currentFilter === key; },
+  };
+
   function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
@@ -171,6 +181,7 @@
   function renderList() {
     if (currentFilter === 'vh') { renderCulture(); return; }
     if (currentFilter === 'tn') { renderIdioms(); return; }
+    if (EXT[currentFilter]) { pillsWrap.classList.remove('hidden'); emptyEl.classList.add('hidden'); EXT[currentFilter].render(extCtx()); return; }
     if (RS.status !== 'ready' || !readingLessons.length) { renderGate(); return; }
     pillsWrap.classList.remove('hidden');
     const filtered = readingLessons.filter(l => currentFilter === 'all' || l.hsk === currentFilter);
@@ -267,6 +278,7 @@
     span.classList.add('hz-active');
     tooltipPyEl.textContent = py;
     tooltipHvEl.textContent = hv ? ('Hán Việt: ' + hv) : 'Hán Việt: —';
+    tooltipHvEl.classList.toggle('hidden', !hv && detailCard.classList.contains('gh-ext'));
 
     // Nghĩa tiếng Việt của riêng chữ này (nếu có trong từ điển)
     if (mean) {
@@ -360,7 +372,11 @@
     audioRate.addEventListener('change', () => { if (audioBtn.dataset.playing) { stopAudio(); delete audioBtn.dataset.playing; } });
   }
 
-  function findLesson(id) { return readingLessons.find(l => l.id === id) || cultureLessons.find(l => l.id === id); }
+  function findLesson(id) {
+    let l = readingLessons.find(x => x.id === id) || cultureLessons.find(x => x.id === id);
+    if (!l) for (const k in EXT) { if (EXT[k].find && (l = EXT[k].find(id))) break; }
+    return l;
+  }
   function openDetail(id) {
     const lesson = findLesson(id);
     if (!lesson) return;
@@ -368,7 +384,7 @@
     stopAudio();
 
     const grp = lesson.group ? CS.groups.find(g => g.id === lesson.group) : null;
-    document.getElementById('baidoc-detail-badge').textContent = lesson.group ? '中国文化补习 · ' + (grp ? grp.zh : lesson.group) + (lesson.badge ? ' · ' + lesson.badge : '') : 'hsk ' + lesson.hsk;
+    document.getElementById('baidoc-detail-badge').textContent = lesson.extBadge ? lesson.extBadge : lesson.group ? '中国文化补习 · ' + (grp ? grp.zh : lesson.group) + (lesson.badge ? ' · ' + lesson.badge : '') : 'hsk ' + lesson.hsk;
     document.getElementById('baidoc-detail-title').textContent = lesson.title;
     document.getElementById('baidoc-detail-summary').textContent = lesson.summary || '';
 
@@ -447,7 +463,7 @@
     if (branchWrap) branchWrap.querySelectorAll('[data-baidoc-branch]').forEach(x => x.classList.toggle('active', x.dataset.baidocBranch === b));
     pillsWrap.classList.toggle('bd-hide-levels', b !== 'level');
     if (b === 'level') {
-      if (currentFilter === 'vh' || currentFilter === 'tn') {
+      if (currentFilter === 'vh' || currentFilter === 'tn' || EXT[currentFilter]) {
         currentFilter = 'all';
         pillsWrap.querySelectorAll('.baidoc-level').forEach(p => p.classList.toggle('active', p.dataset.baidocFilter === 'all'));
       }
@@ -712,7 +728,7 @@
     const allowed = window.tnCan && window.tnCan('culture');
     if (!allowed && cultureLessons.length) clearCulture();
     if (!(window.tnCan && window.tnCan('idioms')) && idiomItems.length) clearIdioms();
-    if ((currentFilter === 'vh' || (currentFilter === 'tn' && IS.status !== 'ready')) && detailEl.classList.contains('hidden')) renderList();
+    if ((currentFilter === 'vh' || EXT[currentFilter] || (currentFilter === 'tn' && IS.status !== 'ready')) && detailEl.classList.contains('hidden')) renderList();
   });
 
   function setLessons(arr) {
