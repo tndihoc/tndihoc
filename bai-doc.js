@@ -170,6 +170,7 @@
 
   function renderList() {
     if (currentFilter === 'vh') { renderCulture(); return; }
+    if (currentFilter === 'tn') { renderIdioms(); return; }
     if (RS.status !== 'ready' || !readingLessons.length) { renderGate(); return; }
     pillsWrap.classList.remove('hidden');
     const filtered = readingLessons.filter(l => currentFilter === 'all' || l.hsk === currentFilter);
@@ -440,6 +441,24 @@
 
   document.getElementById('baidoc-back').addEventListener('click', backToList);
 
+  // 3 nhánh: Bài đọc theo trình độ · Bổ túc văn hoá (VIP) · Thành ngữ tục ngữ (VIP)
+  const branchWrap = document.getElementById('baidoc-branches');
+  function setBranch(b) {
+    if (branchWrap) branchWrap.querySelectorAll('[data-baidoc-branch]').forEach(x => x.classList.toggle('active', x.dataset.baidocBranch === b));
+    pillsWrap.classList.toggle('bd-hide-levels', b !== 'level');
+    if (b === 'level') {
+      if (currentFilter === 'vh' || currentFilter === 'tn') {
+        currentFilter = 'all';
+        pillsWrap.querySelectorAll('.baidoc-level').forEach(p => p.classList.toggle('active', p.dataset.baidocFilter === 'all'));
+      }
+    } else {
+      currentFilter = b;
+      if (b === 'vh') CS.openGroup = CS.openProv = null;
+    }
+    if (!detailEl.classList.contains('hidden')) backToList(); else renderList();
+  }
+  if (branchWrap) branchWrap.querySelectorAll('[data-baidoc-branch]').forEach(btn => btn.addEventListener('click', () => setBranch(btn.dataset.baidocBranch)));
+
   pillsWrap.querySelectorAll('.baidoc-level').forEach(pill => {
     pill.addEventListener('click', () => {
       pillsWrap.querySelectorAll('.baidoc-level').forEach(p => p.classList.remove('active'));
@@ -528,11 +547,171 @@
     cultureLessons.splice(0); CS.status = 'idle'; CS.groups = []; CS.uid = null; cDel();
     if (currentOpenId && !findLesson(currentOpenId) && !detailEl.classList.contains('hidden')) backToList();
   }
+  /* ===================== THÀNH NGỮ · TỤC NGỮ · ĐIỂN CỐ (VIP) ===================== */
+  const IDIOM_KEY = 'idioms';
+  const iGet = () => idb('readonly', s => s.get(IDIOM_KEY));
+  const iPut = (v) => idb('readwrite', s => s.put(v, IDIOM_KEY));
+  const iDel = () => idb('readwrite', s => s.delete(IDIOM_KEY));
+  const idiomItems = [];
+  const IS = { status: 'idle', err: '', uid: null, disclaimer: '', q: '', type: 'all', page: 1, open: null, per: 24 };
+  const IDIOM_TYPES = [['all', 'Tất cả'], ['成语', '成语 Thành ngữ'], ['谚语', '谚语 Tục ngữ'], ['俗语', '俗语 Khẩu ngữ'], ['典故', '典故 Điển cố']];
+  const IDIOM_COLOR = { '成语': ['#FFF1E0', '#B45309'], '谚语': ['#E8F5EC', '#2F6B45'], '俗语': ['#E6F0FB', '#2F5C8F'], '典故': ['#F3E8FA', '#6B3F8F'] };
+  if (!document.getElementById('idiom-style')) {
+    const st = document.createElement('style'); st.id = 'idiom-style';
+    st.textContent = `
+    .id-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+    .id-search{flex:1;min-width:200px;padding:10px 14px;border-radius:9999px;border:1.5px solid #FFD9B0;background:#fff;font-size:15px;outline:none}
+    .id-search:focus{border-color:#FF7D00}
+    .id-chip{padding:6px 12px;border-radius:9999px;border:1.5px solid #FFD9B0;background:#fff;font-size:13px;font-weight:600;color:#2E3440;cursor:pointer}
+    .id-chip.active{background:#FF7D00;color:#fff;border-color:#FF7D00}
+    .id-note{font-size:12.5px;color:#7A6A5A;line-height:1.6;background:#FFF8EF;border:1px dashed #FFD9B0;border-radius:14px;padding:10px 14px;margin-bottom:12px}
+    .id-card{text-align:left;background:#fff;border:1px solid rgba(46,52,64,.1);border-radius:18px;padding:16px 18px;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease;opacity:0;animation:fadeUp .35s ease both}
+    .id-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px -14px rgba(46,52,64,.25);border-color:#FFC98A}
+    .id-card.open{grid-column:1/-1;border-color:#FF7D00;cursor:default}
+    .id-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+    .id-zh{font-size:26px;font-weight:700;line-height:1.3;font-family:"KaiTi","Kaiti SC","STKaiti","SimSun",serif;color:#2E3440}
+    .id-py{font-size:14px;color:#D9822B;margin-top:2px}
+    .id-badge{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:9999px;white-space:nowrap}
+    .id-mean{font-size:14.5px;color:#2E3440;line-height:1.7;margin-top:8px}
+    .id-more{margin-top:10px;padding-top:10px;border-top:1px dashed #FFD9B0;font-size:14px;line-height:1.75;color:#3a4150}
+    .id-more b{color:#B45309}
+    .id-say{border:none;background:#FFF1E0;color:#B45309;border-radius:9999px;padding:5px 12px;font-size:13px;font-weight:700;cursor:pointer}
+    .id-say:hover{background:#FFDCB3}
+    .id-pg{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:14px;grid-column:1/-1}
+    .id-pg button{padding:7px 14px;border-radius:9999px;border:1.5px solid #FFD9B0;background:#fff;font-weight:700;font-size:13px;cursor:pointer}
+    .id-pg button[disabled]{opacity:.4;cursor:not-allowed}
+    @media (prefers-reduced-motion:reduce){.id-card{animation:none;opacity:1}}`;
+    document.head.appendChild(st);
+  }
+  const noDia = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').toLowerCase();
+  function idiomFiltered() {
+    const q = noDia(IS.q.trim());
+    return idiomItems.filter(it => (IS.type === 'all' || it.type === IS.type) &&
+      (!q || it.text.includes(IS.q.trim()) || noDia(it.pinyin).includes(q) || noDia(it.meaning_vi).includes(q) || noDia(it.insight_vi).includes(q)));
+  }
+  function sayZh(text) {
+    try {
+      if (!window.speechSynthesis) return;
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text); u.lang = 'zh-CN'; u.rate = 0.8;
+      const v = speechSynthesis.getVoices().find(x => /^zh/i.test(x.lang)); if (v) u.voice = v;
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+  function drawIdiomResults() {
+    const box = document.getElementById('id-results'); if (!box) return;
+    const all = idiomFiltered();
+    const pages = Math.max(1, Math.ceil(all.length / IS.per));
+    if (IS.page > pages) IS.page = pages;
+    const slice = all.slice((IS.page - 1) * IS.per, IS.page * IS.per);
+    const cnt = document.getElementById('id-count');
+    if (cnt) cnt.textContent = all.length + ' / ' + idiomItems.length + ' mục';
+    box.innerHTML = '';
+    if (!slice.length) { box.innerHTML = '<p class="text-sm text-slate italic" style="grid-column:1/-1">Không tìm thấy mục nào phù hợp.</p>'; return; }
+    slice.forEach((it, i) => {
+      const c = IDIOM_COLOR[it.type] || ['#F1F1F1', '#555'];
+      const open = IS.open === it.id;
+      const card = document.createElement('div');
+      card.className = 'id-card focus-ring' + (open ? ' open' : '');
+      card.tabIndex = 0; card.setAttribute('role', 'button');
+      card.style.animationDelay = (i * 0.025) + 's';
+      card.innerHTML = `<div class="id-top"><div><div class="id-zh">${escapeHtml(it.text)}</div><div class="id-py">${escapeHtml(it.pinyin)}</div></div>
+        <span class="id-badge" style="background:${c[0]};color:${c[1]}">${escapeHtml(it.type)}</span></div>
+        <div class="id-mean">${escapeHtml(it.meaning_vi)}</div>
+        ${open ? `<div class="id-more"><div><b>Xuất xứ:</b> ${escapeHtml(it.origin || '—')}</div><div style="margin-top:6px"><b>Tìm hiểu thêm:</b> ${escapeHtml(it.insight_vi || '—')}</div>
+        <div style="margin-top:10px"><button type="button" class="id-say" data-say>🔊 Nghe đọc</button></div></div>` : ''}`;
+      const toggle = () => { IS.open = open ? null : it.id; drawIdiomResults(); };
+      card.addEventListener('click', e => { if (e.target.closest('[data-say]')) { sayZh(it.text); return; } toggle(); });
+      card.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === card) { e.preventDefault(); toggle(); } });
+      box.appendChild(card);
+    });
+    if (pages > 1) {
+      const pg = document.createElement('div'); pg.className = 'id-pg';
+      pg.innerHTML = `<button type="button" data-p="-1" ${IS.page <= 1 ? 'disabled' : ''}>‹ Trước</button><span class="text-sm text-slate">Trang ${IS.page}/${pages}</span><button type="button" data-p="1" ${IS.page >= pages ? 'disabled' : ''}>Sau ›</button>`;
+      pg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { IS.page += Number(b.dataset.p); IS.open = null; drawIdiomResults(); listEl.scrollIntoView({ behavior: 'smooth', block: 'start' }); }));
+      box.appendChild(pg);
+    }
+  }
+  function renderIdioms() {
+    pillsWrap.classList.remove('hidden');
+    emptyEl.classList.add('hidden');
+    const msg = html => { listEl.innerHTML = html; };
+    if (RS.status === 'guest') {
+      msg(`<div class="tt-lock" style="grid-column:1/-1"><div class="ico">📜</div><b>成语·谚语·俗语·典故 – Thành ngữ, tục ngữ, điển cố</b>
+        <p>Mục VIP gồm 1000 thành ngữ, tục ngữ, khẩu ngữ và điển cố tiếng Trung kèm pinyin, nghĩa tiếng Việt, xuất xứ và giải thích. Đăng nhập để xem.</p>
+        <button class="tt-btn" data-tt-login>Đăng nhập / Đăng ký</button></div>`); return;
+    }
+    const can = window.tnCan;
+    if (!can || RS.status === 'checking') { msg(`<div class="tt-empty" style="grid-column:1/-1"><span class="tt-spin"></span> Đang kiểm tra quyền truy cập…</div>`); return; }
+    if (!can('idioms')) {
+      const api = window.tnApi;
+      msg(`<div style="grid-column:1/-1">${api && api.lockedHtml ? api.lockedHtml('idioms') : '<div class="tt-lock"><div class="ico">🔒</div><b>Mục VIP</b><p>Liên hệ cô Thúy để được mở quyền.</p></div>'}</div>`);
+      return;
+    }
+    if (IS.status === 'error') {
+      msg(`<div class="tt-note warn" style="grid-column:1/-1">${escapeHtml(IS.err)} <button class="tt-link" data-id-retry>Thử lại</button></div>`);
+      listEl.querySelector('[data-id-retry]').addEventListener('click', () => { IS.status = 'idle'; renderList(); });
+      return;
+    }
+    if (IS.status !== 'ready') {
+      msg(`<div class="tt-empty" style="grid-column:1/-1"><span class="tt-spin"></span> Đang tải thành ngữ, tục ngữ…</div>`);
+      if (IS.status === 'idle') loadIdioms();
+      return;
+    }
+    if (!idiomItems.length) { msg(`<p class="text-sm text-slate italic" style="grid-column:1/-1">Chưa có dữ liệu thành ngữ.</p>`); return; }
+    listEl.innerHTML = `<div style="grid-column:1/-1">
+      <div class="id-bar"><input class="id-search" id="id-q" type="search" placeholder="Tìm: chữ Hán, pinyin hoặc nghĩa tiếng Việt…" value="${escapeHtml(IS.q)}" autocomplete="off">
+        <span class="text-sm text-slate" id="id-count"></span></div>
+      <div class="id-bar" id="id-types">${IDIOM_TYPES.map(t => `<button type="button" class="id-chip${IS.type === t[0] ? ' active' : ''}" data-t="${t[0]}">${t[1]}</button>`).join('')}</div>
+      ${IS.disclaimer ? `<div class="id-note">ℹ️ ${escapeHtml(IS.disclaimer)}</div>` : ''}
+      </div><div id="id-results" class="grid sm:grid-cols-2 gap-3" style="grid-column:1/-1"></div>`;
+    const qi = document.getElementById('id-q');
+    qi.addEventListener('input', () => { IS.q = qi.value; IS.page = 1; IS.open = null; drawIdiomResults(); });
+    listEl.querySelectorAll('#id-types .id-chip').forEach(b => b.addEventListener('click', () => {
+      IS.type = b.dataset.t; IS.page = 1; IS.open = null;
+      listEl.querySelectorAll('#id-types .id-chip').forEach(x => x.classList.toggle('active', x === b));
+      drawIdiomResults();
+    }));
+    drawIdiomResults();
+  }
+  async function loadIdioms() {
+    const fb = lastFb || (window.tnEnsureFb ? await window.tnEnsureFb() : null);
+    if (!fb) { IS.status = 'error'; IS.err = 'Không kết nối được máy chủ.'; renderList(); return; }
+    IS.status = 'loading'; IS.uid = RS.uid;
+    try {
+      const { db, D } = fb;
+      const metaSnap = await D.getDoc(D.doc(db, 'idioms', '_meta'));
+      if (!metaSnap.exists()) throw new Error('Mục thành ngữ chưa được nạp lên máy chủ. (Admin: “Lớp học & phân quyền” → tab “📜 Dữ liệu thành ngữ”.)');
+      const meta = metaSnap.data();
+      const cached = await iGet();
+      let arr;
+      if (cached && cached.version === meta.version && cached.uid === RS.uid && Array.isArray(cached.items)) arr = cached.items;
+      else {
+        const parts = await Promise.all((meta.parts || []).map(id => D.getDoc(D.doc(db, 'idioms', id))));
+        arr = [];
+        parts.forEach(p => { if (p.exists()) arr.push(...JSON.parse(p.data().json || '[]')); });
+        iPut({ version: meta.version, uid: RS.uid, items: arr });
+      }
+      idiomItems.splice(0, idiomItems.length, ...arr);
+      IS.disclaimer = meta.disclaimer || '';
+      IS.status = 'ready';
+    } catch (e) {
+      IS.status = 'error';
+      const code = (e && e.code) || '';
+      IS.err = code.includes('permission') ? 'Tài khoản chưa có quyền đọc mục này, hoặc luật Firestore cho “idioms” chưa được cập nhật.'
+        : code.includes('unavailable') ? 'Không kết nối được máy chủ. Kiểm tra mạng (ở Trung Quốc cần bật VPN) rồi thử lại.'
+        : (e && e.message) || 'Không tải được thành ngữ.';
+    }
+    renderList();
+  }
+  function clearIdioms() { idiomItems.splice(0); IS.status = 'idle'; IS.uid = null; IS.open = null; iDel(); }
+
   // Quyền thay đổi (đăng nhập xong, admin mở/khoá quyền, đổi lớp…) → vẽ lại mục văn hoá
   document.addEventListener('tt-state', () => {
     const allowed = window.tnCan && window.tnCan('culture');
     if (!allowed && cultureLessons.length) clearCulture();
-    if (currentFilter === 'vh' && detailEl.classList.contains('hidden')) renderList();
+    if (!(window.tnCan && window.tnCan('idioms')) && idiomItems.length) clearIdioms();
+    if ((currentFilter === 'vh' || (currentFilter === 'tn' && IS.status !== 'ready')) && detailEl.classList.contains('hidden')) renderList();
   });
 
   function setLessons(arr) {
@@ -576,7 +755,7 @@
       if (RS.uid !== null || RS.status !== 'guest') {
         RS.uid = null; RS.status = 'guest';
         if (readingLessons.length) { cacheDel(); setLessons([]); }
-        clearCulture();
+        clearCulture(); clearIdioms();
         if (!detailEl.classList.contains('hidden')) backToList();
         renderList();
       }
@@ -584,6 +763,7 @@
     }
     if (RS.uid === uid && (RS.status === 'ready' || RS.status === 'loading')) return;
     if (CS.uid && CS.uid !== uid) clearCulture();
+    if (IS.uid && IS.uid !== uid) clearIdioms();
     RS.uid = uid;
     const fb = detail.fb || (window.tnEnsureFb ? await window.tnEnsureFb() : null);
     lastFb = fb;

@@ -1532,6 +1532,19 @@ Trang quản trị
 <span class="seal-stamp" style="width:30px;height:30px;font-size:12px;background:#FF7D00;color:#FFE8D1;">读</span>
 <h3 class="font-sans font-semibold text-xl text-ink">Bài đọc</h3>
 </div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mt-3 mb-4" id="baidoc-branches">
+<button class="bd-branch active focus-ring" data-baidoc-branch="level" type="button"><span class="bd-b-ico">📖</span><span class="bd-b-t">Bài đọc theo trình độ</span><span class="bd-b-s">HSK 2 – 9</span></button>
+<button class="bd-branch focus-ring" data-baidoc-branch="vh" type="button"><span class="bd-b-ico">🏮</span><span class="bd-b-t">Bổ túc văn hoá</span><span class="bd-b-s">中国文化补习 · VIP</span></button>
+<button class="bd-branch focus-ring" data-baidoc-branch="tn" type="button"><span class="bd-b-ico">📜</span><span class="bd-b-t">Thành ngữ tục ngữ</span><span class="bd-b-s">成语 · 谚语 · 俗语 · 典故 · VIP</span></button>
+</div>
+<style>
+.bd-branch{display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 10px;border-radius:18px;background:#fff;border:1.5px solid #FFD9B0;color:#2E3440;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}
+.bd-branch:hover{transform:translateY(-2px);box-shadow:0 8px 18px -12px rgba(255,125,0,.5)}
+.bd-branch.active{background:#FFF1E0;border-color:#FF7D00;box-shadow:0 8px 18px -12px rgba(255,125,0,.6)}
+.bd-b-ico{font-size:22px;line-height:1}.bd-b-t{font-weight:700;font-size:15px}.bd-b-s{font-size:12px;color:#7A6A5A;font-weight:600}
+#baidoc-filter-pills.bd-hide-levels{display:none}
+#baidoc-filter-pills .baidoc-level-vh{display:none}
+</style>
 <div class="bg-ink/[0.04] rounded-3xl p-3 sm:p-4 mb-6" id="baidoc-filter-pills">
 <div class="grid grid-cols-3 sm:grid-cols-6 gap-2.5 baidoc-pills-7">
 <button class="baidoc-level active focus-ring" data-baidoc-filter="all" style="background:#F5F0FF;color:#3B1F6E;">
@@ -3585,7 +3598,7 @@ Trang quản trị
 })();
 </script>
 <script>try { localStorage.removeItem("tn_ai_chat_history_v1"); } catch (e) {}</script>
-<script src="bai-doc.js?v=6" defer></script>
+<script src="bai-doc.js?v=7" defer></script>
 <script src="bo-thu.js?v=1" defer></script>
 <script src="tu-vung-gt1.js?v=1" defer></script>
 <script src="ngu-phap-gt1.js?v=1" defer></script>
@@ -3660,7 +3673,7 @@ Tiếp tục với Google
 </div>
 </div>
 <script src="auth.js?v=tt4" type="module"></script>
-<script src="tinh-nang-moi.js?v=14" type="module"></script>
+<script src="tinh-nang-moi.js?v=15" type="module"></script>
 <script src="phong-van.js?v=3" type="module"></script>
 <script src="hskk.js?v=1" type="module"></script>
 <script src="bai-tap.js?v=1" type="module"></script>
