@@ -560,25 +560,25 @@
     const st = document.createElement('style'); st.id = 'idiom-style';
     st.textContent = `
     .id-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
-    .id-search{flex:1;min-width:200px;padding:10px 14px;border-radius:9999px;border:1.5px solid #FFD9B0;background:#fff;font-size:15px;outline:none}
-    .id-search:focus{border-color:#FF7D00}
-    .id-chip{padding:6px 12px;border-radius:9999px;border:1.5px solid #FFD9B0;background:#fff;font-size:13px;font-weight:600;color:#2E3440;cursor:pointer}
-    .id-chip.active{background:#FF7D00;color:#fff;border-color:#FF7D00}
-    .id-note{font-size:12.5px;color:#7A6A5A;line-height:1.6;background:#FFF8EF;border:1px dashed #FFD9B0;border-radius:14px;padding:10px 14px;margin-bottom:12px}
+    .id-search{flex:1;min-width:150px;padding:10px 14px;border-radius:9999px;border:1.5px solid var(--t2,#F5BBD5);background:#fff;font-size:15px;outline:none}
+    .id-search:focus{border-color:var(--t5,#B0306A)}
+    .id-chip{padding:6px 12px;border-radius:9999px;border:1.5px solid var(--t2,#F5BBD5);background:#fff;font-size:13px;font-weight:600;color:#2E3440;cursor:pointer}
+    .id-chip.active{background:var(--t5,#B0306A);color:#fff;border-color:var(--t5,#B0306A)}
+    .id-note{font-size:12.5px;color:#5B6472;line-height:1.6;background:var(--t0,#FDF0F6);border:1px dashed var(--t2,#F5BBD5);border-radius:14px;padding:10px 14px;margin-bottom:12px}
     .id-card{text-align:left;background:#fff;border:1px solid rgba(46,52,64,.1);border-radius:18px;padding:16px 18px;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease;opacity:0;animation:fadeUp .35s ease both}
-    .id-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px -14px rgba(46,52,64,.25);border-color:#FFC98A}
-    .id-card.open{grid-column:1/-1;border-color:#FF7D00;cursor:default}
+    .id-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px -14px rgba(46,52,64,.25);border-color:var(--t3,#EB8DB7)}
+    .id-card.open{grid-column:1/-1;border-color:var(--t5,#B0306A);cursor:default}
     .id-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
     .id-zh{font-size:26px;font-weight:700;line-height:1.3;font-family:"KaiTi","Kaiti SC","STKaiti","SimSun",serif;color:#2E3440}
-    .id-py{font-size:14px;color:#D9822B;margin-top:2px}
+    .id-py{font-size:14px;color:var(--t4,#D65C95);margin-top:2px}
     .id-badge{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:9999px;white-space:nowrap}
     .id-mean{font-size:14.5px;color:#2E3440;line-height:1.7;margin-top:8px}
-    .id-more{margin-top:10px;padding-top:10px;border-top:1px dashed #FFD9B0;font-size:14px;line-height:1.75;color:#3a4150}
-    .id-more b{color:#B45309}
-    .id-say{border:none;background:#FFF1E0;color:#B45309;border-radius:9999px;padding:5px 12px;font-size:13px;font-weight:700;cursor:pointer}
-    .id-say:hover{background:#FFDCB3}
+    .id-more{margin-top:10px;padding-top:10px;border-top:1px dashed var(--t2,#F5BBD5);font-size:14px;line-height:1.75;color:#3a4150}
+    .id-more b{color:var(--t6,#7A1A47)}
+    .id-say{border:none;background:var(--t1,#FADCEA);color:var(--t6,#7A1A47);border-radius:9999px;padding:5px 12px;font-size:13px;font-weight:700;cursor:pointer}
+    .id-say:hover{background:var(--t2,#F5BBD5)}
     .id-pg{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:14px;grid-column:1/-1}
-    .id-pg button{padding:7px 14px;border-radius:9999px;border:1.5px solid #FFD9B0;background:#fff;font-weight:700;font-size:13px;cursor:pointer}
+    .id-pg button{padding:7px 14px;border-radius:9999px;border:1.5px solid var(--t2,#F5BBD5);background:#fff;font-weight:700;font-size:13px;cursor:pointer}
     .id-pg button[disabled]{opacity:.4;cursor:not-allowed}
     @media (prefers-reduced-motion:reduce){.id-card{animation:none;opacity:1}}`;
     document.head.appendChild(st);
@@ -619,9 +619,10 @@
         <span class="id-badge" style="background:${c[0]};color:${c[1]}">${escapeHtml(it.type)}</span></div>
         <div class="id-mean">${escapeHtml(it.meaning_vi)}</div>
         ${open ? `<div class="id-more"><div><b>Xuất xứ:</b> ${escapeHtml(it.origin || '—')}</div><div style="margin-top:6px"><b>Tìm hiểu thêm:</b> ${escapeHtml(it.insight_vi || '—')}</div>
+        ${it.story_zh && window.tnStoryHtml ? `<div style="margin-top:12px"><b>Câu chuyện (tiếng Trung):</b><div style="margin-top:8px">${window.tnStoryHtml(it, true)}</div></div>` : ''}
         <div style="margin-top:10px"><button type="button" class="id-say" data-say>🔊 Nghe đọc</button></div></div>` : ''}`;
       const toggle = () => { IS.open = open ? null : it.id; drawIdiomResults(); };
-      card.addEventListener('click', e => { if (e.target.closest('[data-say]')) { sayZh(it.text); return; } toggle(); });
+      card.addEventListener('click', e => { if (e.target.closest('[data-say]')) { sayZh(it.text); return; } if (e.target.closest('.gt-story')) return; toggle(); });
       card.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === card) { e.preventDefault(); toggle(); } });
       box.appendChild(card);
     });

@@ -1129,6 +1129,7 @@ Trang quản trị
 <button class="game-tab" data-game-tab="camera">📷 Tương tác camera</button>
 <button class="game-tab" data-game-tab="match3">🍬 Xếp chữ 消消乐</button>
 <button class="game-tab" data-game-tab="pikachu">🀄 Pikachu lượng từ</button>
+<button class="game-tab" data-game-tab="idiom">📜 Thành ngữ (VIP)</button>
 <button class="game-tab game-tab--lb" data-game-tab="leaderboard">🏆 Bảng xếp hạng</button>
 </div>
 <!-- ---------- GAME 1: MATCH UP (NỐI CẶP) ---------- -->
@@ -1419,6 +1420,8 @@ Trang quản trị
 <div class="game-panel" id="game-match3"></div>
 <!-- ---------- GAME 8: PIKACHU LƯỢNG TỪ 连连看 (giao diện + logic ở game-pikachu.js, dữ liệu ở luong-tu-data.js) ---------- -->
 <div class="game-panel" id="game-pikachu"></div>
+<!-- ---------- GAME 9: THÀNH NGỮ TỤC NGỮ (VIP) (giao diện + logic ở game-thanh-ngu.js) ---------- -->
+<div class="game-panel" id="game-idiom"></div>
 <!-- ---------- BẢNG XẾP HẠNG (top 10 tuần / tháng) ---------- -->
 <div class="game-panel" id="game-leaderboard">
 <div class="lb-card">
@@ -1538,10 +1541,10 @@ Trang quản trị
 <button class="bd-branch focus-ring" data-baidoc-branch="tn" type="button"><span class="bd-b-ico">📜</span><span class="bd-b-t">Thành ngữ tục ngữ</span><span class="bd-b-s">成语 · 谚语 · 俗语 · 典故 · VIP</span></button>
 </div>
 <style>
-.bd-branch{display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 10px;border-radius:18px;background:#fff;border:1.5px solid #FFD9B0;color:#2E3440;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}
-.bd-branch:hover{transform:translateY(-2px);box-shadow:0 8px 18px -12px rgba(255,125,0,.5)}
-.bd-branch.active{background:#FFF1E0;border-color:#FF7D00;box-shadow:0 8px 18px -12px rgba(255,125,0,.6)}
-.bd-b-ico{font-size:22px;line-height:1}.bd-b-t{font-weight:700;font-size:15px}.bd-b-s{font-size:12px;color:#7A6A5A;font-weight:600}
+.bd-branch{display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 10px;border-radius:18px;background:#fff;border:1.5px solid var(--t2,#F5BBD5);color:#2E3440;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}
+.bd-branch:hover{transform:translateY(-2px);box-shadow:0 8px 18px -12px color-mix(in srgb,var(--t5,#B0306A) 50%,transparent)}
+.bd-branch.active{background:var(--t1,#FADCEA);border-color:var(--t5,#B0306A);box-shadow:0 8px 18px -12px color-mix(in srgb,var(--t5,#B0306A) 55%,transparent)}
+.bd-b-ico{font-size:22px;line-height:1}.bd-b-t{font-weight:700;font-size:15px}.bd-b-s{font-size:12px;color:#5B6472;font-weight:600}
 #baidoc-filter-pills.bd-hide-levels{display:none}
 #baidoc-filter-pills .baidoc-level-vh{display:none}
 </style>
@@ -2156,6 +2159,7 @@ Trang quản trị
     camera: document.getElementById('game-camera'),
     match3: document.getElementById('game-match3'),
     pikachu: document.getElementById('game-pikachu'),
+    idiom: document.getElementById('game-idiom'),
     leaderboard: document.getElementById('game-leaderboard'),
   };
   gameTabs.forEach(tab => {
@@ -2165,7 +2169,7 @@ Trang quản trị
       Object.entries(gamePanels).forEach(([key, panel]) => panel.classList.toggle('active', key === tab.dataset.gameTab));
       // Pikachu lượng từ có ô chọn trình độ riêng → ẩn ô chọn cấp HSK chung
       const hskBox = document.getElementById('game-hsk-box');
-      if (hskBox) hskBox.classList.toggle('hidden', tab.dataset.gameTab === 'pikachu');
+      if (hskBox) hskBox.classList.toggle('hidden', tab.dataset.gameTab === 'pikachu' || tab.dataset.gameTab === 'idiom');
     });
   });
 
@@ -3598,7 +3602,7 @@ Trang quản trị
 })();
 </script>
 <script>try { localStorage.removeItem("tn_ai_chat_history_v1"); } catch (e) {}</script>
-<script src="bai-doc.js?v=7" defer></script>
+<script src="bai-doc.js?v=8" defer></script>
 <script src="bo-thu.js?v=1" defer></script>
 <script src="tu-vung-gt1.js?v=1" defer></script>
 <script src="ngu-phap-gt1.js?v=1" defer></script>
@@ -3672,13 +3676,14 @@ Tiếp tục với Google
 </div>
 </div>
 </div>
-<script src="auth.js?v=tt4" type="module"></script>
+<script src="auth.js?v=tt5" type="module"></script>
 <script src="tinh-nang-moi.js?v=15" type="module"></script>
 <script src="phong-van.js?v=3" type="module"></script>
 <script src="hskk.js?v=1" type="module"></script>
 <script src="bai-tap.js?v=1" type="module"></script>
 <script src="game-cu-chi.js?v=3" type="module"></script>
 <script src="game-xep-chu.js?v=3" type="module"></script>
+<script src="game-thanh-ngu.js?v=2" defer></script>
 <script src="game-pikachu.js?v=5" type="module"></script>
 <script src="diem-hoc-tap.js?v=3" defer></script>
 <script src="phan-thuong-thang.js?v=3" defer></script>
