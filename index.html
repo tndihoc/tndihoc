@@ -703,6 +703,7 @@
 <link href="giao-dien-chu.css?v=1" rel="stylesheet"/>
 <link href="chu-de-mau.css?v=2" rel="stylesheet"/>
 <link href="gioi-thieu-du-hoc.css?v=1" rel="stylesheet"/>
+<link href="hieu-ung-noi.css?v=1" rel="stylesheet"/>
 </head>
 <body class="antialiased">
 <!-- ============ NAVBAR (ngang, cố định trên cùng — dùng chung mọi kích thước màn hình) ============ -->
@@ -3289,8 +3290,9 @@ Trang quản trị
      ===================================================================== */
   const STREAK_MILESTONES = [
     { days: 3,  emoji: '🔥', title: 'Chuỗi 3 Ngày Liên Tiếp!', desc: 'Khởi đầu rất tốt — cứ giữ nhịp học này nhé!', treasure: false },
-    { days: 7,  emoji: '🌟', title: 'Chuỗi 7 Ngày Liên Tiếp!', desc: 'Một tuần kiên trì trọn vẹn — bạn đang tiến bộ rõ rệt!', treasure: false },
-    { days: 30, emoji: '🏆', title: 'Chuỗi 1 Tháng Liên Tiếp!', desc: '30 ngày không bỏ cuộc — một cột mốc đáng tự hào!', treasure: false },
+    { days: 7,  emoji: '🔥', title: 'Chuỗi 7 Ngày Liên Tiếp!', desc: 'Một tuần kiên trì trọn vẹn — ngọn lửa của bạn đã chuyển sang màu cam!', treasure: false },
+    { days: 15, emoji: '🔥', title: 'Chuỗi 15 Ngày Liên Tiếp!', desc: 'Nửa tháng không bỏ cuộc — ngọn lửa của bạn đã đổi sang màu đỏ cam!', treasure: false },
+    { days: 30, emoji: '🏆', title: 'Chuỗi 1 Tháng Liên Tiếp!', desc: '30 ngày không bỏ cuộc — ngọn lửa của bạn đã đạt màu đỏ đậm, một cột mốc đáng tự hào!', treasure: false },
     { days: 90, emoji: '👑', title: 'Chuỗi 3 Tháng Liên Tiếp!', desc: 'Một hành trình bền bỉ suốt 3 tháng — thật đáng ngưỡng mộ!', treasure: true },
   ];
 
@@ -3437,6 +3439,9 @@ Trang quản trị
     if (longestEl) longestEl.textContent = Math.max(streakData.longestStreak || 0, current) + ' Ngày';
     if (totalEl) totalEl.textContent = streakData.studyDates.length + ' Ngày';
     if (flameEl) flameEl.classList.toggle('is-active', current > 0);
+    // Cho chao-mung.js (lời chào + màu lửa) biết tình trạng chuỗi hiện tại
+    window.tnStreakInfo = { current, longest: Math.max(streakData.longestStreak || 0, current), studiedToday: streakData.studyDates.includes(todayStr()), hasHistory: streakData.studyDates.length > 0 };
+    document.dispatchEvent(new CustomEvent('tn-streak', { detail: window.tnStreakInfo }));
   }
 
   // ----- Heatmap tháng -----
@@ -3690,6 +3695,7 @@ Tiếp tục với Google
 <script src="game-pikachu.js?v=5" type="module"></script>
 <script src="diem-hoc-tap.js?v=3" defer></script>
 <script src="bat-dau-nhanh.js?v=1" defer></script>
+<script src="chao-mung.js?v=1" defer></script>
 <script src="phan-thuong-thang.js?v=3" defer></script>
 <!-- ===== TUYỂN SINH (điều khiển) — đổi ngày ở TS_END để banner tự ẩn ===== -->
 <script>

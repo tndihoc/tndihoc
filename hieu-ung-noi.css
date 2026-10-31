@@ -1,0 +1,57 @@
+/* =====================================================================
+   HIỆU ỨNG "NỔI LÊN" KHI RÊ CHUỘT — dùng chung cho mọi thẻ / khối bấm được
+   ---------------------------------------------------------------------
+   Rê chuột vào: thẻ nhích lên + phóng to nhẹ + đổ bóng mềm, chuyển động có độ nảy nhẹ (spring)
+   nên nhìn nhịp nhàng chứ không giật. Bấm xuống: thẻ "nhún" lại một chút.
+   • Dùng thuộc tính riêng `translate` / `scale` (không dùng `transform`) vì nhiều thẻ có animation
+     xuất hiện (tt-in, fadeUp) đang giữ `transform` cố định — trước đây chính điều này làm hiệu ứng
+     nhấc lên không chạy, chỉ còn đổi màu viền.
+   • Chỉ bật trên thiết bị có chuột (hover: hover). Trên điện thoại chỉ có hiệu ứng nhún khi chạm.
+   • Tự tắt nếu máy bật chế độ "giảm chuyển động" (prefers-reduced-motion).
+   Muốn mạnh/nhẹ hơn: chỉnh 3 số ở khối :root ngay bên dưới.
+   Áp dụng cho: 3 khối trang chủ, 6 thẻ "Học tiếng Trung", nút HSK (Trò chơi + Bài đọc),
+   thẻ bài đọc, thẻ chọn bài/đơn nguyên, thẻ văn hoá, thẻ ảnh.
+   ===================================================================== */
+:root {
+  --lift-y: -8px;          /* nhích lên bao nhiêu */
+  --lift-scale: 1.04;      /* phóng to bao nhiêu (1.04 = +4%) */
+  --lift-shadow: 0 20px 36px -14px rgba(46, 52, 64, .32);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .home-block, .hoc-card, .tt-pick, .baidoc-level, .baidoc-card, .game-hsk-pill, .cs-card, .card-lift, .tt-shot,
+  #chinese[data-theme] .game-hsk-pill {
+    transition: translate .34s cubic-bezier(.22, 1.25, .36, 1), scale .34s cubic-bezier(.22, 1.25, .36, 1),
+                transform .2s ease, box-shadow .3s ease, border-color .2s ease;
+    will-change: translate, scale;
+  }
+  .tt-pick, .baidoc-card, .cs-card, .card-lift, .tt-shot, .game-hsk-pill { position: relative; }
+
+  .home-block:hover, .hoc-card:hover, .tt-pick:hover, .baidoc-level:hover, .baidoc-card:hover,
+  .game-hsk-pill:hover, .cs-card:hover, .card-lift:hover, .tt-shot:hover {
+    translate: 0 var(--lift-y);
+    scale: var(--lift-scale);
+    transform: none;                 /* bỏ lệnh nhấc cũ để không bị nhấc 2 lần */
+    box-shadow: var(--lift-shadow);
+    z-index: 5;
+  }
+  /* khối trang chủ giữ bóng cùng tông màu với khối */
+  .home-block:hover { box-shadow: 0 26px 42px -14px var(--hb-shadow); }
+  /* nút HSK đang được chọn (đã có scale riêng) vẫn nổi lên khi rê vào */
+  .baidoc-level.active:hover { scale: 1.04; transform: scale(1.03); }
+
+  /* bấm xuống: nhún lại */
+  .home-block:active, .hoc-card:active, .tt-pick:active, .baidoc-level:active, .baidoc-card:active,
+  .game-hsk-pill:active, .cs-card:active, .card-lift:active, .tt-shot:active {
+    translate: 0 -2px;
+    scale: .985;
+    transition-duration: .12s;
+  }
+}
+
+/* Điện thoại / máy cảm ứng: chỉ nhún nhẹ khi chạm (không có "rê chuột") */
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+  .home-block, .hoc-card, .tt-pick, .baidoc-level, .baidoc-card, .game-hsk-pill, .cs-card { transition: scale .14s ease, box-shadow .2s ease; }
+  .home-block:active, .hoc-card:active, .tt-pick:active, .baidoc-level:active, .baidoc-card:active,
+  .game-hsk-pill:active, .cs-card:active { scale: .975; }
+}
