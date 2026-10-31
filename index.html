@@ -2004,7 +2004,7 @@ Trang quản trị
   document.getElementById('drawer-close').addEventListener('click', closeDrawer);
   overlay.addEventListener('click', closeDrawer);
 </script>
-<script src="tu-vung.js?v=tt2"></script>
+<script src="tu-vung.js?v=tt3"></script>
 <script>
   /* =====================================================================
      SỔ TAY TỪ VỰNG — tự động ghi lại từ mà người chơi trả lời/chọn SAI
@@ -2205,26 +2205,50 @@ Trang quản trị
     gameHskLabel.textContent = label + ' · ' + gameWords().length + ' từ';
   }
   window.updateNotebookPillLabels = updateGameHskUI;
+  // HSK 5, 6, 7-9 có bộ từ lớn nên chỉ tải khi chọn (tu-vung-hskN.js). withDeck chờ tải xong rồi mới đổi cấp độ;
+  // nếu bấm sang cấp độ khác trong lúc đang tải thì bỏ qua lần tải cũ (pendingLevel).
+  let pendingLevel = null;
+  function withDeck(level, go) {
+    pendingLevel = null;
+    if (level === 'notebook' || !window.tnLoadDeck || window.tnDeckReady(level)) { go(); return; }
+    pendingLevel = level;
+    gameHskLabel.textContent = 'Đang tải bộ từ ' + (levelLabels[level] || ('hsk ' + level)) + '…';
+    window.tnLoadDeck(level).then(ok => {
+      if (pendingLevel !== level) return;
+      pendingLevel = null;
+      if (ok) { go(); return; }
+      gameHskLabel.textContent = 'Không tải được bộ từ ' + (levelLabels[level] || level) + ' — kiểm tra mạng rồi bấm lại';
+      setTimeout(updateGameHskUI, 4000);
+    });
+  }
   gameHskPills.forEach(pill => {
+    const prefetch = () => { const lv = Number(pill.dataset.gameHsk); if (lv && window.tnLoadDeck && !window.tnDeckReady(lv)) window.tnLoadDeck(lv); };
+    pill.addEventListener('pointerenter', prefetch);   // rê chuột / chạm vào nút → bắt đầu tải sẵn, bấm xong là có ngay
+    pill.addEventListener('focus', prefetch);
     pill.addEventListener('click', () => {
       const raw = pill.dataset.gameHsk;
-      gameLevel = raw === 'notebook' ? 'notebook' : Number(raw);
-      updateGameHskUI();
-      gameAvailabilityChecks.forEach(fn => fn());
-      // Đồng bộ cấp độ này sang Flashcard và Ghép cặp phản xạ nhanh (2 mục dùng chung 1 bộ chọn cấp độ ở trên).
-      if (window.fcSetLevel) window.fcSetLevel(gameLevel);
-      if (gameLevel !== 'notebook' && window.rxSetLevel) window.rxSetLevel(gameLevel);
+      const lv = raw === 'notebook' ? 'notebook' : Number(raw);
+      withDeck(lv, () => {
+        gameLevel = lv;
+        updateGameHskUI();
+        gameAvailabilityChecks.forEach(fn => fn());
+        // Đồng bộ cấp độ này sang Flashcard và Ghép cặp phản xạ nhanh (2 mục dùng chung 1 bộ chọn cấp độ ở trên).
+        if (window.fcSetLevel) window.fcSetLevel(gameLevel);
+        if (gameLevel !== 'notebook' && window.rxSetLevel) window.rxSetLevel(gameLevel);
+      });
     });
   });
   updateGameHskUI();
   // Cho mục "Ôn từ vựng" (Lớp học của tôi) đổi bộ từ của MỌI trò chơi sang từ vựng 1 bài giáo trình
   window.tnGetGameLevel = () => gameLevel;
   window.tnSetGameLevel = function (level) {
-    gameLevel = level;
-    updateGameHskUI();
-    gameAvailabilityChecks.forEach(fn => fn());
-    if (window.fcSetLevel) window.fcSetLevel(gameLevel);
-    if (gameLevel !== 'notebook' && window.rxSetLevel) window.rxSetLevel(gameLevel);
+    withDeck(level, () => {
+      gameLevel = level;
+      updateGameHskUI();
+      gameAvailabilityChecks.forEach(fn => fn());
+      if (window.fcSetLevel) window.fcSetLevel(gameLevel);
+      if (gameLevel !== 'notebook' && window.rxSetLevel) window.rxSetLevel(gameLevel);
+    });
   };
 
   /* ============ GAME 1: NỐI CẶP TỪ (MATCH UP) — lưới ô trộn lẫn, bấm chọn cặp đôi ============ */
@@ -2758,7 +2782,7 @@ Trang quản trị
 (function () {
   /* =========================================================================
      HỌC TỪ VỰNG · GHÉP CẶP PHẢN XẠ NHANH
-     Dùng lại `decks` (hsk1Deck..hsk79Deck) và `levelLabels` đã khai báo ở
+     Dùng lại `decks` (HSK 1–4 có sẵn; HSK 5/6/7-9 tải theo nhu cầu) và `levelLabels` đã khai báo ở
      script phía trên — không cần khai báo dữ liệu riêng.
      ========================================================================= */
 
