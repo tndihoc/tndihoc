@@ -25,28 +25,58 @@
   const tierOf = n => { let t = TIERS[0]; for (const x of TIERS) if (n >= x.from) t = x; return t; };
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-  /* ---------- Lời chúc (mỗi nhóm có vài câu, chọn theo ngày để không đổi liên tục) ---------- */
+  /* ---------- Lời chúc ----------
+     Mỗi nhóm có nhiều câu (tục ngữ, thành ngữ Việt – Hán, lời động viên). Cách chọn câu:
+       • nhóm "done" (vừa học xong): chọn theo SỐ NGÀY CHUỖI → các ngày liên tiếp luôn khác nhau
+         (chuỗi 2, 3, 4… mỗi ngày một câu; nhóm có 12 câu nên 12 ngày liền không lặp).
+       • các nhóm còn lại: chọn theo ngày trong lịch → mỗi nhóm có ≥ 7 câu nên 7 ngày liền không lặp.
+     Muốn thêm câu: thêm 1 dòng [tiêu đề, dòng phụ] vào đúng nhóm; {n} sẽ thành số ngày chuỗi. */
   const MSG = {
     first: [
+      ['Hành trình vạn dặm bắt đầu từ một bước chân 🚶', 'Hãy bắt đầu với bước đầu tiên nhé! 千里之行，始于足下 (qiān lǐ zhī xíng, shǐ yú zú xià).'],
       ['Chào mừng bạn đến với tndihoc! 👋', '为时不晚 — không bao giờ là quá muộn để bắt đầu. Học 5 phút hôm nay để thắp ngọn lửa đầu tiên nhé.'],
-      ['Rất vui được gặp bạn! 🌱', 'Mỗi ngày một chút, chữ Hán sẽ quen dần. Bắt đầu với vài từ đầu tiên ngay bây giờ nhé.'],
+      ['Vạn sự khởi đầu nan, nhưng bạn đã ở đây rồi! 🌱', 'Chỉ cần vài từ đầu tiên thôi — chữ Hán sẽ quen dần theo từng ngày.'],
+      ['Rất vui được gặp bạn! 📖', 'Mỗi ngày một chút, chữ Hán sẽ thành người bạn. Bắt đầu với vài từ đầu tiên ngay bây giờ nhé.'],
+      ['Đi một ngày đàng, học một sàng khôn 🎒', 'Hôm nay hãy học thử vài từ — ngọn lửa đầu tiên đang chờ bạn thắp lên.'],
+      ['Có chí thì nên! 🌟', '有志者事竟成 (yǒu zhì zhě shì jìng chéng). Học 5 phút đầu tiên để bắt đầu chuỗi ngày của bạn nhé.'],
+      ['Ngày mới, trang mới ☀️', 'Chào bạn đến với góc học tập nhỏ này. Thử một trò chơi từ vựng để làm quen nhé!'],
     ],
     back: [
       ['Bạn đã quay lại rồi, hãy tiếp tục cố gắng nhé! 💪', 'Chuỗi {n} ngày của bạn đang chờ — học một chút hôm nay để giữ lửa nào.'],
       ['Chào mừng bạn trở lại! 🌟', 'Ngọn lửa {n} ngày vẫn đang cháy. Hôm nay mình học tiếp nhé!'],
       ['Mừng bạn quay lại! 📖', 'Giữ chuỗi {n} ngày chỉ cần vài phút thôi — bắt đầu thôi nào.'],
+      ['Gần đèn thì sáng 💡', 'Ở bên chữ Hán mỗi ngày, bạn sẽ sáng dần lên. Giữ chuỗi {n} ngày nào!'],
+      ['Ngày mới, bước mới ☀️', 'Chuỗi {n} ngày đang đợi bạn ghé thăm hôm nay. Chỉ cần thêm một bước nhỏ thôi.'],
+      ['Đi một ngày đàng, học một sàng khôn 🎒', 'Hôm nay học thêm một chút để chuỗi {n} ngày của bạn tiếp tục dài ra nhé.'],
+      ['Trăm hay không bằng tay quen ✋', '熟能生巧 (shú néng shēng qiǎo) — ôn một chút hôm nay, chuỗi {n} ngày sẽ lại dài thêm.'],
     ],
     reset: [
       ['Chào mừng bạn quay lại! Hôm nay bắt đầu một chuỗi mới nhé 🌱', 'Không sao nếu những ngày qua bận — quan trọng là bạn đã trở lại. Tiếp tục cố gắng nhé!'],
       ['Bạn đã quay lại rồi, thật tuyệt! 🔥', 'Thắp lại ngọn lửa từ hôm nay: chỉ cần học 5 phút là chuỗi mới bắt đầu.'],
+      ['Ngã ở đâu, đứng dậy ở đó 💪', '不怕慢，只怕站 (bù pà màn, zhǐ pà zhàn) — không sợ chậm, chỉ sợ dừng lại. Mình đi tiếp nhé!'],
+      ['Hành trình mới, bước đầu tiên 🚶', 'Chuỗi cũ đã khép lại, chuỗi mới bắt đầu từ hôm nay. Chỉ cần một bước nhỏ thôi.'],
+      ['Có chí thì nên! 🌟', '有志者事竟成 (yǒu zhì zhě shì jìng chéng). Học 5 phút hôm nay để thắp lại ngọn lửa nhé.'],
+      ['Chào mừng bạn trở lại! ☀️', 'Việc học không có “muộn”, chỉ có “bắt đầu lại”. Hôm nay mình bắt đầu một chuỗi mới nhé.'],
+      ['Mừng bạn quay lại với chữ Hán! 📖', 'Ai cũng có lúc bận — quan trọng là bạn vẫn quay về. Tiếp tục cố gắng nhé!'],
     ],
     done: [
       ['Lại thêm 1 ngày chăm chỉ! 🔥', 'Chuỗi {n} ngày rồi — tiếp tục cố gắng nhé, mỗi ngày một chút bạn sẽ đi rất xa.'],
-      ['Một ngày nữa được ghi nhận! ✨', 'Chuỗi {n} ngày liên tiếp. Bạn đang làm rất tốt, cứ giữ nhịp này nhé.'],
-      ['Hôm nay bạn đã học rồi — giỏi lắm! 👏', 'Chuỗi {n} ngày. Lại thêm 1 ngày chăm chỉ, tiếp tục cố gắng nhé.'],
+      ['Hành trình vạn dặm bắt đầu từ một bước chân 🚶', 'Hôm nay bạn đã đi thêm một bước — chuỗi {n} ngày! 千里之行，始于足下 (qiān lǐ zhī xíng, shǐ yú zú xià).'],
+      ['Kiến tha lâu cũng đầy tổ 🐜', 'Mỗi cố gắng nhỏ đều đáng được trân trọng. Chuỗi {n} ngày rồi — cứ thế nhé!'],
+      ['Có công mài sắt, có ngày nên kim 🪡', '铁杵磨成针 (tiě chǔ mó chéng zhēn). Chuỗi {n} ngày kiên trì — từng chữ Hán đang dần thuộc về bạn.'],
+      ['Nước chảy đá mòn 💧', '水滴石穿 (shuǐ dī shí chuān). Từng ngày một, {n} ngày liên tiếp — sức mạnh của sự đều đặn.'],
+      ['Không sợ chậm, chỉ sợ dừng 🌱', '不怕慢，只怕站 (bù pà màn, zhǐ pà zhàn). Hôm nay bạn không dừng lại — chuỗi {n} ngày!'],
+      ['Cần cù bù thông minh 💪', 'Chuỗi {n} ngày: sự chăm chỉ của bạn đang tạo ra khác biệt thật sự.'],
+      ['Học như thuyền đi ngược dòng 🚣', '学如逆水行舟，不进则退 (xué rú nì shuǐ xíng zhōu, bù jìn zé tuì). Hôm nay bạn đã chèo thêm một nhịp — chuỗi {n} ngày!'],
+      ['Quen tay hay việc 🎯', '熟能生巧 (shú néng shēng qiǎo). Chuỗi {n} ngày — càng học càng nhớ lâu.'],
+      ['Mưa dầm thấm lâu 🌧️', 'Đừng xem nhẹ 10 phút mỗi ngày: chuỗi {n} ngày là cả một dòng kiến thức đã thấm vào bạn.'],
+      ['Ngu Công dời núi ⛰️', '愚公移山 (yú gōng yí shān). Mỗi ngày chuyển một ít đất đá — chuỗi {n} ngày của bạn cũng vậy!'],
+      ['Học, học nữa, học mãi 📚', 'Chuỗi {n} ngày. Lại thêm 1 ngày chăm chỉ — tiếp tục cố gắng nhé!'],
     ],
     doneFirst: [
-      ['Ngọn lửa đầu tiên đã được thắp lên! 🔥', 'Ngày đầu tiên hoàn thành — lại thêm 1 ngày chăm chỉ nữa là chuỗi của bạn dài thêm. Cố lên nhé!'],
+      ['Ngọn lửa đầu tiên đã được thắp lên! 🔥', 'Ngày đầu tiên hoàn thành — mai quay lại để chuỗi của bạn dài thêm nhé. Cố lên!'],
+      ['Bước đầu tiên đã xong! 🚶', 'Hành trình vạn dặm bắt đầu từ một bước chân — và bạn vừa bước xong bước đầu. Giỏi lắm!'],
+      ['Khởi đầu tuyệt vời! 🌱', 'Vạn sự khởi đầu nan — bạn đã vượt qua rồi. Mai mình học tiếp nhé!'],
     ],
     milestone: {
       7:  ['🎉 Chúc mừng! Đủ 7 ngày liên tiếp!', 'Một tuần kiên trì trọn vẹn. Ngọn lửa của bạn đã chuyển sang màu cam — đỏ cam ở mốc 15 ngày nhé!'],
@@ -55,8 +85,10 @@
       90: ['👑 Chúc mừng! Đủ 90 ngày liên tiếp!', 'Ba tháng bền bỉ — bạn là tấm gương học tập. Hãy liên hệ cô Thúy để nhận phần quà bí mật nhé!'],
     },
   };
-  const dayKey = () => { const d = new Date(); return d.getFullYear() * 400 + d.getMonth() * 31 + d.getDate(); };
-  const pick = arr => arr[dayKey() % arr.length];
+  // Số ngày kể từ mốc cố định (theo lịch của máy) → 2 ngày liền nhau luôn khác nhau 1 đơn vị
+  const epochDay = () => { const d = new Date(); return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5); };
+  const pick = arr => arr[epochDay() % arr.length];
+  const pickBy = (arr, i) => arr[((i % arr.length) + arr.length) % arr.length];
   const fill = (s, n) => s.replace(/\{n\}/g, n);
 
   /* ---------- Ngọn lửa SVG (đổi màu theo bậc) ---------- */
@@ -126,7 +158,7 @@
     else if (!studiedToday) [title, sub] = pick(MSG.back);
     else if (MILESTONES.includes(n)) { [title, sub] = MSG.milestone[n]; milestone = true; }
     else if (n === 1) [title, sub] = pick(MSG.doneFirst);
-    else [title, sub] = pick(MSG.done);
+    else [title, sub] = pickBy(MSG.done, n - 2);   // chuỗi 2 → câu đầu, 3 → câu thứ hai… (không lặp trong 12 ngày)
     title = fill(title, n); sub = fill(sub, n);
 
     // Thanh tiến độ tới mốc kế tiếp
@@ -180,6 +212,6 @@
     document.addEventListener('tn-auth', () => setTimeout(render, 600));   // đăng nhập xong → tiến độ được đồng bộ
     window.addEventListener('hashchange', () => { if (home.classList.contains('is-active')) render(); });
   }
-  window.tnFlame = { tierOf, flameSVG, TIERS };
+  window.tnFlame = { tierOf, flameSVG, TIERS, preview: n => (MILESTONES.includes(n) ? MSG.milestone[n] : n === 1 ? MSG.doneFirst[0] : pickBy(MSG.done, n - 2)).map(t => fill(t, n)) };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
