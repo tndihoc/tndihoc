@@ -47,7 +47,7 @@
         const r = u.monthReward;
         if (!r || r.revoked || !(r.until <= now) || isStaffRole(u.role)) continue;   // không đụng quyền của quản trị / giáo viên
         const perms = { ...(u.permissions || {}) };
-        (r.granted || []).forEach(p => { const v = (r.prev || {})[p]; if (typeof v === 'boolean') perms[p] = v; else delete perms[p]; });
+        (r.granted || []).filter(p => PERMS.includes(p)).forEach(p => { const v = (r.prev || {})[p]; if (typeof v === 'boolean') perms[p] = v; else delete perms[p]; });
         await D.updateDoc(D.doc(db, 'users', u.id), { permissions: perms, 'monthReward.revoked': true });
         u.permissions = perms; u.monthReward = { ...r, revoked: true };   // để bước trao thưởng bên dưới thấy quyền đã trả lại
       }
@@ -65,7 +65,7 @@
       for (const [i, w] of winners.entries()) {
         const u = byId.get(w.id);
         const perms = { ...(u.permissions || {}) };
-        const old = u.monthReward && !u.monthReward.revoked && u.monthReward.until > now ? u.monthReward.granted || [] : [];
+        const old = u.monthReward && !u.monthReward.revoked && u.monthReward.until > now ? (u.monthReward.granted || []).filter(p => PERMS.includes(p)) : [];
         const granted = PERMS.filter(p => old.includes(p) || perms[p] !== true);   // không đụng quyền cô đã bật sẵn
         const prevVals = {};
         granted.forEach(p => { prevVals[p] = old.includes(p) ? ((u.monthReward.prev || {})[p] ?? null) : (typeof perms[p] === 'boolean' ? perms[p] : null); perms[p] = true; });
