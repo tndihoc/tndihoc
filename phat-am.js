@@ -1,14 +1,14 @@
 /* =====================================================================
    NHẬP MÔN › PHÁT ÂM (拼音) — dựng từ 2 bài PPT 《HSK标准教程1》 bài 1 & bài 2 của cô Thúy Ngô
    - Vẽ vào khối #tt-pinyin (hoc-tieng-trung.js tạo sẵn khối này).
-   - Dữ liệu nằm ngay trong file này; âm thanh & hình khẩu hình nằm trong thư mục phat-am/ (xem BASE).
+   - Dữ liệu nằm ngay trong file này; âm thanh & hình khẩu hình nằm ở thư mục gốc (xem BASE).
    - Không cần đăng nhập. Tiến độ luyện nghe lưu trên máy người học (localStorage).
    Các tab: Làm quen · Thanh mẫu (21) · Vận mẫu (36) · Thanh điệu · Quy tắc viết · Luyện nghe
    ===================================================================== */
 (function () {
   const root = document.getElementById("tt-pinyin");
   if (!root) return;
-  const BASE = "phat-am/";
+  const BASE = ""; // file nghe (.mp3) và hình khẩu hình (.webp) nằm ngay thư mục gốc
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const PKEY = "tn_phatam_v1";
   const prog = () => { try { return JSON.parse(localStorage.getItem(PKEY) || "{}") || {}; } catch (e) { return {}; } };
