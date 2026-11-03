@@ -369,8 +369,27 @@ window.tnVoice = (function () {
       top.innerHTML = head + `<div class="rv-banner">
           <div><span class="tt-small">Đang ôn</span><div class="rv-banner-t"><span class="tt-hz">${esc(u.title)}</span> · Bài ${esc(u.no)} · ${esc(u.vi)}</div><span class="tt-small">${u.words.length} từ · tất cả trò chơi bên dưới đang dùng bộ từ này</span></div>
           <div class="tt-row"><button class="tt-btn ghost sm" id="rv-list">📋 Danh sách từ</button><button class="tt-btn soft sm" id="rv-back">‹ Chọn bài khác</button></div></div>
+        <div class="tt-card rv-pdf"><div><b>📄 Tải PDF luyện viết chữ Hán</b><div class="tt-small">Mỗi chữ 3 dòng: dòng 1 là thứ tự các nét, dòng 2 và 3 để trống cho bạn viết. In đen – trắng, khổ A4.</div></div>
+          <div class="tt-row"><select class="tt-select" id="rv-pdf-size" aria-label="Cỡ ô"><option value="15">Ô lớn (15 mm)</option><option value="12">Ô vừa (12 mm, nhiều chữ/trang)</option></select>
+          <button class="tt-btn sm" id="rv-pdf">⬇ Tải PDF</button></div></div>
         <div id="rv-words" hidden></div>`;
       document.getElementById("rv-back").onclick = () => { reviewLeave(); renderReview(); };
+      document.getElementById("rv-pdf").onclick = async (ev) => {
+        const btn = ev.currentTarget; if (btn.disabled) return;
+        if (!window.tnWritingPdf) { alert("Chức năng tạo PDF chưa tải xong, hãy thử lại sau vài giây."); return; }
+        const old = btn.textContent; btn.disabled = true;
+        try {
+          const blob = await window.tnWritingPdf(u.words, {
+            title: "Luyện viết chữ Hán · 《贯通中文 1》 " + (u.key === "gt1-all" ? "Bài 1–15" : "Bài " + u.no),
+            sub: u.key === "gt1-all" ? "Tổng ôn" : u.vi, cell: Number(document.getElementById("rv-pdf-size").value) || 15,
+            onProgress: (d, t) => { btn.textContent = "Đang tạo… " + d + "/" + t; } });
+          window.tnDownloadBlob(blob, "Luyen-viet_GT1_" + (u.key === "gt1-all" ? "Bai-1-15" : "Bai-" + u.no) + "_tndihoc.pdf");
+          btn.textContent = "✓ Đã tải (" + blob.tnPages + " trang)";
+          if (blob.tnMissing && blob.tnMissing.length) alert("Chữ chưa có dữ liệu nét (đã để chữ mờ để tập tô): " + blob.tnMissing.join(" "));
+          setTimeout(() => { btn.textContent = old; }, 3500);
+        } catch (e) { btn.textContent = old; alert("Không tạo được PDF: " + (e && e.message || e) + "\nKiểm tra kết nối mạng rồi thử lại."); }
+        btn.disabled = false;
+      };
       document.getElementById("rv-list").onclick = () => {
         const w = document.getElementById("rv-words"); w.hidden = !w.hidden;
         if (!w.hidden && !w.innerHTML) w.innerHTML = `<div class="tt-table-wrap" style="margin-bottom:1rem"><table class="tt-table"><thead><tr><th>#</th><th>Chữ Hán</th><th>Pinyin</th><th>Hán Việt</th><th>Nghĩa</th><th></th></tr></thead><tbody>${u.words.map((x, i) => `<tr><td>${i + 1}</td><td class="tt-hz" style="font-size:18px">${esc(x.hanzi)}</td><td>${esc(x.pinyin)}</td><td>${esc(x.hv || "")}</td><td>${esc(x.mean)}</td><td><button class="tt-link" data-say="${esc(x.hanzi.split("/")[0])}">🔊</button></td></tr>`).join("")}</tbody></table></div>`;
