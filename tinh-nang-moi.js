@@ -101,6 +101,13 @@ const role = () => (T.profile && T.profile.role) || "user";
 const isAdmin = () => !!T.user && role() === "admin";
 const isStaff = () => !!T.user && (role() === "admin" || role() === "teacher");
 const myName = () => (T.profile && T.profile.name) || (T.user && (T.user.displayName || (T.user.email || "").split("@")[0])) || "Học viên";
+/** Đã vào ít nhất 1 lớp (nhập mã lớp hoặc được giáo viên thêm) */
+const inClass = () => !!T.user && T.myClasses.length > 0;
+/** Chỉ học viên có lớp (và giáo viên/admin) mới được NỘP bài ghi âm cho giáo viên */
+const canSubmit = () => isStaff() || inClass();
+function noClassNote() {
+  return `<div class="tt-note warn" style="margin-top:.6rem">🏫 <b>Chỉ học viên đã vào lớp mới nộp được bài ghi âm.</b> Bạn vẫn ghi âm và nghe lại thoải mái để tự luyện — bản ghi chỉ nằm trên máy bạn, không gửi đi đâu. Đã có mã lớp từ cô? <button type="button" class="tt-link" data-go-myclass>Nhập mã lớp</button></div>`;
+}
 
 /** Kiểm tra quyền dùng 1 tính năng — cùng logic với luật Firestore (firestore.rules) */
 function can(feat) {
@@ -688,7 +695,7 @@ function renderHand() {
     <ol class="tt-small" style="margin:0 0 .8rem 1.1rem;list-style:decimal;line-height:1.8">
       <li>Chuẩn bị giấy (vở ô li / giấy kẻ ô chữ điền). Bấm <b>Bắt đầu đọc</b>: mỗi câu được đọc 2 lần, có khoảng dừng để bạn viết.</li>
       <li>Viết xong, bấm <b>Hiện bài gốc</b> để tự chấm bằng bút đỏ.</li>
-      <li>Chụp ảnh bài viết và đăng lên <b>Góc luyện chữ</b> để mọi người cùng góp ý.</li></ol>
+      <li>Chụp ảnh bài viết và đăng lên <b>Góc luyện chữ</b> để được góp ý.</li></ol>
     <div class="tt-row" style="margin-bottom:.6rem">
       <button class="tt-btn peach" id="hd-start">▶ Bắt đầu đọc</button>
       <button class="tt-btn ghost" id="hd-stop" disabled>■ Dừng</button>
@@ -699,6 +706,7 @@ function renderHand() {
       <div class="tt-diff tt-hz" style="font-size:20px">${lines.map(x => esc(x.cn)).join(" ")}</div></details>
     <div class="tt-card" style="background:#FFFBF6;border-color:#FFD9A8">
       <b style="color:#A65400">📷 Đăng ảnh bài chép tay</b>
+      ${hwNotice()}
       ${T.user ? `
         <input type="file" accept="image/*" id="hd-file" class="tt-input" style="width:100%;margin-top:.6rem">
         <img id="hd-preview" alt="" style="display:none;max-height:220px;border-radius:12px;margin-top:.6rem">
@@ -735,19 +743,34 @@ async function runHand(lines) {
   $("hd-start").disabled = false; $("hd-stop").disabled = true;
   if (window.trackStudyActivity) window.trackStudyActivity();
 }
+/** Lời nhắc quyền riêng tư ngay trong khung đăng ảnh / đầu Góc luyện chữ */
+function hwNotice() {
+  if (!T.user) return "";
+  if (inClass() && !isStaff()) return `<div class="tt-note" style="margin-top:.5rem">🔒 Bạn là học viên của lớp nên bài đăng ở đây <b>chỉ giáo viên lớp của bạn xem được</b>, không hiện trong Góc luyện chữ chung.</div>`;
+  return `<div class="tt-note warn" style="margin-top:.5rem">⚠️ <b>Đây là dữ liệu công khai:</b> ảnh bài chép, tên hiển thị, lời nhắn và bình luận sẽ được <b>mọi thành viên đăng nhập</b> vào web nhìn thấy. Hãy chỉ đăng bài bạn muốn chia sẻ.</div>`;
+}
+/** Học viên có lớp → bài lưu ở "handwritingClass" (riêng tư, chỉ giáo viên lớp + admin xem); còn lại → "handwriting" (công khai) */
+const HW_CLASS = "handwritingClass";
+const hwCol = (p) => (p && p._col) || "handwriting";
+const hwImgCol = (p) => hwCol(p) === HW_CLASS ? "handwritingClassImages" : "handwritingImages";
 async function postHandwriting(l, f, caption) {
   if (!f) return;
   const btn = $("hd-post"); btn.disabled = true; btn.innerHTML = '<span class="tt-spin"></span> Đang nén & tải ảnh…';
   try {
     if (!(await fbReady())) throw new Error("Không kết nối được máy chủ.");
+    const priv = inClass() && !isStaff();
+    const teacherIds = priv ? [...new Set(T.myClasses.map(c => c.teacherId).filter(Boolean))].slice(0, 10) : [];
+    if (priv && !teacherIds.length) throw new Error("Lớp của bạn chưa có giáo viên phụ trách nên chưa gửi bài được.");
     const [full, thumb] = await Promise.all([compressImage(f, 1400, 700000, 0.82), compressImage(f, 420, 60000, 0.7)]);
-    const ref = D().doc(D().collection(db(), "handwriting"));
-    await D().setDoc(D().doc(db(), "handwritingImages", ref.id), { uid: T.user.uid, image: full, createdAt: D().serverTimestamp() });
+    const ref = D().doc(D().collection(db(), priv ? HW_CLASS : "handwriting"));
+    await D().setDoc(D().doc(db(), priv ? "handwritingClassImages" : "handwritingImages", ref.id), { uid: T.user.uid, image: full, ...(priv ? { teacherIds } : {}), createdAt: D().serverTimestamp() });
     await D().setDoc(ref, {
       uid: T.user.uid, name: myName(), readingId: l.id, readingTitle: l.title, hsk: String(l.hsk || ""),
       caption: String(caption || "").trim().slice(0, 200), thumb, likes: [], likesCount: 0, commentCount: 0, createdAt: D().serverTimestamp(),
+      ...(priv ? { classIds: T.myClasses.map(c => c.id).slice(0, 10), teacherIds } : {}),
     });
-    toast("✅ Đã đăng lên Góc luyện chữ!");
+    toast(priv ? "✅ Đã gửi bài cho giáo viên lớp (chỉ giáo viên xem được)." : "✅ Đã đăng lên Góc luyện chữ!");
+    if (priv) GAL.scope = "mine";
     renderHand(); GAL.items = null; renderGallery();
     showSec("tt-gallery");
   } catch (e) { toast(errText(e)); btn.disabled = false; btn.textContent = "Đăng lên Góc luyện chữ"; }
@@ -762,17 +785,19 @@ onState(renderDictation);
 /* =====================================================================
    2b) GÓC LUYỆN CHỮ — bảng tin ảnh chép tay: thích + bình luận
    ===================================================================== */
-const GAL = { items: null, lastDoc: null, more: true, loading: false, mineOnly: false };
+/* scope: "all" = Góc luyện chữ chung (bài công khai) · "mine" = bài của tôi · "class" = (giáo viên/admin) bài riêng tư của học viên trong lớp */
+const GAL = { items: null, lastDoc: null, more: true, loading: false, scope: "all" };
 async function renderGallery() {
   const box = $("tt-gallery"); if (!box) return;
   const head = `<div class="tt-head"><span class="tt-stamp navy">字</span><h3>Góc luyện chữ</h3></div>
     <p class="tt-desc">Nơi khoe bài chép tay chữ Hán. Thả ♥ và để lại lời khen / góp ý nét chữ cho nhau nhé!</p>`;
   if (!T.user) { box.innerHTML = head + needLoginHtml("xem và chia sẻ bài chép tay"); return; }
-  box.innerHTML = head + `<div class="tt-row between" style="margin-bottom:.8rem">
-      <div class="tt-tabs" style="margin:0"><button class="tt-tab ${!GAL.mineOnly ? "active" : ""}" data-g="all">Tất cả</button><button class="tt-tab ${GAL.mineOnly ? "active" : ""}" data-g="mine">Bài của tôi</button></div>
+  if (GAL.scope === "class" && !isStaff()) GAL.scope = "all";
+  box.innerHTML = head + `${hwNotice()}<div class="tt-row between" style="margin:.8rem 0">
+      <div class="tt-tabs" style="margin:0"><button class="tt-tab ${GAL.scope === "all" ? "active" : ""}" data-g="all">Tất cả</button><button class="tt-tab ${GAL.scope === "mine" ? "active" : ""}" data-g="mine">Bài của tôi</button>${isStaff() ? `<button class="tt-tab ${GAL.scope === "class" ? "active" : ""}" data-g="class">🔒 Bài của lớp</button>` : ""}</div>
       ${can("dictation") ? `<a class="tt-btn soft sm" href="#tt-dictation" id="g-new">＋ Đăng bài mới</a>` : ""}</div>
     <div class="tt-gallery" id="g-list"></div><div id="g-more" style="text-align:center;margin-top:.8rem"></div>`;
-  box.querySelectorAll("[data-g]").forEach(b => b.addEventListener("click", () => { GAL.mineOnly = b.dataset.g === "mine"; GAL.items = null; renderGallery(); }));
+  box.querySelectorAll("[data-g]").forEach(b => b.addEventListener("click", () => { GAL.scope = b.dataset.g; GAL.items = null; renderGallery(); }));
   $("g-new")?.addEventListener("click", (e) => { e.preventDefault(); DICT.tab = "hand"; renderDictation(); showSec("tt-dictation"); });
   if (!GAL.items) await loadGallery(true); else drawGallery();
 }
@@ -780,17 +805,29 @@ async function loadGallery(reset) {
   if (GAL.loading || !(await fbReady())) return;
   GAL.loading = true;
   if (reset) { GAL.items = []; GAL.lastDoc = null; GAL.more = true; $("g-list") && ($("g-list").innerHTML = `<div class="tt-empty"><span class="tt-spin"></span></div>`); }
+  const byTime = (a, b) => ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0);
+  const tag = (snap, col) => snap ? snap.docs.map(d => ({ id: d.id, _col: col, ...d.data() })) : [];
   try {
-    const parts = [D().collection(db(), "handwriting")];
-    if (GAL.mineOnly) parts.push(D().where("uid", "==", T.user.uid));
-    else parts.push(D().orderBy("createdAt", "desc"));
-    if (GAL.lastDoc && !GAL.mineOnly) parts.push(D().startAfter(GAL.lastDoc));
-    parts.push(D().limit(GAL.mineOnly ? 100 : 24));
-    const snap = await D().getDocs(D().query(...parts));
-    let docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    if (GAL.mineOnly) { docs.sort((a, b) => ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0)); GAL.more = false; }
-    else { GAL.lastDoc = snap.docs[snap.docs.length - 1] || GAL.lastDoc; GAL.more = snap.docs.length === 24; }
-    GAL.items = (GAL.items || []).concat(docs);
+    if (GAL.scope === "mine") {
+      // bài của tôi = bài đã đăng công khai + bài gửi riêng cho giáo viên lớp
+      const [pub, priv] = await Promise.all([
+        D().getDocs(D().query(D().collection(db(), "handwriting"), D().where("uid", "==", T.user.uid), D().limit(100))),
+        D().getDocs(D().query(D().collection(db(), HW_CLASS), D().where("uid", "==", T.user.uid), D().limit(100))).catch(() => null),
+      ]);
+      GAL.items = [...tag(pub, "handwriting"), ...tag(priv, HW_CLASS)].sort(byTime); GAL.more = false;
+    } else if (GAL.scope === "class") {
+      // giáo viên: chỉ bài của lớp mình (teacherIds); admin: tất cả
+      const q = isAdmin() ? D().query(D().collection(db(), HW_CLASS), D().orderBy("createdAt", "desc"), D().limit(100))
+        : D().query(D().collection(db(), HW_CLASS), D().where("teacherIds", "array-contains", T.user.uid), D().limit(100));
+      GAL.items = tag(await D().getDocs(q), HW_CLASS).sort(byTime); GAL.more = false;
+    } else {
+      const parts = [D().collection(db(), "handwriting"), D().orderBy("createdAt", "desc")];
+      if (GAL.lastDoc) parts.push(D().startAfter(GAL.lastDoc));
+      parts.push(D().limit(24));
+      const snap = await D().getDocs(D().query(...parts));
+      GAL.lastDoc = snap.docs[snap.docs.length - 1] || GAL.lastDoc; GAL.more = snap.docs.length === 24;
+      GAL.items = (GAL.items || []).concat(tag(snap, "handwriting"));
+    }
   } catch (e) { GAL.items = GAL.items || []; toast(errText(e)); }
   GAL.loading = false;
   drawGallery();
@@ -800,7 +837,7 @@ function drawGallery() {
   list.innerHTML = (GAL.items || []).length ? GAL.items.map(p => `
     <button class="tt-shot" data-post="${p.id}">
       <img src="${safeMedia(p.thumb)}" alt="Bài chép tay của ${esc(p.name)}" loading="lazy">
-      <div class="meta"><span class="who">${esc(p.name)}</span><span class="what">${p.hsk ? "HSK " + esc(p.hsk) + " · " : ""}${esc(p.readingTitle || "")}</span>
+      <div class="meta"><span class="who">${hwCol(p) === HW_CLASS ? "🔒 " : ""}${esc(p.name)}</span><span class="what">${p.hsk ? "HSK " + esc(p.hsk) + " · " : ""}${esc(p.readingTitle || "")}</span>
         <span class="cnt"><span>${(p.likes || []).includes(T.user.uid) ? "❤️" : "🤍"} ${p.likesCount || 0}</span><span>💬 ${p.commentCount || 0}</span><span>${fmtTime(p.createdAt)}</span></span></div>
     </button>`).join("") : `<div class="tt-empty" style="grid-column:1/-1">Chưa có bài nào. Hãy mở “Chép chính tả → Chép tay” và đăng bài đầu tiên!</div>`;
   list.querySelectorAll("[data-post]").forEach(b => b.addEventListener("click", () => openPost(b.dataset.post)));
@@ -810,7 +847,7 @@ function drawGallery() {
 async function openPost(id) {
   const p = GAL.items.find(x => x.id === id); if (!p) return;
   const m = modal(`<img class="full" id="pp-img" src="${safeMedia(p.thumb)}" alt="">
-    <div class="tt-row between" style="margin:.7rem 0 .2rem"><div><b>${esc(p.name)}</b> <span class="tt-small">· ${fmtTime(p.createdAt)}</span><div class="tt-small">${p.hsk ? "HSK " + esc(p.hsk) + " · " : ""}${esc(p.readingTitle || "")}</div></div>
+    <div class="tt-row between" style="margin:.7rem 0 .2rem"><div><b>${esc(p.name)}</b> <span class="tt-small">· ${fmtTime(p.createdAt)}</span><div class="tt-small">${p.hsk ? "HSK " + esc(p.hsk) + " · " : ""}${esc(p.readingTitle || "")}</div>${hwCol(p) === HW_CLASS ? '<div class="tt-small" style="color:#A65400">🔒 Chỉ giáo viên lớp và bạn xem được bài này</div>' : ""}</div>
       <div class="tt-row"><button class="tt-btn ghost sm" id="pp-like"></button>${(p.uid === T.user.uid || isStaff()) ? `<button class="tt-btn danger sm" id="pp-del">Xoá</button>` : ""}</div></div>
     ${p.caption ? `<p style="font-size:14px;margin:.4rem 0">${esc(p.caption)}</p>` : ""}
     <div class="tt-comments" id="pp-cmts"><div class="tt-empty"><span class="tt-spin"></span></div></div>
@@ -818,16 +855,16 @@ async function openPost(id) {
     { title: "🖼️ Bài chép tay" });
   const drawLike = () => { const liked = (p.likes || []).includes(T.user.uid); $("pp-like").innerHTML = `${liked ? "❤️" : "🤍"} ${p.likesCount || 0}`; };
   drawLike();
-  D().getDoc(D().doc(db(), "handwritingImages", id)).then(s => { if (s.exists() && $("pp-img")) $("pp-img").src = s.data().image; }).catch(() => {});
+  D().getDoc(D().doc(db(), hwImgCol(p), id)).then(s => { if (s.exists() && $("pp-img")) $("pp-img").src = s.data().image; }).catch(() => {});
   const loadC = async () => {
     try {
-      const snap = await D().getDocs(D().query(D().collection(db(), "handwriting", id, "comments"), D().orderBy("createdAt", "asc"), D().limit(200)));
+      const snap = await D().getDocs(D().query(D().collection(db(), hwCol(p), id, "comments"), D().orderBy("createdAt", "asc"), D().limit(200)));
       const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       $("pp-cmts").innerHTML = items.length ? items.map(c => `<div class="tt-cmt"><span class="tt-ava">${esc(initialOf(c.name))}</span><div class="bub"><b>${esc(c.name)}</b>${c.role === "teacher" || c.role === "admin" ? ' <span class="tt-badge peach">giáo viên</span>' : ""}<span class="tt-small">${fmtTime(c.createdAt)}</span>${(c.uid === T.user.uid || isStaff()) ? `<button class="tt-link" style="float:right;color:#D6524F" data-cdel="${c.id}">Xoá</button>` : ""}<div>${esc(c.text)}</div></div></div>`).join("") : `<div class="tt-empty">Chưa có bình luận.</div>`;
       $("pp-cmts").querySelectorAll("[data-cdel]").forEach(b => b.addEventListener("click", async () => {
         try {
-          await D().deleteDoc(D().doc(db(), "handwriting", id, "comments", b.dataset.cdel));
-          await D().updateDoc(D().doc(db(), "handwriting", id), { commentCount: D().increment(-1) });
+          await D().deleteDoc(D().doc(db(), hwCol(p), id, "comments", b.dataset.cdel));
+          await D().updateDoc(D().doc(db(), hwCol(p), id), { commentCount: D().increment(-1) });
           p.commentCount = Math.max(0, (p.commentCount || 1) - 1); loadC(); drawGallery();
         } catch (e) { toast(errText(e)); }
       }));
@@ -837,7 +874,7 @@ async function openPost(id) {
   $("pp-like").addEventListener("click", async () => {
     const liked = (p.likes || []).includes(T.user.uid);
     try {
-      await D().updateDoc(D().doc(db(), "handwriting", id), { likes: liked ? D().arrayRemove(T.user.uid) : D().arrayUnion(T.user.uid), likesCount: D().increment(liked ? -1 : 1) });
+      await D().updateDoc(D().doc(db(), hwCol(p), id), { likes: liked ? D().arrayRemove(T.user.uid) : D().arrayUnion(T.user.uid), likesCount: D().increment(liked ? -1 : 1) });
       p.likes = liked ? p.likes.filter(u => u !== T.user.uid) : [...(p.likes || []), T.user.uid];
       p.likesCount = (p.likesCount || 0) + (liked ? -1 : 1); drawLike(); drawGallery();
     } catch (e) { toast(errText(e)); }
@@ -846,8 +883,8 @@ async function openPost(id) {
     const t = $("pp-text").value.trim(); if (!t) return;
     $("pp-send").disabled = true;
     try {
-      await D().addDoc(D().collection(db(), "handwriting", id, "comments"), { uid: T.user.uid, name: myName(), role: role(), text: t.slice(0, 600), createdAt: D().serverTimestamp() });
-      await D().updateDoc(D().doc(db(), "handwriting", id), { commentCount: D().increment(1) });
+      await D().addDoc(D().collection(db(), hwCol(p), id, "comments"), { uid: T.user.uid, name: myName(), role: role(), text: t.slice(0, 600), createdAt: D().serverTimestamp() });
+      await D().updateDoc(D().doc(db(), hwCol(p), id), { commentCount: D().increment(1) });
       p.commentCount = (p.commentCount || 0) + 1; $("pp-text").value = ""; loadC(); drawGallery();
     } catch (e) { toast(errText(e)); }
     $("pp-send").disabled = false;
@@ -855,8 +892,8 @@ async function openPost(id) {
   $("pp-del")?.addEventListener("click", async () => {
     if (!confirm("Xoá bài đăng này?")) return;
     try {
-      await D().deleteDoc(D().doc(db(), "handwriting", id));
-      await D().deleteDoc(D().doc(db(), "handwritingImages", id)).catch(() => {});
+      await D().deleteDoc(D().doc(db(), hwCol(p), id));
+      await D().deleteDoc(D().doc(db(), hwImgCol(p), id)).catch(() => {});
       GAL.items = GAL.items.filter(x => x.id !== id); m.close(); drawGallery(); toast("Đã xoá bài đăng.");
     } catch (e) { toast(errText(e)); }
   });
@@ -1008,10 +1045,12 @@ function drawTake() {
   if (!r) { el.innerHTML = `<p class="tt-small">Bấm ghi âm, nói xong bấm dừng. Bạn có thể nghe lại và ghi lại nhiều lần trước khi nộp.</p>`; return; }
   el.innerHTML = `<audio class="tt-audio" controls src="${safeMedia(r.url)}" style="width:100%"></audio>
     <div class="tt-row" style="margin-top:.6rem;justify-content:space-between"><span class="tt-small">Độ dài: ${fmtClock(r.duration)} · ${(r.dataUrl.length / 1024).toFixed(0)} KB</span>
-    ${T.user ? `<button class="tt-btn peach" id="spk-submit">📤 Nộp cho giáo viên</button>` : `<button class="tt-btn" data-tt-login>Đăng nhập để nộp bài</button>`}</div>`;
+    ${!T.user ? `<button class="tt-btn" data-tt-login>Đăng nhập để nộp bài</button>` : canSubmit() ? `<button class="tt-btn peach" id="spk-submit">📤 Nộp cho giáo viên</button>` : ""}</div>
+    ${T.user && !canSubmit() ? noClassNote() : ""}`;
   $("spk-submit")?.addEventListener("click", () => submitSpeaking(SPK.current, r));
 }
 async function submitSpeaking(t, r) {
+  if (!canSubmit()) { toast("Chỉ học viên đã vào lớp mới nộp được bài."); return; }
   const b = $("spk-submit"); b.disabled = true; b.innerHTML = '<span class="tt-spin"></span> Đang nộp…';
   try {
     if (r.dataUrl.length > 950000) throw new Error("Bản ghi quá dài. Hãy nói ngắn gọn hơn (dưới 2 phút) rồi ghi lại.");
@@ -1270,7 +1309,8 @@ function renderVipPractice(box, head) {
     <div class="tt-row between" style="margin-top:1rem">
       <span class="tt-small">Đã ghi <b>${recorded}/${need.length}</b> câu${VIP.roleFilter !== "all" ? " (vai " + esc(VIP.roleFilter) + ")" : ""}. Mỗi câu tối đa 20 giây.</span>
       <div class="tt-row">${VIP.textIdx + 1 < lesson.texts.length ? `<button class="tt-btn ghost" id="vp-next">Đoạn tiếp ▶</button>` : ""}
-      <button class="tt-btn peach" id="vp-submit" ${recorded === need.length && need.length ? "" : "disabled"}>📤 Nộp bài</button></div></div>
+      <button class="tt-btn peach" id="vp-submit" ${recorded === need.length && need.length && canSubmit() ? "" : "disabled"}>📤 Nộp bài</button></div></div>
+    ${canSubmit() ? "" : noClassNote()}
     </div>`;
   bindVipTop(box, lesson);
   $("vp-next")?.addEventListener("click", () => { stopVipAudio(); cancelVipRec(); VIP.textIdx++; VIP.roleFilter = "all"; renderVip(); });
@@ -1297,7 +1337,7 @@ async function toggleVipRec(text, i, btn) {
   } catch (e) { toast(e.message); }
 }
 async function submitVip(lesson, text, need) {
-  if (!T.user) return;
+  if (!T.user || !canSubmit()) return;
   const b = $("vp-submit"); b.disabled = true; b.innerHTML = '<span class="tt-spin"></span> Đang nộp…';
   try {
     const takes = VIP.takes[text.id]; const clips = {};
@@ -2059,7 +2099,7 @@ function lmsVipData() {
 onState(() => { LMS.classes = null; LMS.users = null; LMS.subs = null; renderLms(); });
 
 /* ---------------- Cho các file khác dùng chung (phong-van.js) ---------------- */
-window.tnApi = { T, can, isStaff, isAdmin, myName, fbReady, db, D, REC, TTS, toast, errText, esc, modal, fmtClock, fmtTime, blobToDataURL,
+window.tnApi = { T, can, isStaff, isAdmin, canSubmit, noClassNote, myName, fbReady, db, D, REC, TTS, toast, errText, esc, modal, fmtClock, fmtTime, blobToDataURL,
   lockedHtml, needLoginHtml, onState, showSubAudio, toWav, subAudioTag, mountAudios, compressImage, safeMedia, invalidateMySubs: () => { SPK.mySubs = null; renderSpeaking(); } };
 document.dispatchEvent(new CustomEvent("tn-api-ready"));
 

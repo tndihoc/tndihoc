@@ -26,7 +26,7 @@ const LV_META = {
 };
 
 function start(api) {
-  const { T, can, isStaff, isAdmin, myName, fbReady, db, D, REC, TTS, toast, errText, esc, fmtClock, fmtTime, blobToDataURL, needLoginHtml, lockedHtml, onState, showSubAudio } = api;
+  const { T, can, isStaff, isAdmin, myName, fbReady, db, D, REC, TTS, toast, errText, esc, fmtClock, fmtTime, blobToDataURL, needLoginHtml, lockedHtml, onState, showSubAudio, canSubmit, noClassNote } = api;
   const $ = (id) => document.getElementById(id);
   const root = $("tt-hskk"); if (!root) return;
 
@@ -271,7 +271,7 @@ function start(api) {
           <input class="tt-input" id="hk-q" placeholder="Tìm đề (chữ Hán / tiếng Việt / số đề)…" value="${esc(HK.query)}" style="flex:1;min-width:200px">
           <button class="tt-btn soft" id="hk-rand" title="Bốc ngẫu nhiên 1 đề, máy đọc đề như giám khảo">🎲 Bốc đề thi thử</button>
           <label class="pv-voice">🔊 Tốc độ đọc <select id="hk-rate">${RATES.map(r => `<option value="${r.v}" ${Math.abs(r.v - rate) < 0.01 ? "selected" : ""}>${r.t}</option>`).join("")}</select></label>
-          ${unsent ? `<button class="tt-btn peach" id="hk-sendall">📤 Nộp tất cả đề đã ghi (${unsent})</button>` : ""}
+          ${unsent && canSubmit() ? `<button class="tt-btn peach" id="hk-sendall">📤 Nộp tất cả đề đã ghi (${unsent})</button>` : ""}
         </div>
       </div>
       <div class="pv-list">${list.length ? list.map(qCard).join("") : `<div class="tt-empty">Không có đề nào phù hợp.</div>`}</div>`;
@@ -360,7 +360,8 @@ function start(api) {
           <span class="tt-timer" id="hk-timer"></span>
         </div>
         <div id="hk-take" style="margin-top:.6rem">${takeHtml(take)}</div>
-        <p class="pv-lock-note">🔒 Bản ghi chưa nộp chỉ lưu trên thiết bị này — <b>chỉ bạn nghe được</b>. Giáo viên chỉ nghe khi bạn bấm “Nộp bài”.</p>
+        <p class="pv-lock-note">🔒 Bản ghi chưa nộp chỉ lưu trên thiết bị này — <b>chỉ bạn nghe được</b>. ${canSubmit() ? "Giáo viên chỉ nghe khi bạn bấm “Nộp bài”." : "Bạn chưa thuộc lớp nào nên chỉ dùng để tự luyện."}</p>
+        ${T.user && !canSubmit() ? noClassNote() : ""}
       </div>
 
       ${subs.length ? `<div class="pv-subs"><b class="pv-subs-t">📬 Bài đã nộp cho đề này (${subs.length})</b>${subs.slice(0, 5).map(s => `<div class="tt-sub">
@@ -380,7 +381,7 @@ function start(api) {
     return `<audio class="tt-audio" controls src="${take.url}" style="width:100%"></audio>
       <div class="tt-row between" style="margin-top:.5rem"><span class="tt-small">Độ dài ${fmtClock(take.duration)}${take.sent ? " · ✓ đã nộp bản này" : ""}</span>
       <div class="tt-row"><button class="tt-btn danger sm" id="hk-del">Xoá bản ghi</button>
-      ${take.sent ? "" : `<button class="tt-btn peach" id="hk-submit">📤 Nộp bài</button>`}</div></div>`;
+      ${take.sent || !canSubmit() ? "" : `<button class="tt-btn peach" id="hk-submit">📤 Nộp bài</button>`}</div></div>`;
   }
 
   function bindSamples(box, it) {
@@ -450,6 +451,7 @@ function start(api) {
   async function submitOne(it) {
     const lv = HK.lv, take = (HK.takes[lv] || {})[it.n]; if (!take) throw new Error("Chưa có bản ghi.");
     if (!T.user) throw new Error("Hãy đăng nhập để nộp bài.");
+    if (!canSubmit()) throw new Error("Chỉ học viên đã vào lớp mới nộp được bài.");
     const dataUrl = await blobToDataURL(take.blob);
     if (dataUrl.length > 950000) throw new Error("Bản ghi quá dài. Hãy nói ngắn gọn hơn rồi ghi lại.");
     if (!(await fbReady())) throw new Error("Không kết nối được máy chủ.");
