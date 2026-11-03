@@ -99,8 +99,8 @@ window.tnVoice = (function () {
     const pin = document.createElement("div");
     pin.id = "tt-pinyin";
     pin.className = "mt-10 pt-8 border-t border-ink/10";
-    pin.innerHTML = `<div class="tt-head"><span class="tt-stamp">音</span><h3>Phiên âm</h3></div>
-      <div class="tt-empty">Phần <b>phiên âm</b> (thanh mẫu, vận mẫu, thanh điệu) đang được biên soạn — <b>sắp có</b>.</div>`;
+    pin.innerHTML = `<div class="tt-head"><span class="tt-stamp">音</span><h3>Phát âm</h3></div>
+      <div class="tt-empty"><span class="tt-spin"></span></div>`;
     radEl.parentNode.insertBefore(pin, radEl);
   }
 
@@ -125,8 +125,8 @@ window.tnVoice = (function () {
     ],
   });
   const PANELS = [
-    { id: "nhapmon", group: "Nền tảng", icon: "🌱", title: "Nhập môn", desc: "Phiên âm và 214 bộ thủ Khang Hy: nghĩa, âm Hán Việt, ví dụ và luyện tập.", ...tone(SC.lilac),
-      parts: [{ el: "tt-pinyin", label: "🔤 Phiên âm" }, { el: "tt-radicals", label: "部 Bộ thủ" }] },
+    { id: "nhapmon", group: "Nền tảng", icon: "🌱", title: "Nhập môn", desc: "Phát âm (thanh mẫu, vận mẫu, thanh điệu, luyện nghe) và 214 bộ thủ Khang Hy.", ...tone(SC.lilac),
+      parts: [{ el: "tt-pinyin", label: "🔤 Phát âm" }, { el: "tt-radicals", label: "部 Bộ thủ" }] },
     ...HSKS.map(hskPanel),
     { id: "khaungu", group: "Luyện kỹ năng & lớp học", icon: "🎙️", title: "Khẩu ngữ", desc: "Luyện nói theo chủ đề và theo đề thi HSKK (sơ – trung – cao cấp), ghi âm và nộp cho giáo viên.", ...tone(SC.blue),
       parts: [{ el: "tt-speaking", label: "🗣️ Theo chủ đề" }, { el: "tt-hskk", label: "📝 Luyện HSKK" }] },
