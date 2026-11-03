@@ -77,19 +77,64 @@ window.tnVoice = (function () {
   const hub = document.getElementById("hoc-hub");
   const bar = document.getElementById("hoc-bar");
   if (!page || !hub || !bar) return;
+  // ---- Bảng màu (7 sắc nhạt → đậm) cho từng thẻ ----
+  const SC = {
+    green:  ["#EEF8F5", "#D2EEE7", "#A6DCCE", "#6FC2AE", "#3A9E88", "#1F6F62", "#124A41"],
+    sky:    ["#EFF8FD", "#D6EDF9", "#AEDAF2", "#7BBFE5", "#4A9FD0", "#2574A6", "#154A6E"],
+    yellow: ["#FFFAE8", "#FFF1C2", "#FFE38A", "#F5CB4D", "#D8A91E", "#9C7208", "#5F4503"],
+    pink:   ["#FDF0F6", "#FADCEA", "#F5BBD5", "#EB8DB7", "#D65C95", "#B0306A", "#7A1A47"],
+    purple: ["#F5F0FF", "#E6DAFD", "#CDB8FA", "#A98BF0", "#7C5CD6", "#52329E", "#2E1760"],
+    teal:   ["#EAF8FA", "#CBEEF2", "#9ADBE3", "#5FC0CD", "#2E9BAB", "#1B6E7C", "#0E4650"],
+    navy:   ["#F0F3F8", "#DAE1ED", "#B4C2DA", "#869CC0", "#5A76A3", "#364F7D", "#1E2F55"],
+    red:    ["#FDF1EE", "#FADDD6", "#F4B9AB", "#E98F7B", "#D2634B", "#A33F2B", "#6B2415"],
+    blue:   ["#F1F4FD", "#DCE4FA", "#B9CAF4", "#8BA7EA", "#5A7ADB", "#2E48C4", "#1B2D85"],
+    orange: ["#FFF6EC", "#FFE6CC", "#FFCB94", "#FFA95A", "#F08A24", "#B35600", "#7A3A00"],
+    lilac:  ["#F6F3FC", "#E8E2F7", "#D1C6EF", "#AE9FDF", "#8875C8", "#4B3C8C", "#2F255C"],
+  };
+  const tone = (sc) => ({ scale: sc, bg: sc[1], ink: sc[5], line: sc[2] });
+
+  // Phần "Phiên âm" (Nhập môn): tạm để chỗ trống, cô bổ sung nội dung sau
+  const radEl = document.getElementById("tt-radicals");
+  if (radEl && !document.getElementById("tt-pinyin")) {
+    const pin = document.createElement("div");
+    pin.id = "tt-pinyin";
+    pin.className = "mt-10 pt-8 border-t border-ink/10";
+    pin.innerHTML = `<div class="tt-head"><span class="tt-stamp">音</span><h3>Phiên âm</h3></div>
+      <div class="tt-empty">Phần <b>phiên âm</b> (thanh mẫu, vận mẫu, thanh điệu) đang được biên soạn — <b>sắp có</b>.</div>`;
+    radEl.parentNode.insertBefore(pin, radEl);
+  }
+
+  // ---- Các thẻ theo trình độ HSK: mỗi thẻ có Bài đọc · Trò chơi · Sổ tay · Chép chính tả của riêng cấp đó ----
+  const HSKS = [
+    { lv: 1, key: "1",   sc: SC.green,  title: "HSK 1" },
+    { lv: 2, key: "2",   sc: SC.sky,    title: "HSK 2" },
+    { lv: 3, key: "3",   sc: SC.yellow, title: "HSK 3" },
+    { lv: 4, key: "4",   sc: SC.pink,   title: "HSK 4" },
+    { lv: 5, key: "5",   sc: SC.purple, title: "HSK 5" },
+    { lv: 6, key: "6",   sc: SC.teal,   title: "HSK 6" },
+    { lv: 79, key: "7-9", sc: SC.navy,  title: "HSK 7-9" },
+  ];
+  const hskPanel = (h) => ({
+    id: "hsk" + h.lv, kind: "hsk", level: h.lv, hskKey: h.key, group: "Học theo trình độ HSK",
+    icon: "📘", title: h.title, desc: "Bài đọc, trò chơi, sổ tay từ vựng và chép chính tả — chỉ dùng từ vựng của " + h.title + ".", ...tone(h.sc),
+    parts: [
+      { el: "baidoc-section", label: "📖 Bài đọc", with: ["tt-reading-extra"] },
+      { el: "vocab-games", label: "🎮 Trò chơi" },
+      { el: "notebook-section", label: "📓 Sổ tay từ vựng" },
+      { el: "tt-dictation", label: "✍️ Chép chính tả" },
+    ],
+  });
   const PANELS = [
-    { id: "trochoi", scale: ["#F5F0FF", "#E6DAFD", "#CDB8FA", "#A98BF0", "#7C5CD6", "#52329E", "#2E1760"], icon: "🎮", title: "Trò chơi", desc: "Flashcard, nối cặp, trắc nghiệm, đấu trường, xếp chữ 消消乐, bảng xếp hạng, tương tác bằng camera.", bg: "#F0EAFE", ink: "#52329E", line: "#D9CCFA",
-      parts: [{ el: "vocab-games", label: "🎮 Trò chơi" }, { el: "notebook-section", label: "📓 Sổ tay từ vựng" }] },
-    { id: "chinhta", scale: ["#EEF8F5", "#D2EEE7", "#A6DCCE", "#6FC2AE", "#3A9E88", "#1F6F62", "#124A41"], icon: "✍️", title: "Chép chính tả", desc: "Nghe – gõ lại, đo tốc độ chữ/phút; hoặc chép tay rồi đăng ảnh.", bg: "#E6F4F1", ink: "#1F6F62", line: "#BCE3DA",
-      parts: [{ el: "tt-dictation", label: "✍️ Chép chính tả" }] },
-    { id: "baidoc", scale: ["#FDF0F6", "#FADCEA", "#F5BBD5", "#EB8DB7", "#D65C95", "#B0306A", "#7A1A47"], icon: "📖", title: "Bài đọc", desc: "Kho bài đọc HSK 2–6, tra từng chữ, nghe đọc, thảo luận.", bg: "#FDE8F1", ink: "#B0306A", line: "#F7C6DB",
-      parts: [{ el: "baidoc-section", label: "📖 Bài đọc", with: ["tt-reading-extra"] }] },
-    { id: "khaungu", scale: ["#F1F4FD", "#DCE4FA", "#B9CAF4", "#8BA7EA", "#5A7ADB", "#2E48C4", "#1B2D85"], icon: "🎙️", title: "Khẩu ngữ", desc: "Luyện nói theo chủ đề và theo đề thi HSKK (sơ – trung – cao cấp), ghi âm và nộp cho giáo viên.", bg: "#EEF2FC", ink: "#2E48C4", line: "#D6E0F7",
+    { id: "nhapmon", group: "Nền tảng", icon: "🌱", title: "Nhập môn", desc: "Phiên âm và 214 bộ thủ Khang Hy: nghĩa, âm Hán Việt, ví dụ và luyện tập.", ...tone(SC.lilac),
+      parts: [{ el: "tt-pinyin", label: "🔤 Phiên âm" }, { el: "tt-radicals", label: "部 Bộ thủ" }] },
+    ...HSKS.map(hskPanel),
+    { id: "khaungu", group: "Luyện kỹ năng & lớp học", icon: "🎙️", title: "Khẩu ngữ", desc: "Luyện nói theo chủ đề và theo đề thi HSKK (sơ – trung – cao cấp), ghi âm và nộp cho giáo viên.", ...tone(SC.blue),
       parts: [{ el: "tt-speaking", label: "🗣️ Theo chủ đề" }, { el: "tt-hskk", label: "📝 Luyện HSKK" }] },
-    { id: "lophoc", scale: ["#FFF6EC", "#FFE6CC", "#FFCB94", "#FFA95A", "#F08A24", "#B35600", "#7A3A00"], icon: "🏫", title: "Lớp học của tôi", desc: "Vào lớp bằng mã, ôn từ vựng theo bài, góc luyện chữ và hội thoại 贯通中文.", bg: "#FFE8D1", ink: "#B35600", line: "#FFC98A",
+    { id: "lophoc", group: "Luyện kỹ năng & lớp học", icon: "🏫", title: "Lớp học của tôi", desc: "Vào lớp bằng mã, ôn từ vựng theo bài, góc luyện chữ và hội thoại 贯通中文.", ...tone(SC.orange),
       parts: [{ el: "tt-myclass", label: "🏫 Lớp của tôi" }, { el: "tt-review", label: "📚 Ôn từ vựng" }, { el: "tt-grammar", label: "📐 Ngữ pháp (VIP)" }, { el: "tt-gallery", label: "🖼️ Luyện chữ" }, { el: "tt-vip", label: "⭐ Hội thoại 贯通" }] },
-    { id: "bothu", scale: ["#F6F3FC", "#E8E2F7", "#D1C6EF", "#AE9FDF", "#8875C8", "#4B3C8C", "#2F255C"], icon: "部", title: "Bộ thủ", desc: "214 bộ thủ Khang Hy: nghĩa, âm Hán Việt, ví dụ và luyện tập.", bg: "#F3F0FA", ink: "#4B3C8C", line: "#DCD3F2",
-      parts: [{ el: "tt-radicals", label: "部 Bộ thủ" }] },
+    { id: "vanhoa", kind: "culture", group: "Văn hoá", icon: "🏮", title: "Văn hoá", desc: "Bổ túc văn hoá Trung Quốc, thành ngữ – tục ngữ, Cổ Hán ngữ và game thành ngữ (VIP).", ...tone(SC.red),
+      parts: [{ el: "baidoc-section", label: "🏮 Bổ túc văn hoá", mode: "vh" }, { el: "baidoc-section", label: "📜 Thành ngữ tục ngữ", mode: "tn" },
+              { el: "baidoc-section", label: "🏺 Cổ Hán ngữ", mode: "gh" }, { el: "vocab-games", label: "🎮 Game thành ngữ", game: "idiom" }] },
   ];
   // Khối Tổng quan: luôn hiện ở đầu màn hình thẻ (không còn là 1 thẻ phải bấm mới xem)
   const overview = document.getElementById("streak-widget");
@@ -109,18 +154,54 @@ window.tnVoice = (function () {
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
   function drawHub() {
-    hub.innerHTML = PANELS.map((p, i) => `
+    let lastGroup = null;
+    hub.innerHTML = PANELS.map((p, i) => {
+      const gh = p.group !== lastGroup ? `<h3 class="hoc-group">${esc(p.group)}</h3>` : "";
+      lastGroup = p.group;
+      return gh + `
       <button type="button" class="hoc-card focus-ring" data-hoc="${p.id}" style="--c-bg:${p.bg};--c-ink:${p.ink};--c-line:${p.line};animation-delay:${i * 45}ms">
-        <span class="hoc-num">${i + 1}</span>
+        ${p.kind === "hsk" ? `<span class="hoc-num">${p.level === 79 ? "7-9" : p.level}</span>` : ""}
         <span class="hoc-ico">${p.icon}</span>
         <span class="hoc-title">${esc(p.title)}</span>
         <span class="hoc-desc">${esc(p.desc)}</span>
         ${p.parts.length > 1 ? `<span class="hoc-subs">${p.parts.map(x => `<span>${esc(x.label)}</span>`).join("")}</span>` : ""}
         <span class="hoc-go">Mở ›</span>
-      </button>`).join("");
+      </button>`;
+    }).join("");
+  }
+  const hskKeyOf = (lv) => lv === 79 ? "7-9" : String(lv);
+  /** Áp chế độ "khoá" của thẻ HSK / Văn hoá lên các khối dùng chung (bài đọc, trò chơi, chính tả) */
+  function applyMode(p, part, changed) {
+    const gTab = (name) => games && games.querySelector('.game-tab[data-game-tab="' + name + '"]');
+    const idiomOn = gTab("idiom") && gTab("idiom").classList.contains("active");
+    setGameIntro(p && p.kind === "hsk" ? "Flashcard, nối cặp, trắc nghiệm, đấu trường, xếp chữ 消消乐… — tất cả đều dùng từ vựng " + p.title + " (hoặc Sổ tay của bạn)." : p && p.kind === "culture" ? "Trò chơi từ kho thành ngữ, tục ngữ, điển cố (VIP)." : null);
+    if (p && p.kind === "hsk") {
+      page.dataset.lock = "1"; page.dataset.lv = String(p.level); page.dataset.gmode = "hsk";
+      if (part.el === "vocab-games") {
+        if (idiomOn) { const f = gTab("matchup"); f && f.click(); }
+        const cur = window.tnGetGameLevel && window.tnGetGameLevel();
+        if (window.tnSetGameLevel && (changed || (cur !== p.level && cur !== "notebook"))) window.tnSetGameLevel(p.level);
+      }
+      if (part.el === "baidoc-section" && window.tnBaidocMode) window.tnBaidocMode(p.hskKey);
+      if (window.tnDictLock) window.tnDictLock(p.hskKey);
+    } else if (p && p.kind === "culture") {
+      page.dataset.lock = "1"; delete page.dataset.lv; page.dataset.gmode = "idiom";
+      if (part.el === "baidoc-section" && window.tnBaidocMode) window.tnBaidocMode(part.mode);
+      if (part.el === "vocab-games") { const t = gTab("idiom"); t && !idiomOn && t.click(); }
+    } else {
+      delete page.dataset.lock; delete page.dataset.lv; delete page.dataset.gmode;
+      if (idiomOn) { const f = gTab("matchup"); f && f.click(); }
+    }
+  }
+  const gIntro = games0 => { const p = document.querySelector("#vocab-games > p"); return p; };
+  function setGameIntro(txt) {
+    const p = gIntro(); if (!p) return;
+    if (!p.dataset.orig) p.dataset.orig = p.textContent;
+    p.textContent = txt == null ? p.dataset.orig : txt;
   }
   function show(panelId, partIdx, push) {
     const p = PANELS.find(x => x.id === panelId);
+    const changedPanel = page.dataset.view !== (p ? p.id : "hub");
     page.dataset.view = p ? p.id : "hub";
     const target = p ? p.parts[Math.max(0, Math.min(partIdx || 0, p.parts.length - 1))].el : null;
     if (target !== "tt-review") reviewLeave();   // trả khu trò chơi về chỗ cũ nếu đang mượn cho "Ôn từ vựng"
@@ -128,6 +209,7 @@ window.tnVoice = (function () {
     setTheme(p);
     if (overview) overview.hidden = !!p;
     if (!p) {
+      applyMode(null, null, false);
       hub.hidden = false; bar.hidden = true; drawHub();
     } else {
       const k = Math.max(0, Math.min(partIdx || 0, p.parts.length - 1));
@@ -138,6 +220,7 @@ window.tnVoice = (function () {
       const part = p.parts[k];
       [part.el, ...(part.with || [])].forEach(id => { const el = document.getElementById(id); if (el) el.classList.add("hub-show"); });
       bar.dataset.panel = p.id;
+      applyMode(p, part, changedPanel);
       if (part.el === "tt-review") renderReview();
       if (part.el === "tt-radicals") renderRadicals();
       if (part.el === "tt-grammar") renderGrammar();
@@ -156,14 +239,16 @@ window.tnVoice = (function () {
     if (!target || !page.contains(target)) return false;
     const host = target.closest(".hub-part");
     if (!host) return false;
-    for (const p of PANELS) {
-      const j = p.parts.findIndex(x => [x.el, ...(x.with || [])].includes(host.id));
-      if (j >= 0) {
-        if (window.showPage && !page.classList.contains("is-active")) window.showPage("chinese");
-        show(p.id, j, true);
-        if (target !== host) setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
-        return true;
-      }
+    const hits = [];
+    PANELS.forEach(p => p.parts.forEach((x, j) => { if ([x.el, ...(x.with || [])].includes(host.id)) hits.push({ p, j }); }));
+    if (hits.length) {
+      // khối dùng chung (bài đọc, trò chơi, chính tả): ưu tiên thẻ đang mở → thẻ HSK đúng cấp đang chơi → thẻ đầu tiên
+      const gl = window.tnGetGameLevel ? window.tnGetGameLevel() : null;
+      const hit = hits.find(x => x.p.id === page.dataset.view) || hits.find(x => x.p.kind === "hsk" && x.p.level === gl) || hits[0];
+      if (window.showPage && !page.classList.contains("is-active")) window.showPage("chinese");
+      show(hit.p.id, hit.j, true);
+      if (target !== host) setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+      return true;
     }
     return false;
   }

@@ -494,6 +494,15 @@
   }
   if (branchWrap) branchWrap.querySelectorAll('[data-baidoc-branch]').forEach(btn => btn.addEventListener('click', () => setBranch(btn.dataset.baidocBranch)));
 
+  // Bố cục mới (hoc-tieng-trung.js): mỗi thẻ HSK / Văn hoá "khoá" sẵn 1 chế độ: '2'…'6','7-9','1' (theo cấp) hoặc 'vh' | 'tn' | 'gh'
+  window.tnBaidocMode = function (m) {
+    pillsWrap.classList.add('bd-hide-levels');
+    if (branchWrap) branchWrap.querySelectorAll('[data-baidoc-branch]').forEach(x => x.classList.toggle('active', x.dataset.baidocBranch === (['vh','tn','gh'].includes(m) ? m : 'level')));
+    currentFilter = m;
+    if (m === 'vh') CS.openGroup = CS.openProv = null;
+    if (!detailEl.classList.contains('hidden')) backToList(); else renderList();
+  };
+
   pillsWrap.querySelectorAll('.baidoc-level').forEach(pill => {
     pill.addEventListener('click', () => {
       pillsWrap.querySelectorAll('.baidoc-level').forEach(p => p.classList.remove('active'));

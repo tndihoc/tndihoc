@@ -305,3 +305,18 @@
 .vp-mode { border:0; background:none; padding:.4rem .95rem; border-radius:999px; font-size:13.5px; font-weight:600; color:var(--tt-slate); cursor:pointer; transition:background .15s, color .15s; }
 .vp-mode:hover { color:var(--tt-ink); }
 .vp-mode.active { background:#fff; color:#B35600; box-shadow:0 2px 8px rgba(46,52,64,.1); }
+
+/* ===== Bố cục mới: thẻ theo nhóm + khoá cấp độ HSK / Văn hoá (hoc-tieng-trung.js) ===== */
+.hoc-group { grid-column: 1 / -1; margin: .6rem 0 -.2rem; font-size: .8rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--tt-slate, #5B6472); }
+.hoc-group:first-child { margin-top: 0; }
+#chinese[data-lock] #baidoc-branches, #chinese[data-lock] #baidoc-filter-pills { display: none !important; }
+#chinese[data-gmode="hsk"] .game-tab[data-game-tab="idiom"] { display: none !important; }
+#chinese[data-gmode="idiom"] .game-tab:not([data-game-tab="idiom"]), #chinese[data-gmode="idiom"] #game-hsk-box { display: none !important; }
+#chinese[data-gmode="hsk"] #game-hsk-pills { grid-template-columns: repeat(2, minmax(0, 170px)); }
+#chinese[data-lv="1"] .game-hsk-pill:not([data-game-hsk="1"]):not([data-game-hsk="notebook"]) { display: none !important; }
+#chinese[data-lv="2"] .game-hsk-pill:not([data-game-hsk="2"]):not([data-game-hsk="notebook"]) { display: none !important; }
+#chinese[data-lv="3"] .game-hsk-pill:not([data-game-hsk="3"]):not([data-game-hsk="notebook"]) { display: none !important; }
+#chinese[data-lv="4"] .game-hsk-pill:not([data-game-hsk="4"]):not([data-game-hsk="notebook"]) { display: none !important; }
+#chinese[data-lv="5"] .game-hsk-pill:not([data-game-hsk="5"]):not([data-game-hsk="notebook"]) { display: none !important; }
+#chinese[data-lv="6"] .game-hsk-pill:not([data-game-hsk="6"]):not([data-game-hsk="notebook"]) { display: none !important; }
+#chinese[data-lv="79"] .game-hsk-pill:not([data-game-hsk="79"]):not([data-game-hsk="notebook"]) { display: none !important; }

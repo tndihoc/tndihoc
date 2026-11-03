@@ -568,6 +568,10 @@ function renderDictation() {
   const all = dictLessons();
   if (!all.length) { box.innerHTML = head + `<div class="tt-empty">Đang tải kho bài đọc…</div>`; return; }
   const levels = [...new Set(all.map(l => String(l.hsk)))].sort();
+  if (DICT.lock) {   // bố cục mới: thẻ HSK n khoá sẵn cấp độ
+    DICT.level = DICT.lock;
+    if (!levels.includes(DICT.lock)) { box.innerHTML = head + `<div class="tt-empty">Chưa có bài đọc HSK ${esc(DICT.lock)} để chép chính tả — <b>sắp có</b>.</div>`; return; }
+  }
   if (!DICT.level) DICT.level = levels[0];
   if (!DICT.lessonId || !all.some(l => l.id === DICT.lessonId)) DICT.lessonId = (all.find(l => String(l.hsk) === DICT.level) || all[0]).id;
   const inLevel = all.filter(l => String(l.hsk) === DICT.level);
@@ -578,7 +582,7 @@ function renderDictation() {
         <button class="tt-tab ${DICT.tab === "hand" ? "active" : ""}" data-dt="hand">✍️ Chép tay</button>
       </div>
       <div class="tt-row" style="margin-bottom:.9rem">
-        <select class="tt-select" id="dt-level">${levels.map(v => `<option value="${v}" ${v === DICT.level ? "selected" : ""}>HSK ${v}</option>`).join("")}</select>
+        ${DICT.lock ? `<span class="tt-badge peach">HSK ${esc(DICT.level)}</span>` : `<select class="tt-select" id="dt-level">${levels.map(v => `<option value="${v}" ${v === DICT.level ? "selected" : ""}>HSK ${v}</option>`).join("")}</select>`}
         <select class="tt-select" id="dt-lesson" style="flex:1;min-width:200px">${inLevel.map(l => `<option value="${l.id}" ${l.id === DICT.lessonId ? "selected" : ""}>${esc(l.title)} (${dictLines(l).length} câu)</option>`).join("")}</select>
         <select class="tt-select" id="dt-rate" title="Tốc độ đọc"><option value="0.65">🐢 Chậm</option><option value="0.8">Vừa</option><option value="1">🐇 Nhanh</option></select>
       </div>
@@ -586,12 +590,18 @@ function renderDictation() {
     </div>`;
   $("dt-rate").value = String(DICT.rate);
   box.querySelectorAll("[data-dt]").forEach(b => b.addEventListener("click", () => { stopDict(); DICT.tab = b.dataset.dt; renderDictation(); }));
-  $("dt-level").addEventListener("change", e => { stopDict(); DICT.level = e.target.value; DICT.lessonId = ""; renderDictation(); });
+  $("dt-level")?.addEventListener("change", e => { stopDict(); DICT.level = e.target.value; DICT.lessonId = ""; renderDictation(); });
   $("dt-lesson").addEventListener("change", e => { stopDict(); DICT.lessonId = e.target.value; resetDict(); renderDictBody(); });
   $("dt-rate").addEventListener("change", e => { DICT.rate = Number(e.target.value); });
   if (!DICT.results.length && DICT.idx === 0) resetDict();
   renderDictBody();
 }
+window.tnDictLock = function (lv) {   // lv: "2".."6" | "7-9" | "1" | null (mở khoá)
+  const v = lv == null ? "" : String(lv);
+  if ((DICT.lock || "") === v) return;
+  stopDict(); DICT.lock = v; if (v) { DICT.level = v; DICT.lessonId = ""; } resetDict();
+  renderDictation();
+};
 function resetDict() { DICT.idx = 0; DICT.results = []; DICT.t0 = 0; DICT.tEnd = 0; DICT.checked = false; clearInterval(DICT.timer); }
 function stopDict() { TTS.stop(); clearInterval(DICT.timer); DICT.handRun++; }
 function renderDictBody() { DICT.tab === "type" ? renderTyping() : renderHand(); }
